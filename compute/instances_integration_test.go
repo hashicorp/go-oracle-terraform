@@ -2,12 +2,14 @@ package compute
 
 import (
 	"fmt"
+	"github.com/hashicorp/go-oracle-terraform/helper"
 	"testing"
 )
 
 var createdInstanceName *InstanceName
 
-func TestInstanceLifecycle(t *testing.T) {
+func TestAccInstanceLifecycle(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
 	defer tearDownInstances()
 
 	svc, err := getInstancesClient()

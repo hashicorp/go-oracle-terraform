@@ -52,11 +52,13 @@ func unmarshalRequestBody(t *testing.T, r *http.Request, target interface{}) {
 	if err != nil {
 		t.Fatalf("Error marshalling request: %s", err)
 	}
-	io.Copy(os.Stdout, buf)
-	fmt.Println()
+	if _, err := io.Copy(os.Stdout, buf); err != nil {
+		t.Fatalf("Error copying file: %s", err)
+	}
 }
 
-func marshalToBytes(target interface{}) []byte {
+// Unused Function
+/*func marshalToBytes(target interface{}) []byte {
 	marshalled, err := json.Marshal(target)
 	if err != nil {
 		panic(err)
@@ -66,4 +68,4 @@ func marshalToBytes(target interface{}) []byte {
 	io.Copy(os.Stdout, buf)
 	fmt.Println()
 	return marshalled
-}
+}*/

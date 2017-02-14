@@ -1,26 +1,24 @@
 TEST?=$$(go list ./... |grep -v 'vendor')
 GOFMT_FILES?=$$(find . -name '*.go' |grep -v vendor)
 
-# Commenting these out until we can write a test-helper
-# that only runs unit tests, or acctests based on env-var
-#test: fmtcheck errcheck
-#	go test -i $(TEST) || exit 1
-#	echo $(TEST) | \
-#		xargs -t -n4 go test $(TESTARGS) -timeout=30s -parallel=4
+test: fmtcheck errcheck
+	go test -i $(TEST) || exit 1
+	echo $(TEST) | \
+		xargs -t -n4 go test $(TESTARGS) -timeout=30s -parallel=4
 
 #testacc: fmtcheck
-#	TF_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m
+#	ORACLE_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m
 
-#testrace: fmtcheck
-#	TF_ACC= go test -race $(TEST) $(TESTARGS)
+testrace: fmtcheck
+	ORACLE_ACC= go test -race $(TEST) $(TESTARGS)
 
-#cover:
-#	@go tool cover 2>/dev/null; if [ $$? -eq 3 ]; then \
-#		go get -u golang.org/x/tools/cmd/cover; \
-#	fi
-#	go test $(TEST) -coverprofile=coverage.out
-#	go tool cover -html=coverage.out
-#	rm coverage.out
+cover:
+	@go tool cover 2>/dev/null; if [ $$? -eq 3 ]; then \
+		go get -u golang.org/x/tools/cmd/cover; \
+	fi
+	go test $(TEST) -coverprofile=coverage.out
+	go tool cover -html=coverage.out
+	rm coverage.out
 
 vet:
 	@echo "go vet ."
