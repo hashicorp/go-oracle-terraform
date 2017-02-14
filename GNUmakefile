@@ -1,8 +1,6 @@
 TEST?=$$(go list ./... |grep -v 'vendor')
 GOFMT_FILES?=$$(find . -name '*.go' |grep -v vendor)
 
-default: build
-
 # Commenting these out until we can write a test-helper
 # that only runs unit tests, or acctests based on env-var
 #test: fmtcheck errcheck
