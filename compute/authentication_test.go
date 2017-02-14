@@ -6,10 +6,13 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"testing"
+
+	"github.com/hashicorp/go-oracle-terraform/helper"
 )
 
 // Test that the client can obtain an authentication cookie from the authentication endpoint.
-func TestObtainAuthenticationCookie(t *testing.T) {
+func TestAccObtainAuthenticationCookie(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
 	identityDomain := "opencredodev"
 	username := "user@test.com"
 	password := "p4ssw0rd"
@@ -67,7 +70,7 @@ func TestObtainAuthenticationCookie(t *testing.T) {
 }
 
 // Test that the authenticating client sends the authentication cookie with all requests to the API.
-func TestAuthenticationCookieSentInRequestsFromAuthenticatedClient(t *testing.T) {
+func TestAccAuthenticationCookieSentInRequestsFromAuthenticatedClient(t *testing.T) {
 	server := newAuthenticatingServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if len(r.Cookies()) == 0 {
 			t.Fatal("No cookie sent with request")

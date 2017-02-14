@@ -6,10 +6,13 @@ import (
 	"net/url"
 	"reflect"
 	"testing"
+
+	"github.com/hashicorp/go-oracle-terraform/helper"
 )
 
 // Test that the client can create an instance.
-func TestSecurityIPListsClient_CreateKey(t *testing.T) {
+func TestAccSecurityIPListsClient_CreateKey(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
 	server := newAuthenticatingServer(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "POST" {
 			t.Errorf("Wrong HTTP method %s, expected POST", r.Method)

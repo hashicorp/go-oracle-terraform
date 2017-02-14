@@ -7,10 +7,13 @@ import (
 	"net/url"
 	"reflect"
 	"testing"
+
+	"github.com/hashicorp/go-oracle-terraform/helper"
 )
 
 // Test that the client can create a storage volume.
-func TestStorageVolumeClient_CreateStorageVolume(t *testing.T) {
+func TestAccStorageVolumeClient_CreateStorageVolume(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
 	server := newAuthenticatingServer(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "POST" {
 			t.Fatalf("Wrong HTTP method %s, expected POST", r.Method)
@@ -39,7 +42,8 @@ func TestStorageVolumeClient_CreateStorageVolume(t *testing.T) {
 	}
 }
 
-func TestStorageVolumeClient_GetStorageVolume(t *testing.T) {
+func TestAccStorageVolumeClient_GetStorageVolume(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
 	server := newAuthenticatingServer(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "GET" {
 			t.Fatalf("Expected GET request, was %s", r.Method)
@@ -72,7 +76,8 @@ func TestStorageVolumeClient_GetStorageVolume(t *testing.T) {
 	}
 }
 
-func TestStorageVolumeClient_WaitForStorageVolumeOnline(t *testing.T) {
+func TestAccStorageVolumeClient_WaitForStorageVolumeOnline(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
 	server := serverThatReturnsOnlineStorageVolumeAfterThreeSeconds(t)
 
 	defer server.Close()
@@ -89,7 +94,8 @@ func TestStorageVolumeClient_WaitForStorageVolumeOnline(t *testing.T) {
 	}
 }
 
-func TestStorageVolumeClient_WaitForStorageVolumeOnlineTimeout(t *testing.T) {
+func TestAccStorageVolumeClient_WaitForStorageVolumeOnlineTimeout(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
 	server := serverThatReturnsOnlineStorageVolumeAfterThreeSeconds(t)
 
 	defer server.Close()
@@ -101,7 +107,8 @@ func TestStorageVolumeClient_WaitForStorageVolumeOnlineTimeout(t *testing.T) {
 	}
 }
 
-func TestStorageVolumeClient_UpdateStorageVolume(t *testing.T) {
+func TestAccStorageVolumeClient_UpdateStorageVolume(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
 	server := newAuthenticatingServer(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method == "GET" {
 			svr := "{\"result\":[{\"name\":\"/Compute-test/test/test\",\"size\":\"16G\",\"status\":\"Online\"}]}"

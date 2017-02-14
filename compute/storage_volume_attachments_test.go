@@ -1,14 +1,19 @@
 package compute
 
+import "testing"
+
 import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
+
+	"github.com/hashicorp/go-oracle-terraform/helper"
 )
 
 // Test that the client can create an instance.
-func TestStorageAttachmentsClient_GetStorageAttachmentsForInstance(t *testing.T) {
+func TestAccStorageAttachmentsClient_GetStorageAttachmentsForInstance(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
 	server := newAuthenticatingServer(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "GET" {
 			t.Errorf("Wrong HTTP method %s, expected GET", r.Method)

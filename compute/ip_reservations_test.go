@@ -3,9 +3,12 @@ package compute
 import (
 	"fmt"
 	"testing"
+
+	"github.com/hashicorp/go-oracle-terraform/helper"
 )
 
-func TestIPReservationLifeCycle(t *testing.T) {
+func TestAccIPReservationLifeCycle(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
 	var (
 		parentPool string = "/oracle/public/ippool"
 		permanent  bool   = true

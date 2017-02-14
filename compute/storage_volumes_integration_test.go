@@ -3,9 +3,12 @@ package compute
 import (
 	"strconv"
 	"testing"
+
+	"github.com/hashicorp/go-oracle-terraform/helper"
 )
 
-func TestStorageVolumeLifecycle(t *testing.T) {
+func TestAccStorageVolumeLifecycle(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
 	defer tearDownStorageVolumes()
 
 	svc, err := getStorageVolumeClient()

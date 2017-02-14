@@ -2,10 +2,12 @@ package compute
 
 import (
 	"fmt"
+	"github.com/hashicorp/go-oracle-terraform/helper"
 	"testing"
 )
 
-func TestIPAssociationLifeCycle(t *testing.T) {
+func TestAccIPAssociationLifeCycle(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
 	var (
 		vcable        string
 		parentPool    string = "ippool:/oracle/public/ippool"
