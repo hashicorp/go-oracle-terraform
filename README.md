@@ -14,5 +14,5 @@ To authenticate with the Oracle Compute Cloud the following credentails must be 
 -	`OPC_IDENTITY_DOMAIN` - Identity domain for Oracle Public Cloud
 
 ```sh
-$ make acctest
+$ make testacc
 ```
