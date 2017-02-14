@@ -1,7 +1,5 @@
 package compute
 
-import "testing"
-
 import (
 	"net/http"
 	"net/http/httptest"
