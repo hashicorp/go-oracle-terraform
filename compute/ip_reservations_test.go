@@ -12,8 +12,8 @@ func TestAccIPReservationLifeCycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
 	createIPReservation := CreateIPReservationInfo{
-		ParentPool:  "/oracle/public/ippool",
-		Permanent: true,
+		ParentPool: "/oracle/public/ippool",
+		Permanent:  true,
 	}
 
 	iprc, err := getIPReservationsClient()
@@ -41,9 +41,8 @@ func TestAccIPReservationLifeCycle(t *testing.T) {
 		t.Fatal("Created and retrived IP addresses don't match %s %s\n", ipReservation.IP, ipReservationInfo.IP)
 	}
 
-
 	deleteIPReservationInfo := DeleteIPReservationInfo{
-	  Name: ipReservation.Name,
+		Name: ipReservation.Name,
 	}
 	err = iprc.DeleteIPReservation(deleteIPReservationInfo)
 	if err != nil {

@@ -19,10 +19,10 @@ func (c *Client) IPReservations() *IPReservationsClient {
 
 // CreateIPReservationInfo defines an IP reservation to be created.
 type CreateIPReservationInfo struct {
-	Name       string `json:"name"`
-	ParentPool string      `json:"parentpool"`
-	Permanent  bool        `json:"permanent"`
-	Tags       []string    `json:"tags"`
+	Name       string   `json:"name"`
+	ParentPool string   `json:"parentpool"`
+	Permanent  bool     `json:"permanent"`
+	Tags       []string `json:"tags"`
 }
 
 // IPReservationInfo describes an existing IP reservation.
@@ -39,10 +39,10 @@ type IPReservation struct {
 
 // UpdateIPReservationInfo defines an IP Reservation to be updated
 type UpdateIPReservationInfo struct {
-	Name       string      `json:"name"`
-	ParentPool string      `json:"parentpool"`
-	Permanent  bool        `json:"permanent"`
-	Tags       []string    `json:"tags"`
+	Name       string   `json:"name"`
+	ParentPool string   `json:"parentpool"`
+	Permanent  bool     `json:"permanent"`
+	Tags       []string `json:"tags"`
 }
 
 // DeleteIPReservationINfo defines an IP Reservation to delete
@@ -55,14 +55,13 @@ type GetIPReservationInfo struct {
 	Name string
 }
 
-
 func (c *IPReservationsClient) success(result *IPReservation) (*IPReservation, error) {
 	c.unqualify(&result.Name)
 	return result, nil
 }
 
 // CreateIPReservation creates a new IP reservation with the given parentpool, tags and permanent flag.
-func (c *IPReservationsClient) CreateIPReservation(createInfo  CreateIPReservationInfo) (*IPReservation, error) {
+func (c *IPReservationsClient) CreateIPReservation(createInfo CreateIPReservationInfo) (*IPReservation, error) {
 	var ipInfo IPReservation
 	if err := c.createResource(&createInfo, &ipInfo); err != nil {
 		return nil, err
