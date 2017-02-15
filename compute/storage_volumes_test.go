@@ -34,9 +34,12 @@ func TestAccStorageVolumeClient_CreateStorageVolume(t *testing.T) {
 	})
 
 	defer server.Close()
-	sv := getStubStorageVolumeClient(server)
+	sv, err := getStubStorageVolumeClient(server)
+	if err != nil {
+		t.Fatalf("error getting stub client: %s", err)
+	}
 
-	err := sv.CreateStorageVolume(sv.NewStorageVolumeSpec("15G", []string{}, "myVolume"))
+	err = sv.CreateStorageVolume(sv.NewStorageVolumeSpec("15G", []string{}, "myVolume"))
 	if err != nil {
 		t.Fatalf("Create storage volume request failed: %s", err)
 	}
@@ -60,7 +63,10 @@ func TestAccStorageVolumeClient_GetStorageVolume(t *testing.T) {
 	})
 
 	defer server.Close()
-	sv := getStubStorageVolumeClient(server)
+	sv, err := getStubStorageVolumeClient(server)
+	if err != nil {
+		t.Fatalf("error getting stub client: %s", err)
+	}
 
 	info, err := sv.GetStorageVolume("myVolume")
 	if err != nil {
@@ -81,7 +87,10 @@ func TestAccStorageVolumeClient_WaitForStorageVolumeOnline(t *testing.T) {
 	server := serverThatReturnsOnlineStorageVolumeAfterThreeSeconds(t)
 
 	defer server.Close()
-	sv := getStubStorageVolumeClient(server)
+	sv, err := getStubStorageVolumeClient(server)
+	if err != nil {
+		t.Fatalf("error getting stub client: %s", err)
+	}
 
 	info, err := sv.WaitForStorageVolumeOnline("test", 10)
 	if err != nil {
@@ -99,9 +108,12 @@ func TestAccStorageVolumeClient_WaitForStorageVolumeOnlineTimeout(t *testing.T) 
 	server := serverThatReturnsOnlineStorageVolumeAfterThreeSeconds(t)
 
 	defer server.Close()
-	sv := getStubStorageVolumeClient(server)
+	sv, err := getStubStorageVolumeClient(server)
+	if err != nil {
+		t.Fatalf("error getting stub client: %s", err)
+	}
 
-	_, err := sv.WaitForStorageVolumeOnline("test", 3)
+	_, err = sv.WaitForStorageVolumeOnline("test", 3)
 	if err == nil {
 		t.Fatal("Expected timeout error")
 	}
@@ -140,19 +152,28 @@ func TestAccStorageVolumeClient_UpdateStorageVolume(t *testing.T) {
 	})
 
 	defer server.Close()
-	sv := getStubStorageVolumeClient(server)
+	sv, err := getStubStorageVolumeClient(server)
+	if err != nil {
+		t.Fatalf("error getting stub client: %s", err)
+	}
 
-	err := sv.UpdateStorageVolume("myVolume", "12G", "updated description", []string{"foo", "bar"})
+	err = sv.UpdateStorageVolume("myVolume", "12G", "updated description", []string{"foo", "bar"})
 	if err != nil {
 		t.Fatal(err)
 	}
 }
 
-func getStubStorageVolumeClient(server *httptest.Server) *StorageVolumeClient {
-	endpoint, _ := url.Parse(server.URL)
-	client := NewComputeClient("test", "test", "test", endpoint)
-	authenticatedClient, _ := client.Authenticate()
-	return authenticatedClient.StorageVolumes()
+func getStubStorageVolumeClient(server *httptest.Server) (*StorageVolumeClient, error) {
+	endpoint, err := url.Parse(server.URL)
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := getStubClient(endpoint)
+	if err != nil {
+		return nil, err
+	}
+	return client.StorageVolumes(), nil
 }
 
 func serverThatReturnsOnlineStorageVolumeAfterThreeSeconds(t *testing.T) *httptest.Server {

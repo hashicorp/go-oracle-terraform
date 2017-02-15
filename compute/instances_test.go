@@ -53,7 +53,10 @@ func TestAccInstanceClient_CreateInstance(t *testing.T) {
 	})
 
 	defer server.Close()
-	iv := getStubInstancesClient(server)
+	iv, err := getStubInstancesClient(server)
+	if err != nil {
+		t.Fatalf("err getting stub client: %s", err)
+	}
 
 	id, err := iv.LaunchInstance("name", "label", "shape", "imagelist", nil, nil, []string{"foo", "bar"}, map[string]interface{}{
 		"attr1": 12,
@@ -90,7 +93,10 @@ func TestAccInstanceClient_RetrieveInstance(t *testing.T) {
 	})
 
 	defer server.Close()
-	iv := getStubInstancesClient(server)
+	iv, err := getStubInstancesClient(server)
+	if err != nil {
+		t.Fatalf("err getting stub client: %s", err)
+	}
 
 	info, err := iv.GetInstance(&InstanceName{Name: "test-instance", ID: "test-id"})
 	if err != nil {
@@ -104,11 +110,17 @@ func TestAccInstanceClient_RetrieveInstance(t *testing.T) {
 	}
 }
 
-func getStubInstancesClient(server *httptest.Server) *InstancesClient {
-	endpoint, _ := url.Parse(server.URL)
-	client := NewComputeClient("test", "test", "test", endpoint)
-	authenticatedClient, _ := client.Authenticate()
-	return authenticatedClient.Instances()
+func getStubInstancesClient(server *httptest.Server) (*InstancesClient, error) {
+	endpoint, err := url.Parse(server.URL)
+	if err != nil {
+		return nil, err
+	}
+	client, err := getStubClient(endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	return client.Instances(), nil
 }
 
 var exampleCreateResponse = `

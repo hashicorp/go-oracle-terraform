@@ -13,10 +13,10 @@ type InstancesClient struct {
 
 // Instances obtains an InstancesClient which can be used to access to the
 // Instance functions of the Compute API
-func (c *AuthenticatedClient) Instances() *InstancesClient {
+func (c *Client) Instances() *InstancesClient {
 	return &InstancesClient{
 		ResourceClient: ResourceClient{
-			AuthenticatedClient: c,
+			Client:              c,
 			ResourceDescription: "instance",
 			ContainerPath:       "/launchplan/",
 			ResourceRootPath:    "/instance",
@@ -103,9 +103,9 @@ func (c *InstancesClient) LaunchInstance(name, label, shape, imageList string, s
 		qualifiedSSHKeys = append(qualifiedSSHKeys, c.getQualifiedName(key))
 	}
 
-	qualifiedStorageAttachements := []LaunchPlanStorageAttachmentSpec{}
+	qualifiedStorageAttachments := []LaunchPlanStorageAttachmentSpec{}
 	for _, attachment := range storageAttachments {
-		qualifiedStorageAttachements = append(qualifiedStorageAttachements, LaunchPlanStorageAttachmentSpec{
+		qualifiedStorageAttachments = append(qualifiedStorageAttachments, LaunchPlanStorageAttachmentSpec{
 			Index:  attachment.Index,
 			Volume: c.getQualifiedName(attachment.Volume),
 		})
@@ -113,10 +113,10 @@ func (c *InstancesClient) LaunchInstance(name, label, shape, imageList string, s
 
 	plan := LaunchPlan{Instances: []InstanceSpec{
 		InstanceSpec{
-			Name:       fmt.Sprintf("%s/%s", c.computeUserName(), name),
+			Name:       fmt.Sprintf("%s/%s", c.getUserName(), name),
 			Shape:      shape,
 			ImageList:  imageList,
-			Storage:    qualifiedStorageAttachements,
+			Storage:    qualifiedStorageAttachments,
 			BootOrder:  bootOrder,
 			Label:      label,
 			SSHKeys:    qualifiedSSHKeys,

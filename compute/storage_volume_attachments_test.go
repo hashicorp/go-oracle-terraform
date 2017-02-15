@@ -27,9 +27,12 @@ func TestAccStorageAttachmentsClient_GetStorageAttachmentsForInstance(t *testing
 	})
 
 	defer server.Close()
-	client := getStubStorageAttachmentsClient(server)
+	client, err := getStubStorageAttachmentsClient(server)
+	if err != nil {
+		t.Fatalf("error getting stub client: %s", err)
+	}
 
-	_, err := client.GetStorageAttachmentsForInstance(&InstanceName{
+	_, err = client.GetStorageAttachmentsForInstance(&InstanceName{
 		Name: "test-instance",
 		ID:   "test-id",
 	})
@@ -39,11 +42,17 @@ func TestAccStorageAttachmentsClient_GetStorageAttachmentsForInstance(t *testing
 	}
 }
 
-func getStubStorageAttachmentsClient(server *httptest.Server) *StorageAttachmentsClient {
-	endpoint, _ := url.Parse(server.URL)
-	client := NewComputeClient("test", "test", "test", endpoint)
-	authenticatedClient, _ := client.Authenticate()
-	return authenticatedClient.StorageAttachments()
+func getStubStorageAttachmentsClient(server *httptest.Server) (*StorageAttachmentsClient, error) {
+	endpoint, err := url.Parse(server.URL)
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := getStubClient(endpoint)
+	if err != nil {
+		return nil, err
+	}
+	return client.StorageAttachments(), nil
 }
 
 var exampleGetStorageAttachmentsResponse = `

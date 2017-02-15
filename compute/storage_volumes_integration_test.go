@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
+	"github.com/hashicorp/go-oracle-terraform/opc"
 )
 
 func TestAccStorageVolumeLifecycle(t *testing.T) {
@@ -70,10 +71,10 @@ func tearDownStorageVolumes() {
 }
 
 func getStorageVolumeClient() (*StorageVolumeClient, error) {
-	authenticatedClient, err := getAuthenticatedClient()
+	client, err := getTestClient(&opc.Config{})
 	if err != nil {
 		return &StorageVolumeClient{}, err
 	}
 
-	return authenticatedClient.StorageVolumes(), nil
+	return client.StorageVolumes(), nil
 }

@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
+	"github.com/hashicorp/go-oracle-terraform/opc"
 )
 
 func TestAccIPReservationLifeCycle(t *testing.T) {
@@ -44,10 +45,10 @@ func TestAccIPReservationLifeCycle(t *testing.T) {
 }
 
 func getIPReservationsClient() (*IPReservationsClient, error) {
-	authenticatedClient, err := getAuthenticatedClient()
+	client, err := getTestClient(&opc.Config{})
 	if err != nil {
 		return &IPReservationsClient{}, err
 	}
 
-	return authenticatedClient.IPReservations(), nil
+	return client.IPReservations(), nil
 }

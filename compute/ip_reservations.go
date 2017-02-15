@@ -7,10 +7,10 @@ type IPReservationsClient struct {
 
 // IPReservations obtains an IPReservationsClient which can be used to access to the
 // IP Reservations functions of the Compute API
-func (c *AuthenticatedClient) IPReservations() *IPReservationsClient {
+func (c *Client) IPReservations() *IPReservationsClient {
 	return &IPReservationsClient{
 		ResourceClient: &ResourceClient{
-			AuthenticatedClient: c,
+			Client:              c,
 			ResourceDescription: "ip reservation",
 			ContainerPath:       "/ip/reservation/",
 			ResourceRootPath:    "/ip/reservation",

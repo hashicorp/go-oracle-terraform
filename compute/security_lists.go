@@ -7,10 +7,10 @@ type SecurityListsClient struct {
 
 // SecurityLists obtains a SecurityListsClient which can be used to access to the
 // Security List functions of the Compute API
-func (c *AuthenticatedClient) SecurityLists() *SecurityListsClient {
+func (c *Client) SecurityLists() *SecurityListsClient {
 	return &SecurityListsClient{
 		ResourceClient: ResourceClient{
-			AuthenticatedClient: c,
+			Client:              c,
 			ResourceDescription: "security list",
 			ContainerPath:       "/seclist/",
 			ResourceRootPath:    "/seclist",

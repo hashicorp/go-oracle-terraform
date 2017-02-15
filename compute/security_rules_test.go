@@ -48,7 +48,10 @@ func TestAccSecurityRulesClient_CreateRule(t *testing.T) {
 	})
 
 	defer server.Close()
-	client := getStubSecurityRulesClient(server)
+	client, err := getStubSecurityRulesClient(server)
+	if err != nil {
+		t.Fatalf("error getting stub client: %s", err)
+	}
 
 	info, err := client.CreateSecurityRule(
 		"test-rule1",
@@ -75,11 +78,18 @@ func TestAccSecurityRulesClient_CreateRule(t *testing.T) {
 	}
 }
 
-func getStubSecurityRulesClient(server *httptest.Server) *SecurityRulesClient {
-	endpoint, _ := url.Parse(server.URL)
-	client := NewComputeClient("test", "test", "test", endpoint)
-	authenticatedClient, _ := client.Authenticate()
-	return authenticatedClient.SecurityRules()
+func getStubSecurityRulesClient(server *httptest.Server) (*SecurityRulesClient, error) {
+	endpoint, err := url.Parse(server.URL)
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := getStubClient(endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	return client.SecurityRules(), nil
 }
 
 var exampleCreateSecurityRuleResponse = `

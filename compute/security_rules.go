@@ -12,10 +12,10 @@ type SecurityRulesClient struct {
 
 // SecurityRules obtains a SecurityRulesClient which can be used to access to the
 // Security Rules functions of the Compute API
-func (c *AuthenticatedClient) SecurityRules() *SecurityRulesClient {
+func (c *Client) SecurityRules() *SecurityRulesClient {
 	return &SecurityRulesClient{
 		ResourceClient: ResourceClient{
-			AuthenticatedClient: c,
+			Client:              c,
 			ResourceDescription: "security ip list",
 			ContainerPath:       "/secrule/",
 			ResourceRootPath:    "/secrule",

@@ -39,7 +39,10 @@ func TestAccSecurityIPListsClient_CreateKey(t *testing.T) {
 	})
 
 	defer server.Close()
-	client := getStubSecurityIPListsClient(server)
+	client, err := getStubSecurityIPListsClient(server)
+	if err != nil {
+		t.Fatalf("error getting stub client: %s", err)
+	}
 
 	info, err := client.CreateSecurityIPList("test-list1", []string{"127.0.0.1", "168.10.0.0"})
 	if err != nil {
@@ -51,11 +54,18 @@ func TestAccSecurityIPListsClient_CreateKey(t *testing.T) {
 	}
 }
 
-func getStubSecurityIPListsClient(server *httptest.Server) *SecurityIPListsClient {
-	endpoint, _ := url.Parse(server.URL)
-	client := NewComputeClient("test", "test", "test", endpoint)
-	authenticatedClient, _ := client.Authenticate()
-	return authenticatedClient.SecurityIPLists()
+func getStubSecurityIPListsClient(server *httptest.Server) (*SecurityIPListsClient, error) {
+	endpoint, err := url.Parse(server.URL)
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := getStubClient(endpoint)
+	if err != nil {
+		return nil, err
+	}
+
+	return client.SecurityIPLists(), nil
 }
 
 var exampleCreateSecurityIPListResponse = `
