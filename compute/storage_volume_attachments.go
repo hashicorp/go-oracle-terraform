@@ -12,10 +12,10 @@ type StorageAttachmentsClient struct {
 
 // StorageAttachments obtains a StorageAttachmentsClient which can be used to access to the
 // Storage Attachment functions of the Compute API
-func (c *AuthenticatedClient) StorageAttachments() *StorageAttachmentsClient {
+func (c *Client) StorageAttachments() *StorageAttachmentsClient {
 	return &StorageAttachmentsClient{
 		ResourceClient: ResourceClient{
-			AuthenticatedClient: c,
+			Client:              c,
 			ResourceDescription: "storage volume attachment",
 			ContainerPath:       "/storage/attachment/",
 			ResourceRootPath:    "/storage/attachment",
@@ -120,22 +120,17 @@ func (c *StorageAttachmentsClient) GetStorageAttachmentsForVolume(name string) (
 
 func (c *StorageAttachmentsClient) getStorageAttachments(query string, description string) (*[]StorageAttachmentInfo, error) {
 	queryPath := fmt.Sprintf("/storage/attachment%s/?state=attached&%s",
-		c.computeUserName(),
+		c.getUserName(),
 		query)
 	log.Printf("[DEBUG] Querying for storage attachments: %s", queryPath)
-	req, err := c.newAuthenticatedGetRequest(queryPath)
 
-	if err != nil {
-		return nil, err
-	}
-
-	rsp, err := c.requestAndCheckStatus(fmt.Sprintf("get storage attachments for %s", description), req)
+	resp, err := c.executeRequest("GET", queryPath, nil)
 	if err != nil {
 		return nil, err
 	}
 
 	var attachmentList StorageAttachmentList
-	if err = unmarshalResponseBody(rsp, &attachmentList); err != nil {
+	if err = c.unmarshalResponseBody(resp, &attachmentList); err != nil {
 		return nil, err
 	}
 

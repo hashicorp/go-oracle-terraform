@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
+	"github.com/hashicorp/go-oracle-terraform/opc"
 )
 
 // Test that the client can obtain an authentication cookie from the authentication endpoint.
@@ -52,19 +53,19 @@ func TestAccObtainAuthenticationCookie(t *testing.T) {
 
 	endpoint, _ := url.Parse(server.URL)
 
-	client := NewComputeClient(
-		identityDomain,
-		username,
-		password,
-		endpoint,
-	)
+	config := &opc.Config{
+		IdentityDomain: &identityDomain,
+		Username:       &username,
+		Password:       &password,
+		APIEndpoint:    endpoint,
+	}
 
-	authenticatedClient, err := client.Authenticate()
+	client, err := getTestClient(config)
 	if err != nil {
 		t.Fatalf("Authentication failed: %s", err)
 	}
 
-	if authenticatedClient.authenticationCookie == nil {
+	if client.authCookie == nil {
 		t.Fatal("Authentication cookie not set")
 	}
 }
@@ -83,19 +84,23 @@ func TestAccAuthenticationCookieSentInRequestsFromAuthenticatedClient(t *testing
 
 	endpoint, _ := url.Parse(server.URL)
 
-	client := NewComputeClient(
-		"mydomain",
-		"user",
-		"password",
-		endpoint,
-	)
+	domain := "mydomain"
+	username := "user"
+	password := "password"
 
-	authClient, err := client.Authenticate()
+	config := &opc.Config{
+		IdentityDomain: &domain,
+		Username:       &username,
+		Password:       &password,
+		APIEndpoint:    endpoint,
+	}
+
+	client, err := getTestClient(config)
 	if err != nil {
 		t.Fatalf("Authentication failed: %s", err)
 	}
 
-	_, err = authClient.newAuthenticatedGetRequest("foo")
+	_, err = client.executeRequest("GET", "foo", nil)
 	if err != nil {
 		t.Fatalf("Authenticatde request failed: %s", err)
 	}

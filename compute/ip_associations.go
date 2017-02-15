@@ -12,10 +12,10 @@ type IPAssociationsClient struct {
 
 // IPAssociations obtains a IPAssociationsClient which can be used to access to the
 // IP Association functions of the Compute API
-func (c *AuthenticatedClient) IPAssociations() *IPAssociationsClient {
+func (c *Client) IPAssociations() *IPAssociationsClient {
 	return &IPAssociationsClient{
 		ResourceClient: &ResourceClient{
-			AuthenticatedClient: c,
+			Client:              c,
 			ResourceDescription: "ip association",
 			ContainerPath:       "/ip/association/",
 			ResourceRootPath:    "/ip/association",

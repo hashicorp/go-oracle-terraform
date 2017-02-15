@@ -42,7 +42,10 @@ func TestAccSSHClient_CreateKey(t *testing.T) {
 	})
 
 	defer server.Close()
-	client := getStubSSHKeysClient(server)
+	client, err := getStubSSHKeysClient(server)
+	if err != nil {
+		t.Fatalf("error getting stub client: %s", err)
+	}
 
 	info, err := client.CreateSSHKey("test-key1", "key", true)
 	if err != nil {
@@ -59,11 +62,17 @@ func TestAccSSHClient_CreateKey(t *testing.T) {
 	}
 }
 
-func getStubSSHKeysClient(server *httptest.Server) *SSHKeysClient {
-	endpoint, _ := url.Parse(server.URL)
-	client := NewComputeClient("test", "test", "test", endpoint)
-	authenticatedClient, _ := client.Authenticate()
-	return authenticatedClient.SSHKeys()
+func getStubSSHKeysClient(server *httptest.Server) (*SSHKeysClient, error) {
+	endpoint, err := url.Parse(server.URL)
+	if err != nil {
+		return nil, err
+	}
+
+	client, err := getStubClient(endpoint)
+	if err != nil {
+		return nil, err
+	}
+	return client.SSHKeys(), nil
 }
 
 var exampleCreateKeyResponse = `

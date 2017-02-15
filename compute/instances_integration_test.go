@@ -2,8 +2,10 @@ package compute
 
 import (
 	"fmt"
-	"github.com/hashicorp/go-oracle-terraform/helper"
 	"testing"
+
+	"github.com/hashicorp/go-oracle-terraform/helper"
+	"github.com/hashicorp/go-oracle-terraform/opc"
 )
 
 var createdInstanceName *InstanceName
@@ -59,10 +61,10 @@ func tearDownInstances() {
 }
 
 func getInstancesClient() (*InstancesClient, error) {
-	authenticatedClient, err := getAuthenticatedClient()
+	client, err := getTestClient(&opc.Config{})
 	if err != nil {
 		return &InstancesClient{}, err
 	}
 
-	return authenticatedClient.Instances(), nil
+	return client.Instances(), nil
 }

@@ -10,6 +10,10 @@ import (
 	"net/url"
 	"os"
 	"testing"
+
+	"time"
+
+	"github.com/hashicorp/go-oracle-terraform/opc"
 )
 
 func newAuthenticatingServer(handler func(w http.ResponseWriter, r *http.Request)) *httptest.Server {
@@ -25,24 +29,57 @@ func newAuthenticatingServer(handler func(w http.ResponseWriter, r *http.Request
 	}))
 }
 
-func getAuthenticatedClient() (*AuthenticatedClient, error) {
-	if os.Getenv("OPC_ENDPOINT") == "" {
-		panic("OPC_ENDPOINT not set in environment")
+func getTestClient(c *opc.Config) (*Client, error) {
+	// Build up config with default values if omitted
+	if c.APIEndpoint == nil {
+		if os.Getenv("OPC_ENDPOINT") == "" {
+			panic("OPC_ENDPOINT not set in environment")
+		}
+		endpoint, err := url.Parse(os.Getenv("OPC_ENDPOINT"))
+		if err != nil {
+			return nil, err
+		}
+		c.APIEndpoint = endpoint
 	}
 
-	endpoint, err := url.Parse(os.Getenv("OPC_ENDPOINT"))
-	if err != nil {
-		return nil, err
+	if c.IdentityDomain == nil {
+		domain := os.Getenv("OPC_IDENTITY_DOMAIN")
+		c.IdentityDomain = &domain
 	}
 
-	client := NewComputeClient(
-		os.Getenv("OPC_IDENTITY_DOMAIN"),
-		os.Getenv("OPC_USERNAME"),
-		os.Getenv("OPC_PASSWORD"),
-		endpoint,
-	)
+	if c.Username == nil {
+		username := os.Getenv("OPC_USERNAME")
+		c.Username = &username
+	}
 
-	return client.Authenticate()
+	if c.Password == nil {
+		password := os.Getenv("OPC_PASSWORD")
+		c.Password = &password
+	}
+
+	if c.HTTPClient == nil {
+		c.HTTPClient = &http.Client{
+			Transport: &http.Transport{
+				Proxy:               http.ProxyFromEnvironment,
+				TLSHandshakeTimeout: 120 * time.Second},
+		}
+	}
+
+	return NewComputeClient(c)
+}
+
+// Returns a stub client with default values, and a custom API Endpoint
+func getStubClient(endpoint *url.URL) (*Client, error) {
+	domain := "test"
+	username := "test"
+	password := "test"
+	config := &opc.Config{
+		IdentityDomain: &domain,
+		Username:       &username,
+		Password:       &password,
+		APIEndpoint:    endpoint,
+	}
+	return getTestClient(config)
 }
 
 func unmarshalRequestBody(t *testing.T, r *http.Request, target interface{}) {

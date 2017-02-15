@@ -11,10 +11,10 @@ type StorageVolumeClient struct {
 
 // StorageVolumes obtains a StorageVolumeClient which can be used to access to the
 // Storage Volume functions of the Compute API
-func (c *AuthenticatedClient) StorageVolumes() *StorageVolumeClient {
+func (c *Client) StorageVolumes() *StorageVolumeClient {
 	return &StorageVolumeClient{
 		ResourceClient: ResourceClient{
-			AuthenticatedClient: c,
+			Client:              c,
 			ResourceDescription: "storage volume",
 			ContainerPath:       "/storage/volume/",
 			ResourceRootPath:    "/storage/volume",
@@ -107,13 +107,12 @@ func (c *StorageVolumeClient) getStorageVolumePath(name string) string {
 
 // CreateStorageVolume uses the given StorageVolumeSpec to create a new Storage Volume.
 func (c *StorageVolumeClient) CreateStorageVolume(spec *StorageVolumeSpec) error {
-	req, err := c.newAuthenticatedPostRequest("/storage/volume/", spec)
+	_, err := c.executeRequest("POST", c.ContainerPath, spec)
 	if err != nil {
 		return err
 	}
 
-	_, err = c.requestAndCheckStatus("create storage volume", req)
-	return err
+	return nil
 }
 
 // WaitForStorageVolumeOnline waits until a new Storage Volume is online (i.e. has finished initialising or updating).
@@ -152,18 +151,13 @@ var emptyResult = StorageVolumeResult{Result: []StorageVolumeInfo{}}
 
 // GetStorageVolume gets Storage Volume information for the specified storage volume.
 func (c *StorageVolumeClient) GetStorageVolume(name string) (*StorageVolumeResult, error) {
-	req, err := c.newAuthenticatedGetRequest(c.getStorageVolumePath(name))
-	if err != nil {
-		return &emptyResult, err
-	}
-
-	rsp, err := c.requestAndCheckStatus("get storage volume", req)
+	resp, err := c.executeRequest("GET", c.getStorageVolumePath(name), nil)
 	if err != nil {
 		return &emptyResult, err
 	}
 
 	var result StorageVolumeResult
-	err = unmarshalResponseBody(rsp, &result)
+	err = c.unmarshalResponseBody(resp, &result)
 	if err != nil {
 		return &emptyResult, err
 	}
@@ -176,13 +170,12 @@ func (c *StorageVolumeClient) GetStorageVolume(name string) (*StorageVolumeResul
 
 // DeleteStorageVolume deletes the specified storage volume.
 func (c *StorageVolumeClient) DeleteStorageVolume(name string) error {
-	req, err := c.newAuthenticatedDeleteRequest(c.getStorageVolumePath(name))
+	_, err := c.executeRequest("DELETE", c.getStorageVolumePath(name), nil)
 	if err != nil {
 		return err
 	}
 
-	_, err = c.requestAndCheckStatus("delete storage volume", req)
-	return err
+	return nil
 }
 
 // WaitForStorageVolumeDeleted waits until the specified storage volume has been deleted.
@@ -216,11 +209,11 @@ func (c *StorageVolumeClient) UpdateStorageVolume(name, size, description string
 	volumeInfo.Tags = tags
 	volumeInfo.Description = description
 
-	req, err := c.newAuthenticatedPutRequest(c.getStorageVolumePath(name), volumeInfo)
+	//req, err := c.newAuthenticatedPutRequest(c.getStorageVolumePath(name), volumeInfo)
+	_, err = c.executeRequest("PUT", c.getStorageVolumePath(name), volumeInfo)
 	if err != nil {
 		return err
 	}
 
-	_, err = c.requestAndCheckStatus("update storage volume", req)
-	return err
+	return nil
 }

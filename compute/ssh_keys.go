@@ -1,7 +1,5 @@
 package compute
 
-import ()
-
 // SSHKeysClient is a client for the SSH key functions of the Compute API.
 type SSHKeysClient struct {
 	ResourceClient
@@ -9,10 +7,10 @@ type SSHKeysClient struct {
 
 // SSHKeys obtains an SSHKeysClient which can be used to access to the
 // SSH key functions of the Compute API
-func (c *AuthenticatedClient) SSHKeys() *SSHKeysClient {
+func (c *Client) SSHKeys() *SSHKeysClient {
 	return &SSHKeysClient{
 		ResourceClient: ResourceClient{
-			AuthenticatedClient: c,
+			Client:              c,
 			ResourceDescription: "SSH key",
 			ContainerPath:       "/sshkey/",
 			ResourceRootPath:    "/sshkey",
