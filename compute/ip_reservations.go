@@ -1,5 +1,22 @@
 package compute
 
+// IPReservationsClient is a client for the IP Reservations functions of the Compute API.
+type IPReservationsClient struct {
+	*ResourceClient
+}
+
+// IPReservations obtains an IPReservationsClient which can be used to access to the
+// IP Reservations functions of the Compute API
+func (c *AuthenticatedClient) IPReservations() *IPReservationsClient {
+	return &IPReservationsClient{
+		ResourceClient: &ResourceClient{
+			AuthenticatedClient: c,
+			ResourceDescription: "ip reservation",
+			ContainerPath:       "/ip/reservation/",
+			ResourceRootPath:    "/ip/reservation",
+		}}
+}
+
 // IPReservationInput describes an existing IP reservation.
 type IPReservation struct {
 	Account    string   `json:account`
@@ -75,21 +92,4 @@ func (c *IPReservationsClient) UpdateIPReservation(updateInput UpdateIPReservati
 func (c *IPReservationsClient) success(result *IPReservation) (*IPReservation, error) {
 	c.unqualify(&result.Name)
 	return result, nil
-}
-
-// IPReservationsClient is a client for the IP Reservations functions of the Compute API.
-type IPReservationsClient struct {
-	*ResourceClient
-}
-
-// IPReservations obtains an IPReservationsClient which can be used to access to the
-// IP Reservations functions of the Compute API
-func (c *AuthenticatedClient) IPReservations() *IPReservationsClient {
-	return &IPReservationsClient{
-		ResourceClient: &ResourceClient{
-			AuthenticatedClient: c,
-			ResourceDescription: "ip reservation",
-			ContainerPath:       "/ip/reservation/",
-			ResourceRootPath:    "/ip/reservation",
-		}}
 }
