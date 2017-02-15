@@ -63,7 +63,7 @@ func (c *IPReservationsClient) success(result *IPReservation) (*IPReservation, e
 
 // CreateIPReservation creates a new IP reservation with the given parentpool, tags and permanent flag.
 func (c *IPReservationsClient) CreateIPReservation(createInfo  CreateIPReservationInfo) (*IPReservation, error) {
-	var ipInfo IPReservationInfo
+	var ipInfo IPReservation
 	if err := c.createResource(&createInfo, &ipInfo); err != nil {
 		return nil, err
 	}
@@ -83,13 +83,13 @@ func (c *IPReservationsClient) GetIPReservation(getInfo GetIPReservationInfo) (*
 
 // DeleteIPReservation deletes the IP reservation with the given name.
 func (c *IPReservationsClient) DeleteIPReservation(deleteInfo DeleteIPReservationInfo) error {
-	return c.deleteResource(deleteInfo.name)
+	return c.deleteResource(deleteInfo.Name)
 }
 
 // UpdateIPReservation updates the IP reservation.
-func (c *IPReservationClient) UpdateIPReservation(updateInfo UpdateIPReservationInfo) (*IPReservation, error) {
+func (c *IPReservationsClient) UpdateIPReservation(updateInfo UpdateIPReservationInfo) (*IPReservation, error) {
 	var ipInfo IPReservation
-	if err != c.Updateresource(updateInfo.Name, updateInfo, &ipInfo); err != nil {
+	if err := c.updateResource(updateInfo.Name, updateInfo, &ipInfo); err != nil {
 		return nil, err
 	}
 	return c.success(&ipInfo)
