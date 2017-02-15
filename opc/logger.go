@@ -6,11 +6,10 @@ import (
 )
 
 const (
-	LogOff LogLevelType = iota * 0x1000
-	LogDebug
+	LogOff   LogLevelType = 0
+	LogDebug LogLevelType = 1
 )
 
-// Needs to be fleshed out further
 type LogLevelType uint
 
 // Logger interface. Should be satisfied by Terraform's logger as well as the Default logger

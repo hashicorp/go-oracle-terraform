@@ -26,7 +26,7 @@ type Client struct {
 	authCookie     *http.Cookie
 	cookieIssued   time.Time
 	logger         opc.Logger
-	loglevel       *opc.LogLevelType
+	loglevel       opc.LogLevelType
 }
 
 func NewComputeClient(c *opc.Config) (*Client, error) {
@@ -39,16 +39,17 @@ func NewComputeClient(c *opc.Config) (*Client, error) {
 		httpClient:     c.HTTPClient,
 	}
 
-	if err := client.getAuthenticationCookie(); err != nil {
-		return nil, err
-	}
-
 	// Setup logger; defaults to stdout
 	if c.Logger == nil {
-		c.Logger = opc.NewDefaultLogger()
+		client.logger = opc.NewDefaultLogger()
 	}
-	if c.LogLevel == nil {
-		c.LogLevel = &opc.LogOff
+
+	if &c.LogLevel == nil {
+		client.loglevel = opc.LogOff
+	}
+
+	if err := client.getAuthenticationCookie(); err != nil {
+		return nil, err
 	}
 
 	return client, nil
@@ -158,7 +159,7 @@ func (c *Client) unqualify(names ...*string) {
 
 func (c *Client) debugLogReq(req *http.Request) {
 	// Don't need to log this if not debugging
-	if *c.loglevel != opc.LogDebug {
+	if c.loglevel != opc.LogDebug {
 		return
 	}
 	buf := new(bytes.Buffer)
@@ -169,7 +170,7 @@ func (c *Client) debugLogReq(req *http.Request) {
 
 func (c *Client) debugLogResp(resp *http.Response) {
 	// Don't need to log this if not debugging
-	if *c.loglevel != opc.LogDebug {
+	if c.loglevel != opc.LogDebug {
 		return
 	}
 	buf := new(bytes.Buffer)
@@ -180,7 +181,7 @@ func (c *Client) debugLogResp(resp *http.Response) {
 
 // Log a string if debug logs are on
 func (c *Client) debugLogStr(str string) {
-	if *c.loglevel != opc.LogDebug {
+	if c.loglevel != opc.LogDebug {
 		return
 	}
 	c.logger.Log(fmt.Sprintf("DEBUG: %s", str))
