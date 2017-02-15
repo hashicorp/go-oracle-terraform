@@ -24,7 +24,6 @@ func (c *ResourceClient) createResource(requestBody interface{}, responseBody in
 }
 
 func (c *ResourceClient) updateResource(name string, requestBody interface{}, responseBody interface{}) error {
-	//req, err := c.newAuthenticatedPutRequest(c.getObjectPath(c.ResourceRootPath, name), requestBody)
 	resp, err := c.executeRequest("PUT", c.getObjectPath(c.ResourceRootPath, name), requestBody)
 	if err != nil {
 		return err
@@ -34,7 +33,6 @@ func (c *ResourceClient) updateResource(name string, requestBody interface{}, re
 }
 
 func (c *ResourceClient) getResource(name string, responseBody interface{}) error {
-	//req, err := c.newAuthenticatedGetRequest(c.getObjectPath(c.ResourceRootPath, name))
 	resp, err := c.executeRequest("GET", c.getObjectPath(c.ResourceRootPath, name), nil)
 	if err != nil {
 		return err
@@ -44,14 +42,11 @@ func (c *ResourceClient) getResource(name string, responseBody interface{}) erro
 }
 
 func (c *ResourceClient) deleteResource(name string) error {
-	//req, err := c.newAuthenticatedDeleteRequest(c.getObjectPath(c.ResourceRootPath, name))
 	_, err := c.executeRequest("DELETE", c.getObjectPath(c.ResourceRootPath, name), nil)
 	if err != nil {
 		return err
 	}
 
-	/*_, err = c.requestAndCheckStatus(fmt.Sprintf("delete %s", c.ResourceDescription), req)
-	return err*/
 	// No errors and no response body to write
 	return nil
 }

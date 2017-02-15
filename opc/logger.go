@@ -5,6 +5,11 @@ import (
 	"os"
 )
 
+const (
+	LogOff LogLevelType = iota * 0x1000
+	LogDebug
+)
+
 // Needs to be fleshed out further
 type LogLevelType uint
 

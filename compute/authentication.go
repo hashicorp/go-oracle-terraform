@@ -27,6 +27,7 @@ func (c *Client) getAuthenticationCookie() error {
 		return fmt.Errorf("No authentication cookie found in response %#v", rsp)
 	}
 
+	c.debugLogStr("Successfully authenticated to OPC")
 	c.authCookie = rsp.Cookies()[0]
 	c.cookieIssued = time.Now()
 	return nil

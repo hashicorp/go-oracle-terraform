@@ -25,6 +25,8 @@ type Client struct {
 	httpClient     *http.Client
 	authCookie     *http.Cookie
 	cookieIssued   time.Time
+	logger         opc.Logger
+	loglevel       *opc.LogLevelType
 }
 
 func NewComputeClient(c *opc.Config) (*Client, error) {
@@ -40,6 +42,15 @@ func NewComputeClient(c *opc.Config) (*Client, error) {
 	if err := client.getAuthenticationCookie(); err != nil {
 		return nil, err
 	}
+
+	// Setup logger; defaults to stdout
+	if c.Logger == nil {
+		c.Logger = opc.NewDefaultLogger()
+	}
+	if c.LogLevel == nil {
+		c.LogLevel = &opc.LogOff
+	}
+
 	return client, nil
 }
 
@@ -70,6 +81,9 @@ func (c *Client) executeRequest(method, path string, body interface{}) (*http.Re
 		req.Header.Set("Content-Type", "application/oracle-compute-v3+json")
 	}
 
+	// Log the request before the authentication cookie, so as not to leak credentials
+	c.debugLogReq(req)
+
 	// If we have an authentication cookie, let's authenticate, refreshing cookie if need be
 	if c.authCookie != nil {
 		if time.Since(c.cookieIssued).Minutes() > 25 {
@@ -85,6 +99,8 @@ func (c *Client) executeRequest(method, path string, body interface{}) (*http.Re
 	if err != nil {
 		return nil, err
 	}
+
+	c.debugLogResp(resp)
 
 	if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
 		return resp, nil
@@ -138,6 +154,36 @@ func (c *Client) unqualify(names ...*string) {
 	for _, name := range names {
 		*name = c.getUnqualifiedName(*name)
 	}
+}
+
+func (c *Client) debugLogReq(req *http.Request) {
+	// Don't need to log this if not debugging
+	if *c.loglevel != opc.LogDebug {
+		return
+	}
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(req.Body)
+	c.logger.Log(fmt.Sprintf("DEBUG: HTTP %s Req %s: %s",
+		req.Method, req.URL.String(), buf.String()))
+}
+
+func (c *Client) debugLogResp(resp *http.Response) {
+	// Don't need to log this if not debugging
+	if *c.loglevel != opc.LogDebug {
+		return
+	}
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(resp.Body)
+	c.logger.Log(fmt.Sprintf("DEBUG: HTTP Resp (%d): %s",
+		resp.StatusCode, buf.String()))
+}
+
+// Log a string if debug logs are on
+func (c *Client) debugLogStr(str string) {
+	if *c.loglevel != opc.LogDebug {
+		return
+	}
+	c.logger.Log(fmt.Sprintf("DEBUG: %s", str))
 }
 
 // Used to determine if the checked resource was found or not.
