@@ -111,10 +111,15 @@ func (c *Client) executeRequest(method, path string, body interface{}) (*http.Re
 		StatusCode: resp.StatusCode,
 	}
 
-	errDecoder := json.NewDecoder(resp.Body)
-	if err := errDecoder.Decode(oracleErr); err != nil {
-		return nil, err
+	// Even though the returned body will be in json form, it's undocumented what
+	// fields are actually returned. Once we get documentation of the actual
+	// error fields that are possible to be returned we can have stricter error types.
+	if resp.Body != nil {
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(resp.Body)
+		oracleErr.Message = buf.String()
 	}
+
 	return nil, oracleErr
 }
 

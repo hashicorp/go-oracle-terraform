@@ -4,7 +4,7 @@ import "fmt"
 
 type OracleError struct {
 	StatusCode int
-	Message    string `json:"message"`
+	Message    string
 }
 
 func (e OracleError) Error() string {
