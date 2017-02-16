@@ -25,7 +25,6 @@ type SSHKey struct {
 	URI     string `json:"uri"`
 }
 
-
 // CreateSSHKeyInput defines an SSH key to be created.
 type CreateSSHKeyInput struct {
 	Name    string `json:"name"`
