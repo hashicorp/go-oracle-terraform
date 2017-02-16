@@ -25,6 +25,8 @@ type Client struct {
 	httpClient     *http.Client
 	authCookie     *http.Cookie
 	cookieIssued   time.Time
+	logger         opc.Logger
+	loglevel       opc.LogLevelType
 }
 
 func NewComputeClient(c *opc.Config) (*Client, error) {
@@ -37,9 +39,19 @@ func NewComputeClient(c *opc.Config) (*Client, error) {
 		httpClient:     c.HTTPClient,
 	}
 
+	// Setup logger; defaults to stdout
+	if c.Logger == nil {
+		client.logger = opc.NewDefaultLogger()
+	}
+
+	if &c.LogLevel == nil {
+		client.loglevel = opc.LogOff
+	}
+
 	if err := client.getAuthenticationCookie(); err != nil {
 		return nil, err
 	}
+
 	return client, nil
 }
 
@@ -70,6 +82,9 @@ func (c *Client) executeRequest(method, path string, body interface{}) (*http.Re
 		req.Header.Set("Content-Type", "application/oracle-compute-v3+json")
 	}
 
+	// Log the request before the authentication cookie, so as not to leak credentials
+	c.debugLogReq(req)
+
 	// If we have an authentication cookie, let's authenticate, refreshing cookie if need be
 	if c.authCookie != nil {
 		if time.Since(c.cookieIssued).Minutes() > 25 {
@@ -86,6 +101,8 @@ func (c *Client) executeRequest(method, path string, body interface{}) (*http.Re
 		return nil, err
 	}
 
+	c.debugLogResp(resp)
+
 	if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
 		return resp, nil
 	}
@@ -94,10 +111,15 @@ func (c *Client) executeRequest(method, path string, body interface{}) (*http.Re
 		StatusCode: resp.StatusCode,
 	}
 
-	errDecoder := json.NewDecoder(resp.Body)
-	if err := errDecoder.Decode(oracleErr); err != nil {
-		return nil, err
+	// Even though the returned body will be in json form, it's undocumented what
+	// fields are actually returned. Once we get documentation of the actual
+	// error fields that are possible to be returned we can have stricter error types.
+	if resp.Body != nil {
+		buf := new(bytes.Buffer)
+		buf.ReadFrom(resp.Body)
+		oracleErr.Message = buf.String()
 	}
+
 	return nil, oracleErr
 }
 
@@ -138,6 +160,36 @@ func (c *Client) unqualify(names ...*string) {
 	for _, name := range names {
 		*name = c.getUnqualifiedName(*name)
 	}
+}
+
+func (c *Client) debugLogReq(req *http.Request) {
+	// Don't need to log this if not debugging
+	if c.loglevel != opc.LogDebug {
+		return
+	}
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(req.Body)
+	c.logger.Log(fmt.Sprintf("DEBUG: HTTP %s Req %s: %s",
+		req.Method, req.URL.String(), buf.String()))
+}
+
+func (c *Client) debugLogResp(resp *http.Response) {
+	// Don't need to log this if not debugging
+	if c.loglevel != opc.LogDebug {
+		return
+	}
+	buf := new(bytes.Buffer)
+	buf.ReadFrom(resp.Body)
+	c.logger.Log(fmt.Sprintf("DEBUG: HTTP Resp (%d): %s",
+		resp.StatusCode, buf.String()))
+}
+
+// Log a string if debug logs are on
+func (c *Client) debugLogStr(str string) {
+	if c.loglevel != opc.LogDebug {
+		return
+	}
+	c.logger.Log(fmt.Sprintf("DEBUG: %s", str))
 }
 
 // Used to determine if the checked resource was found or not.

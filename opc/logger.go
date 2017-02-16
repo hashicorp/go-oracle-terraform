@@ -5,7 +5,11 @@ import (
 	"os"
 )
 
-// Needs to be fleshed out further
+const (
+	LogOff   LogLevelType = 0
+	LogDebug LogLevelType = 1
+)
+
 type LogLevelType uint
 
 // Logger interface. Should be satisfied by Terraform's logger as well as the Default logger

@@ -11,7 +11,7 @@ type Config struct {
 	IdentityDomain *string
 	APIEndpoint    *url.URL
 	MaxRetries     *int
-	LogLevel       *LogLevelType
+	LogLevel       LogLevelType
 	Logger         Logger
 	HTTPClient     *http.Client
 }
