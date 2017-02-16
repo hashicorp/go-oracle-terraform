@@ -7,7 +7,7 @@ test: fmtcheck errcheck
 		xargs -t -n4 go test $(TESTARGS) -timeout=30s -parallel=4
 
 testacc: fmtcheck
-	ORACLE_ACC=1 go test $(TEST) -v $(TESTARGS) -timeout 120m
+	ORACLE_ACC=1 go test $(TEST) $(TESTARGS) -timeout 120m
 
 testrace: fmtcheck
 	ORACLE_ACC= go test -race $(TEST) $(TESTARGS)

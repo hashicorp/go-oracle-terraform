@@ -1,8 +1,9 @@
 package compute
 
 import (
-	"fmt"
 	"testing"
+
+	"log"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
@@ -20,8 +21,6 @@ func TestAccIPAssociationLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	//TODO: Initial Implementation
-	//createdInstanceName, err = svc.LaunchInstance("test", "test", "oc3", "/oracle/public/oel_6.4_2GB_v1", nil, nil, []string{},
 	createdInstanceName, err = svc.LaunchInstance("test", "test", "oc3", instanceImage, nil, nil, []string{},
 		map[string]interface{}{
 			"attr1": 12,
@@ -32,15 +31,13 @@ func TestAccIPAssociationLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Printf("Instance created: %#v\n", createdInstanceName)
+	log.Printf("Instance created: %#v\n", createdInstanceName)
 
-	//TODO: Initial Implementation
-	//instanceInfo, err := svc.WaitForInstanceRunning(createdInstanceName, 120)
 	instanceInfo, err := svc.WaitForInstanceRunning(createdInstanceName, 300)
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Printf("Instance retrieved: %#v\n", instanceInfo)
+	log.Printf("Instance retrieved: %#v\n", instanceInfo)
 
 	vcable = instanceInfo.VCableID
 
@@ -49,34 +46,43 @@ func TestAccIPAssociationLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	createdIPAssociation, err := ipac.CreateIPAssociation(vcable, parentPool)
+	createInput := &CreateIPAssociationInput{
+		VCable:     vcable,
+		ParentPool: parentPool,
+	}
+
+	createdIPAssociation, err := ipac.CreateIPAssociation(createInput)
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Printf("Created IP Association: %+v\n", createdIPAssociation)
+	log.Printf("Created IP Association: %+v\n", createdIPAssociation)
 
-	ipAssociationInfo, err := ipac.GetIPAssociation(createdIPAssociation.Name)
+	getInput := &GetIPAssociationInput{
+		Name: createdIPAssociation.Name,
+	}
+	ipAssociationInfo, err := ipac.GetIPAssociation(getInput)
 	if err != nil {
 		t.Fatal(err)
 	}
 	if createdIPAssociation.URI != ipAssociationInfo.URI {
 		t.Fatal("IP Association URIs don't match")
 	}
-	fmt.Printf("Successfully retrived ip association\n")
+	log.Printf("Successfully retrived ip association\n")
 
-	err = ipac.DeleteIPAssociation(ipAssociationInfo.Name)
+	deleteInput := &DeleteIPAssociationInput{
+		Name: ipAssociationInfo.Name,
+	}
+	err = ipac.DeleteIPAssociation(deleteInput)
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Printf("Successfully deleted IP Association\n")
+	log.Printf("Successfully deleted IP Association\n")
 
 	err = svc.DeleteInstance(createdInstanceName)
 	if err != nil {
 		panic(err)
 	}
-	fmt.Printf("Sent Delete instance req\n")
-	//TODO: Initial Implementation
-	//err = svc.WaitForInstanceDeleted(createdInstanceName, 600)
+	log.Printf("Sent Delete instance req\n")
 	waitErr := svc.WaitForInstanceDeleted(createdInstanceName, 600)
 	if waitErr != nil {
 		panic(err)
