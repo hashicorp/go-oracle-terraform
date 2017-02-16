@@ -38,7 +38,7 @@ type CreateIPReservationInput struct {
 }
 
 // CreateIPReservation creates a new IP reservation with the given parentpool, tags and permanent flag.
-func (c *IPReservationsClient) CreateIPReservation(createInput CreateIPReservationInput) (*IPReservation, error) {
+func (c *IPReservationsClient) CreateIPReservation(createInput *CreateIPReservationInput) (*IPReservation, error) {
 	var ipInput IPReservation
 	if err := c.createResource(&createInput, &ipInput); err != nil {
 		return nil, err
@@ -53,23 +53,13 @@ type GetIPReservationInput struct {
 }
 
 // GetIPReservation retrieves the IP reservation with the given name.
-func (c *IPReservationsClient) GetIPReservation(getInput GetIPReservationInput) (*IPReservation, error) {
+func (c *IPReservationsClient) GetIPReservation(getInput *GetIPReservationInput) (*IPReservation, error) {
 	var ipInput IPReservation
 	if err := c.getResource(getInput.Name, &ipInput); err != nil {
 		return nil, err
 	}
 
 	return c.success(&ipInput)
-}
-
-// DeleteIPReservationInput defines an IP Reservation to delete
-type DeleteIPReservationInput struct {
-	Name string
-}
-
-// DeleteIPReservation deletes the IP reservation with the given name.
-func (c *IPReservationsClient) DeleteIPReservation(deleteInput DeleteIPReservationInput) error {
-	return c.deleteResource(deleteInput.Name)
 }
 
 // UpdateIPReservationInput defines an IP Reservation to be updated
@@ -81,12 +71,23 @@ type UpdateIPReservationInput struct {
 }
 
 // UpdateIPReservation updates the IP reservation.
-func (c *IPReservationsClient) UpdateIPReservation(updateInput UpdateIPReservationInput) (*IPReservation, error) {
-	var ipInput IPReservation
-	if err := c.updateResource(updateInput.Name, updateInput, &ipInput); err != nil {
+func (c *IPReservationsClient) UpdateIPReservation(updateInput *UpdateIPReservationInput) (*IPReservation, error) {
+	var updateOutput IPReservation
+	updateInput.Name = c.getQualifiedName(updateInput.Name)
+	if err := c.updateResource(updateInput.Name, updateInput, &updateOutput); err != nil {
 		return nil, err
 	}
-	return c.success(&ipInput)
+	return c.success(&updateOutput)
+}
+
+// DeleteIPReservationInput defines an IP Reservation to delete
+type DeleteIPReservationInput struct {
+	Name string
+}
+
+// DeleteIPReservation deletes the IP reservation with the given name.
+func (c *IPReservationsClient) DeleteIPReservation(deleteInput *DeleteIPReservationInput) error {
+	return c.deleteResource(deleteInput.Name)
 }
 
 func (c *IPReservationsClient) success(result *IPReservation) (*IPReservation, error) {
