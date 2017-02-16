@@ -22,7 +22,7 @@ func TestAccIPReservationLifeCycle(t *testing.T) {
 	}
 	fmt.Printf("Obtained IP Reservation Client\n")
 
-	ipReservation, err := iprc.CreateIPReservation(createIPReservation)
+	ipReservation, err := iprc.CreateIPReservation(&createIPReservation)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -31,7 +31,7 @@ func TestAccIPReservationLifeCycle(t *testing.T) {
 	getIPReservationInput := GetIPReservationInput{
 		Name: ipReservation.Name,
 	}
-	ipReservationInput, err := iprc.GetIPReservation(getIPReservationInput)
+	ipReservationInput, err := iprc.GetIPReservation(&getIPReservationInput)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -44,7 +44,7 @@ func TestAccIPReservationLifeCycle(t *testing.T) {
 	deleteIPReservationInput := DeleteIPReservationInput{
 		Name: ipReservation.Name,
 	}
-	err = iprc.DeleteIPReservation(deleteIPReservationInput)
+	err = iprc.DeleteIPReservation(&deleteIPReservationInput)
 	if err != nil {
 		t.Fatal(err)
 	}

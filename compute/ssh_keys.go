@@ -17,69 +17,80 @@ func (c *Client) SSHKeys() *SSHKeysClient {
 		}}
 }
 
-// SSHKeySpec defines an SSH key to be created.
-type SSHKeySpec struct {
-	Name    string `json:"name"`
-	Key     string `json:"key"`
-	Enabled bool   `json:"enabled"`
-}
-
 // SSHKeyInfo describes an existing SSH key.
-type SSHKeyInfo struct {
+type SSHKey struct {
 	Name    string `json:"name"`
 	Key     string `json:"key"`
 	Enabled bool   `json:"enabled"`
 	URI     string `json:"uri"`
 }
 
-func (c *SSHKeysClient) success(keyInfo *SSHKeyInfo) (*SSHKeyInfo, error) {
-	c.unqualify(&keyInfo.Name)
-	return keyInfo, nil
+
+// CreateSSHKeyInput defines an SSH key to be created.
+type CreateSSHKeyInput struct {
+	Name    string `json:"name"`
+	Key     string `json:"key"`
+	Enabled bool   `json:"enabled"`
 }
 
 // CreateSSHKey creates a new SSH key with the given name, key and enabled flag.
-func (c *SSHKeysClient) CreateSSHKey(name, key string, enabled bool) (*SSHKeyInfo, error) {
-	spec := SSHKeySpec{
-		Name:    c.getQualifiedName(name),
-		Key:     key,
-		Enabled: enabled,
-	}
+func (c *SSHKeysClient) CreateSSHKey(createInput *CreateSSHKeyInput) (*SSHKey, error) {
 
-	var keyInfo SSHKeyInfo
-	if err := c.createResource(&spec, &keyInfo); err != nil {
+	var keyInfo SSHKey
+
+	createInput.Name = c.getQualifiedName(createInput.Name)
+	if err := c.createResource(&createInput, &keyInfo); err != nil {
 		return nil, err
 	}
 
 	return c.success(&keyInfo)
+}
+
+// GetSSHKeyInput describes the ssh key to get
+type GetSSHKeyInput struct {
+	Name string `json:name`
 }
 
 // GetSSHKey retrieves the SSH key with the given name.
-func (c *SSHKeysClient) GetSSHKey(name string) (*SSHKeyInfo, error) {
-	var keyInfo SSHKeyInfo
-	if err := c.getResource(name, &keyInfo); err != nil {
+func (c *SSHKeysClient) GetSSHKey(getInput *GetSSHKeyInput) (*SSHKey, error) {
+	var keyInfo SSHKey
+	if err := c.getResource(getInput.Name, &keyInfo); err != nil {
 		return nil, err
 	}
 
 	return c.success(&keyInfo)
+}
+
+// UpdateSSHKeyInput defines an SSH key to be updated
+type UpdateSSHKeyInput struct {
+	Name    string `json:"name"`
+	Key     string `json:"key"`
+	Enabled bool   `json:"enabled"`
 }
 
 // UpdateSSHKey updates the key and enabled flag of the SSH key with the given name.
-func (c *SSHKeysClient) UpdateSSHKey(name, key string, enabled bool) (*SSHKeyInfo, error) {
-	spec := SSHKeySpec{
-		Name:    c.getQualifiedName(name),
-		Key:     key,
-		Enabled: enabled,
-	}
+func (c *SSHKeysClient) UpdateSSHKey(updateInput *UpdateSSHKeyInput) (*SSHKey, error) {
 
-	var keyInfo SSHKeyInfo
-	if err := c.updateResource(name, &spec, &keyInfo); err != nil {
+	var keyInfo SSHKey
+	updateInput.Name = c.getQualifiedName(updateInput.Name)
+	if err := c.updateResource(updateInput.Name, updateInput, &keyInfo); err != nil {
 		return nil, err
 	}
 
 	return c.success(&keyInfo)
 }
 
+// DeleteKeyInput describes the ssh key to delete
+type DeleteSSHKeyInput struct {
+	Name string `json:name`
+}
+
 // DeleteSSHKey deletes the SSH key with the given name.
-func (c *SSHKeysClient) DeleteSSHKey(name string) error {
-	return c.deleteResource(name)
+func (c *SSHKeysClient) DeleteSSHKey(deleteInput *DeleteSSHKeyInput) error {
+	return c.deleteResource(deleteInput.Name)
+}
+
+func (c *SSHKeysClient) success(keyInfo *SSHKey) (*SSHKey, error) {
+	c.unqualify(&keyInfo.Name)
+	return keyInfo, nil
 }

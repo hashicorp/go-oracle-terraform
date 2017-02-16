@@ -38,7 +38,7 @@ type CreateIPReservationInput struct {
 }
 
 // CreateIPReservation creates a new IP reservation with the given parentpool, tags and permanent flag.
-func (c *IPReservationsClient) CreateIPReservation(createInput CreateIPReservationInput) (*IPReservation, error) {
+func (c *IPReservationsClient) CreateIPReservation(createInput *CreateIPReservationInput) (*IPReservation, error) {
 	var ipInput IPReservation
 	if err := c.createResource(&createInput, &ipInput); err != nil {
 		return nil, err
@@ -53,7 +53,7 @@ type GetIPReservationInput struct {
 }
 
 // GetIPReservation retrieves the IP reservation with the given name.
-func (c *IPReservationsClient) GetIPReservation(getInput GetIPReservationInput) (*IPReservation, error) {
+func (c *IPReservationsClient) GetIPReservation(getInput *GetIPReservationInput) (*IPReservation, error) {
 	var ipInput IPReservation
 	if err := c.getResource(getInput.Name, &ipInput); err != nil {
 		return nil, err
@@ -68,7 +68,7 @@ type DeleteIPReservationInput struct {
 }
 
 // DeleteIPReservation deletes the IP reservation with the given name.
-func (c *IPReservationsClient) DeleteIPReservation(deleteInput DeleteIPReservationInput) error {
+func (c *IPReservationsClient) DeleteIPReservation(deleteInput *DeleteIPReservationInput) error {
 	return c.deleteResource(deleteInput.Name)
 }
 
@@ -81,7 +81,7 @@ type UpdateIPReservationInput struct {
 }
 
 // UpdateIPReservation updates the IP reservation.
-func (c *IPReservationsClient) UpdateIPReservation(updateInput UpdateIPReservationInput) (*IPReservation, error) {
+func (c *IPReservationsClient) UpdateIPReservation(updateInput *UpdateIPReservationInput) (*IPReservation, error) {
 	var ipInput IPReservation
 	if err := c.updateResource(updateInput.Name, updateInput, &ipInput); err != nil {
 		return nil, err
