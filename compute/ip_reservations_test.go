@@ -31,14 +31,14 @@ func TestAccIPReservationLifeCycle(t *testing.T) {
 	getIPReservationInput := GetIPReservationInput{
 		Name: ipReservation.Name,
 	}
-	ipReservationInput, err := iprc.GetIPReservation(&getIPReservationInput)
+	ipReservationOutput, err := iprc.GetIPReservation(&getIPReservationInput)
 	if err != nil {
 		t.Fatal(err)
 	}
 	fmt.Printf("Successfully retrieved ip reservation\n")
 
-	if ipReservation.IP != ipReservationInput.IP {
-		t.Fatal("Created and retrived IP addresses don't match %s %s\n", ipReservation.IP, ipReservationInput.IP)
+	if ipReservation.IP != ipReservationOutput.IP {
+		t.Fatal("Created and retrived IP addresses don't match %s %s\n", ipReservation.IP, ipReservationOutput.IP)
 	}
 
 	deleteIPReservationInput := DeleteIPReservationInput{
