@@ -1,9 +1,8 @@
 package compute
 
 import (
-	"testing"
-
 	"log"
+	"testing"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
@@ -21,25 +20,40 @@ func TestAccIPAssociationLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	createdInstanceName, err = svc.LaunchInstance("test", "test", "oc3", instanceImage, nil, nil, []string{},
-		map[string]interface{}{
+	input := &CreateInstanceInput{
+		Name:      "test",
+		Label:     "test",
+		Shape:     "oc3",
+		ImageList: instanceImage,
+		Storage:   nil,
+		BootOrder: nil,
+		SSHKeys:   []string{},
+		Attributes: map[string]interface{}{
 			"attr1": 12,
 			"attr2": map[string]interface{}{
 				"inner_attr1": "foo",
 			},
-		})
+		},
+	}
+
+	createdInstance, err = svc.CreateInstance(input)
 	if err != nil {
 		t.Fatal(err)
 	}
-	log.Printf("Instance created: %#v\n", createdInstanceName)
 
-	instanceInfo, err := svc.WaitForInstanceRunning(createdInstanceName, 300)
-	if err != nil {
+	log.Printf("Instance created: %#v\n", createdInstance)
+
+	getInput := &GetInstanceInput{
+		Name: createdInstance.Name,
+		ID:   createdInstance.ID,
+	}
+
+	if err := svc.WaitForInstanceRunning(getInput, 300); err != nil {
 		t.Fatal(err)
 	}
-	log.Printf("Instance retrieved: %#v\n", instanceInfo)
+	log.Print("Instance retrieved")
 
-	vcable = instanceInfo.VCableID
+	vcable = createdInstance.VCableID
 
 	ipac, err := getIPAssociationsClient()
 	if err != nil {
@@ -57,10 +71,10 @@ func TestAccIPAssociationLifeCycle(t *testing.T) {
 	}
 	log.Printf("Created IP Association: %+v\n", createdIPAssociation)
 
-	getInput := &GetIPAssociationInput{
+	getIPInput := &GetIPAssociationInput{
 		Name: createdIPAssociation.Name,
 	}
-	ipAssociationInfo, err := ipac.GetIPAssociation(getInput)
+	ipAssociationInfo, err := ipac.GetIPAssociation(getIPInput)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -69,22 +83,26 @@ func TestAccIPAssociationLifeCycle(t *testing.T) {
 	}
 	log.Printf("Successfully retrived ip association\n")
 
-	deleteInput := &DeleteIPAssociationInput{
+	deleteIPInput := &DeleteIPAssociationInput{
 		Name: ipAssociationInfo.Name,
 	}
-	err = ipac.DeleteIPAssociation(deleteInput)
+	err = ipac.DeleteIPAssociation(deleteIPInput)
 	if err != nil {
 		t.Fatal(err)
 	}
 	log.Printf("Successfully deleted IP Association\n")
 
-	err = svc.DeleteInstance(createdInstanceName)
-	if err != nil {
+	deleteInput := &DeleteInstanceInput{
+		Name: createdInstance.Name,
+		ID:   createdInstance.ID,
+	}
+	if err := svc.DeleteInstance(deleteInput); err != nil {
 		panic(err)
 	}
-	log.Printf("Sent Delete instance req\n")
-	waitErr := svc.WaitForInstanceDeleted(createdInstanceName, 600)
-	if waitErr != nil {
+
+	log.Print("Sent Delete instance req")
+
+	if err := svc.WaitForInstanceDeleted(deleteInput, 600); err != nil {
 		panic(err)
 	}
 }

@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
-	"time"
-
 	"strings"
+	"time"
 
 	"github.com/hashicorp/go-oracle-terraform/opc"
 )
@@ -209,6 +209,7 @@ func waitFor(description string, timeoutSeconds int, test func() (bool, error)) 
 		select {
 		case <-tick:
 			completed, err := test()
+			log.Printf("Waiting for %s (%d/%ds)", description, i, timeoutSeconds)
 			if err != nil || completed {
 				return err
 			}

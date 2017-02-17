@@ -6,13 +6,10 @@ import (
 	"net/url"
 	"reflect"
 	"testing"
-
-	"github.com/hashicorp/go-oracle-terraform/helper"
 )
 
 // Test that the client can create an instance.
-func TestAccInstanceClient_CreateInstance(t *testing.T) {
-	helper.Test(t, helper.TestCase{})
+func TestInstanceClient_CreateInstance(t *testing.T) {
 	server := newAuthenticatingServer(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "POST" {
 			t.Errorf("Wrong HTTP method %s, expected POST", r.Method)
@@ -23,7 +20,7 @@ func TestAccInstanceClient_CreateInstance(t *testing.T) {
 			t.Errorf("Wrong HTTP URL %v, expected %v", r.URL, expectedPath)
 		}
 
-		plan := &LaunchPlan{}
+		plan := &LaunchPlanInput{}
 		unmarshalRequestBody(t, r, plan)
 
 		spec := plan.Instances[0]
@@ -58,13 +55,23 @@ func TestAccInstanceClient_CreateInstance(t *testing.T) {
 		t.Fatalf("err getting stub client: %s", err)
 	}
 
-	id, err := iv.LaunchInstance("name", "label", "shape", "imagelist", nil, nil, []string{"foo", "bar"}, map[string]interface{}{
-		"attr1": 12,
-		"attr2": map[string]interface{}{
-			"inner_attr1": "foo",
+	input := &CreateInstanceInput{
+		Name:      "name",
+		Label:     "label",
+		Shape:     "shape",
+		ImageList: "imagelist",
+		Storage:   nil,
+		BootOrder: nil,
+		SSHKeys:   []string{"foo", "bar"},
+		Attributes: map[string]interface{}{
+			"attr1": 12,
+			"attr2": map[string]interface{}{
+				"inner_attr1": "foo",
+			},
 		},
-	})
+	}
 
+	id, err := iv.CreateInstance(input)
 	if err != nil {
 		t.Fatalf("Create storage volume request failed: %s", err)
 	}
@@ -76,8 +83,7 @@ func TestAccInstanceClient_CreateInstance(t *testing.T) {
 }
 
 // Test that the client can create an instance.
-func TestAccInstanceClient_RetrieveInstance(t *testing.T) {
-	helper.Test(t, helper.TestCase{})
+func TestInstanceClient_RetrieveInstance(t *testing.T) {
 	server := newAuthenticatingServer(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "GET" {
 			t.Errorf("Wrong HTTP method %s, expected GET", r.Method)
@@ -98,7 +104,11 @@ func TestAccInstanceClient_RetrieveInstance(t *testing.T) {
 		t.Fatalf("err getting stub client: %s", err)
 	}
 
-	info, err := iv.GetInstance(&InstanceName{Name: "test-instance", ID: "test-id"})
+	input := &GetInstanceInput{
+		Name: "test-instance",
+		ID:   "test-id",
+	}
+	info, err := iv.GetInstance(input)
 	if err != nil {
 		t.Fatalf("%s", err)
 	}

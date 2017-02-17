@@ -49,10 +49,10 @@ func (c *StorageAttachmentsClient) success(attachmentInfo *StorageAttachmentInfo
 }
 
 // CreateStorageAttachment creates a storage attachment attaching the given volume to the given instance at the given index.
-func (c *StorageAttachmentsClient) CreateStorageAttachment(index int, instanceName *InstanceName, storageVolumeName string) (*StorageAttachmentInfo, error) {
+func (c *StorageAttachmentsClient) CreateStorageAttachment(index int, instanceInfo *InstanceInfo, storageVolumeName string) (*StorageAttachmentInfo, error) {
 	spec := StorageAttachmentSpec{
 		Index:             index,
-		InstanceName:      c.getQualifiedName(instanceName.String()),
+		InstanceName:      c.getQualifiedName(instanceInfo.getInstanceName()),
 		StorageVolumeName: c.getQualifiedName(storageVolumeName),
 	}
 
@@ -103,9 +103,9 @@ func (c *StorageAttachmentsClient) WaitForStorageAttachmentDeleted(name string, 
 }
 
 // GetStorageAttachmentsForInstance retrieves all of the storage attachments for the given instance.
-func (c *StorageAttachmentsClient) GetStorageAttachmentsForInstance(name *InstanceName) (*[]StorageAttachmentInfo, error) {
+func (c *StorageAttachmentsClient) GetStorageAttachmentsForInstance(info *InstanceInfo) (*[]StorageAttachmentInfo, error) {
 	return c.getStorageAttachments(
-		fmt.Sprintf("instance_name=%s", c.getQualifiedName(name.String())),
+		fmt.Sprintf("instance_name=%s", c.getQualifiedName(info.getInstanceName())),
 		"instance",
 	)
 }

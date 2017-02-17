@@ -1,10 +1,6 @@
 package compute
 
-import (
-	"fmt"
-	"log"
-	"strings"
-)
+import "fmt"
 
 // InstancesClient is a client for the Instance functions of the Compute API.
 type InstancesClient struct {
@@ -23,29 +19,6 @@ func (c *Client) Instances() *InstancesClient {
 		}}
 }
 
-// LaunchPlanStorageAttachmentSpec defines a storage attachment to be created on launch
-type LaunchPlanStorageAttachmentSpec struct {
-	Index  int    `json:"index"`
-	Volume string `json:"volume"`
-}
-
-// InstanceSpec defines an instance to be created.
-type InstanceSpec struct {
-	Shape      string                            `json:"shape"`
-	ImageList  string                            `json:"imagelist"`
-	Name       string                            `json:"name"`
-	Label      string                            `json:"label"`
-	Storage    []LaunchPlanStorageAttachmentSpec `json:"storage_attachments"`
-	BootOrder  []int                             `json:"boot_order"`
-	SSHKeys    []string                          `json:"sshkeys"`
-	Attributes map[string]interface{}            `json:"attributes"`
-}
-
-// LaunchPlan defines a launch plan, used to launch instances with the supplied InstanceSpec(s)
-type LaunchPlan struct {
-	Instances []InstanceSpec `json:"instances"`
-}
-
 // InstanceInfo represents the Compute API's view of the state of an instance.
 type InstanceInfo struct {
 	ID          string                 `json:"id"`
@@ -62,69 +35,58 @@ type InstanceInfo struct {
 	Attributes  map[string]interface{} `json:"attributes"`
 }
 
-// GetInstanceName returns the InstanceName (name/id pair) of an instance for which we have some InstanceInfo.
-func (i *InstanceInfo) GetInstanceName() *InstanceName {
-	return &InstanceName{
-		Name: i.Name,
-		ID:   i.ID,
-	}
+func (i *InstanceInfo) getInstanceName() string {
+	return fmt.Sprintf("%s/%s", i.Name, i.ID)
 }
 
-// LaunchPlanCreatedResponse represents the API's response to a request to create a launch plan.
-type LaunchPlanCreatedResponse struct {
+type CreateInstanceInput struct {
+	Shape      string                 `json:"shape"`
+	ImageList  string                 `json:"imagelist"`
+	Name       string                 `json:"name"`
+	Label      string                 `json:"label"`
+	Storage    []StorageAttachment    `json:"storage_attachments"`
+	BootOrder  []int                  `json:"boot_order"`
+	SSHKeys    []string               `json:"sshkeys"`
+	Attributes map[string]interface{} `json:"attributes"`
+}
+
+type StorageAttachment struct {
+	Index  int    `json:"index"`
+	Volume string `json:"volume"`
+}
+
+// LaunchPlan defines a launch plan, used to launch instances with the supplied InstanceSpec(s)
+type LaunchPlanInput struct {
+	Instances []CreateInstanceInput `json:"instances"`
+}
+
+type LaunchPlanResponse struct {
 	Instances []InstanceInfo `json:"instances"`
 }
 
-// InstanceName represents the name/id combination which uniquely identifies an instance.
-type InstanceName struct {
-	Name string
-	ID   string
-}
-
-// String obtains a string representation of an InstanceName.
-func (n *InstanceName) String() string {
-	return fmt.Sprintf("%s/%s", n.Name, n.ID)
-}
-
-func InstanceNameFromString(instanceNameString string) *InstanceName {
-	sections := strings.Split(instanceNameString, "/")
-	name := strings.Join(sections[:len(sections)-1], "/")
-	id := sections[len(sections)-1]
-	return &InstanceName{
-		Name: name,
-		ID:   id,
-	}
-}
-
 // LaunchInstance creates and submits a LaunchPlan to launch a new instance.
-func (c *InstancesClient) LaunchInstance(name, label, shape, imageList string, storageAttachments []LaunchPlanStorageAttachmentSpec, bootOrder []int, sshkeys []string, attributes map[string]interface{}) (*InstanceName, error) {
+func (c *InstancesClient) CreateInstance(input *CreateInstanceInput) (*InstanceInfo, error) {
 	qualifiedSSHKeys := []string{}
-	for _, key := range sshkeys {
+	for _, key := range input.SSHKeys {
 		qualifiedSSHKeys = append(qualifiedSSHKeys, c.getQualifiedName(key))
 	}
 
-	qualifiedStorageAttachments := []LaunchPlanStorageAttachmentSpec{}
-	for _, attachment := range storageAttachments {
-		qualifiedStorageAttachments = append(qualifiedStorageAttachments, LaunchPlanStorageAttachmentSpec{
+	input.SSHKeys = qualifiedSSHKeys
+
+	qualifiedStorageAttachments := []StorageAttachment{}
+	for _, attachment := range input.Storage {
+		qualifiedStorageAttachments = append(qualifiedStorageAttachments, StorageAttachment{
 			Index:  attachment.Index,
 			Volume: c.getQualifiedName(attachment.Volume),
 		})
 	}
+	input.Storage = qualifiedStorageAttachments
 
-	plan := LaunchPlan{Instances: []InstanceSpec{
-		InstanceSpec{
-			Name:       fmt.Sprintf("%s/%s", c.getUserName(), name),
-			Shape:      shape,
-			ImageList:  imageList,
-			Storage:    qualifiedStorageAttachments,
-			BootOrder:  bootOrder,
-			Label:      label,
-			SSHKeys:    qualifiedSSHKeys,
-			Attributes: attributes,
-		},
-	}}
+	input.Name = fmt.Sprintf("%s/%s", c.getUserName(), input.Name)
 
-	var responseBody LaunchPlanCreatedResponse
+	plan := LaunchPlanInput{Instances: []CreateInstanceInput{*input}}
+
+	var responseBody LaunchPlanResponse
 	if err := c.createResource(&plan, &responseBody); err != nil {
 		return nil, err
 	}
@@ -133,47 +95,36 @@ func (c *InstancesClient) LaunchInstance(name, label, shape, imageList string, s
 		return nil, fmt.Errorf("No instance information returned: %#v", responseBody)
 	}
 
-	return &InstanceName{
-		Name: name,
-		ID:   responseBody.Instances[0].ID,
-	}, nil
+	// Unqualify the instance name
+	responseBody.Instances[0].Name = input.Name
+
+	return &responseBody.Instances[0], nil
 }
 
-// WaitForInstanceRunning waits for an instance to be completely initialized and available.
-func (c *InstancesClient) WaitForInstanceRunning(name *InstanceName, timeoutSeconds int) (*InstanceInfo, error) {
-	var waitResult *InstanceInfo
-	err := waitFor("instance to be ready", timeoutSeconds, func() (bool, error) {
-		info, err := c.GetInstance(name)
-		log.Printf("[DEBUG] Instance state: %#v", info)
-		if err != nil {
-			return false, err
-		}
-		if info.State == "error" {
-			return false, fmt.Errorf("Error initializing instance: %s", info.ErrorReason)
-		}
-		if info.State == "running" {
-			waitResult = info
-			return true, nil
-		}
-		return false, nil
-	})
-	return waitResult, err
+type GetInstanceInput struct {
+	Name string
+	ID   string
+}
+
+func (g *GetInstanceInput) String() string {
+	return fmt.Sprintf("%s/%s", g.Name, g.ID)
 }
 
 // GetInstance retrieves information about an instance.
-func (c *InstancesClient) GetInstance(name *InstanceName) (*InstanceInfo, error) {
+func (c *InstancesClient) GetInstance(input *GetInstanceInput) (*InstanceInfo, error) {
 	var responseBody InstanceInfo
-	if err := c.getResource(name.String(), &responseBody); err != nil {
+	if err := c.getResource(input.String(), &responseBody); err != nil {
 		return nil, err
 	}
 
 	if responseBody.Name == "" {
-		return nil, fmt.Errorf("Empty response body when requesting instance %s", name)
+		return nil, fmt.Errorf("Empty response body when requesting instance %s", input.Name)
 	}
 
 	// Overwrite returned name/ID with known name/ID
-	responseBody.Name = name.Name
-	responseBody.ID = name.ID
+	// Otherwise the returned name will be the fully qualified name, and the ID will be blank
+	responseBody.Name = input.Name
+	responseBody.ID = input.ID
 	c.unqualify(&responseBody.VCableID)
 
 	// Unqualify SSH Key names
@@ -186,16 +137,43 @@ func (c *InstancesClient) GetInstance(name *InstanceName) (*InstanceInfo, error)
 	return &responseBody, nil
 }
 
+type DeleteInstanceInput struct {
+	Name string
+	ID   string
+}
+
+func (d *DeleteInstanceInput) String() string {
+	return fmt.Sprintf("%s/%s", d.Name, d.ID)
+}
+
 // DeleteInstance deletes an instance.
-func (c *InstancesClient) DeleteInstance(name *InstanceName) error {
-	return c.deleteResource(name.String())
+func (c *InstancesClient) DeleteInstance(input *DeleteInstanceInput) error {
+	return c.deleteResource(input.String())
+}
+
+// WaitForInstanceRunning waits for an instance to be completely initialized and available.
+func (c *InstancesClient) WaitForInstanceRunning(input *GetInstanceInput, timeoutSeconds int) error {
+	err := waitFor("instance to be ready", timeoutSeconds, func() (bool, error) {
+		info, err := c.GetInstance(input)
+		if err != nil {
+			return false, err
+		}
+		if info.State == "error" {
+			return false, fmt.Errorf("Error initializing instance: %s", info.ErrorReason)
+		}
+		if info.State == "running" {
+			return true, nil
+		}
+		return false, nil
+	})
+	return err
 }
 
 // WaitForInstanceDeleted waits for an instance to be fully deleted.
-func (c *InstancesClient) WaitForInstanceDeleted(name *InstanceName, timeoutSeconds int) error {
+func (c *InstancesClient) WaitForInstanceDeleted(input *DeleteInstanceInput, timeoutSeconds int) error {
 	return waitFor("instance to be deleted", timeoutSeconds, func() (bool, error) {
 		var instanceInfo InstanceInfo
-		if err := c.getResource(name.String(), &instanceInfo); err != nil {
+		if err := c.getResource(input.String(), &instanceInfo); err != nil {
 			if WasNotFoundError(err) {
 				return true, nil
 			}

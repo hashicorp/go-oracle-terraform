@@ -1,63 +1,81 @@
 package compute
 
 import (
-	"fmt"
 	"testing"
+
+	"log"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
 )
 
-var createdInstanceName *InstanceName
+var createdInstance *InstanceInfo
 
 func TestAccInstanceLifecycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
-	defer tearDownInstances()
+	defer func() {
+		if err := tearDownInstances(); err != nil {
+			log.Printf("Error deleting instance: %#v", createdInstance)
+			log.Print("Dangling resources may occur!")
+			t.Fatalf("Error: %v", err)
+		}
+	}()
 
 	svc, err := getInstancesClient()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	//TODO: Initial Implementation
-	//createdInstanceName, err = svc.LaunchInstance("test", "test", "oc3", "/oracle/public/oel_6.4_2GB_v1", nil, nil, []string{},
-	createdInstanceName, err = svc.LaunchInstance("test", "test", "oc3", "/oracle/public/oel_6.7_apaas_16.4.5_1610211300", nil, nil, []string{},
-		map[string]interface{}{
+	input := &CreateInstanceInput{
+		Name:      "test-acc",
+		Label:     "test",
+		Shape:     "oc3",
+		ImageList: "/oracle/public/oel_6.7_apaas_16.4.5_1610211300",
+		Storage:   nil,
+		BootOrder: nil,
+		SSHKeys:   []string{},
+		Attributes: map[string]interface{}{
 			"attr1": 12,
 			"attr2": map[string]interface{}{
 				"inner_attr1": "foo",
 			},
-		})
+		},
+	}
+	createdInstance, err = svc.CreateInstance(input)
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Printf("Instance created: %#v\n", createdInstanceName)
+	log.Printf("Instance created: %#v\n", createdInstance)
 
-	//TODO: Initial Implementation
-	//instanceInfo, err := svc.WaitForInstanceRunning(createdInstanceName, 120)
-	instanceInfo, err := svc.WaitForInstanceRunning(createdInstanceName, 300)
-	if err != nil {
-		t.Fatal(err)
+	getInput := &GetInstanceInput{
+		Name: createdInstance.Name,
+		ID:   createdInstance.ID,
 	}
-	fmt.Printf("Instance retrieved: %#v\n", instanceInfo)
+	if err := svc.WaitForInstanceRunning(getInput, 300); err != nil {
+		t.Fatalf("Error waiting for instance to enter running state: %s", err)
+	}
+	log.Printf("Instance found: %#v\n", createdInstance)
 }
 
-func tearDownInstances() {
+func tearDownInstances() error {
 	svc, err := getInstancesClient()
 	if err != nil {
-		panic(err)
+		return err
 	}
 
-	err = svc.DeleteInstance(createdInstanceName)
-	if err != nil {
-		panic(err)
+	input := &DeleteInstanceInput{
+		Name: createdInstance.Name,
+		ID:   createdInstance.ID,
 	}
-	//TODO: Initial Implementation
-	//err = svc.WaitForInstanceDeleted(createdInstanceName, 600)
-	err = svc.WaitForInstanceDeleted(createdInstanceName, 900)
-	if err != nil {
-		panic(err)
+	if err := svc.DeleteInstance(input); err != nil {
+		return err
 	}
+
+	if err := svc.WaitForInstanceDeleted(input, 900); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func getInstancesClient() (*InstancesClient, error) {
