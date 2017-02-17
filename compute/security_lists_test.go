@@ -1,13 +1,71 @@
 package compute
 
 import (
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
 	"testing"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
+	"github.com/hashicorp/go-oracle-terraform/opc"
 )
+
+func TestAccSecurityListLifeCycle(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
+
+	securityListClient, err := getSecurityListsClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	log.Printf("Obtained Security List Client\n")
+
+	createSecurityListInput := CreateSecurityListInput{
+		Name:               "test-sec-list",
+		OutboundCIDRPolicy: "DENY",
+		Policy:             "PERMIT",
+	}
+	securityList, err := securityListClient.CreateSecurityList(&createSecurityListInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	log.Printf("Successfully created Security List: %+v\n", securityList)
+
+	getSecurityListInput := GetSecurityListInput{
+		Name: securityList.Name,
+	}
+	getSecurityListOutput, err := securityListClient.GetSecurityList(&getSecurityListInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if securityList.Policy != getSecurityListOutput.Policy {
+		t.Fatal("Created and retrived policies don't match %s %s\n", securityList.Policy, getSecurityListOutput.Policy)
+	}
+	log.Printf("Successfully retrieved Security List\n")
+
+	updateSecurityListInput := UpdateSecurityListInput{
+		Name:               securityList.Name,
+		OutboundCIDRPolicy: "PERMIT",
+		Policy:             "DENY",
+	}
+	updateSecurityListOutput, err := securityListClient.UpdateSecurityList(&updateSecurityListInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if updateSecurityListOutput.OutboundCIDRPolicy != "PERMIT" {
+		t.Fatal("Outbound policy not successfully updated \nDesired: %s \nActual: %s", updateSecurityListInput.OutboundCIDRPolicy, updateSecurityListOutput.OutboundCIDRPolicy)
+	}
+	log.Printf("Successfully updated Security List\n")
+
+	deleteSecurityListInput := DeleteSecurityListInput{
+		Name: securityList.Name,
+	}
+	err = securityListClient.DeleteSecurityList(&deleteSecurityListInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	log.Printf("Successfully deleted Security List\n")
+}
 
 // Test that the client can create an instance.
 func TestAccSecurityListsClient_CreateKey(t *testing.T) {
@@ -22,7 +80,7 @@ func TestAccSecurityListsClient_CreateKey(t *testing.T) {
 			t.Errorf("Wrong HTTP URL %v, expected %v", r.URL, expectedPath)
 		}
 
-		listInfo := &SecurityListSpec{}
+		listInfo := &CreateSecurityListInput{}
 		unmarshalRequestBody(t, r, listInfo)
 
 		if listInfo.Name != "/Compute-test/test/test-list1" {
@@ -47,7 +105,12 @@ func TestAccSecurityListsClient_CreateKey(t *testing.T) {
 		t.Fatalf("error getting stub client: %s", err)
 	}
 
-	info, err := client.CreateSecurityList("test-list1", "DENY", "PERMIT")
+	createSecurityListInput := CreateSecurityListInput{
+		Name:               "test-list1",
+		OutboundCIDRPolicy: "PERMIT",
+		Policy:             "DENY",
+	}
+	info, err := client.CreateSecurityList(&createSecurityListInput)
 	if err != nil {
 		t.Fatalf("Create security list request failed: %s", err)
 	}
@@ -66,6 +129,15 @@ func getStubSecurityListsClient(server *httptest.Server) (*SecurityListsClient, 
 	client, err := getStubClient(endpoint)
 	if err != nil {
 		return nil, err
+	}
+
+	return client.SecurityLists(), nil
+}
+
+func getSecurityListsClient() (*SecurityListsClient, error) {
+	client, err := getTestClient(&opc.Config{})
+	if err != nil {
+		return &SecurityListsClient{}, err
 	}
 
 	return client.SecurityLists(), nil
