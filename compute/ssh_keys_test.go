@@ -53,7 +53,7 @@ func TestAccSSHKeyLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 	if updateSSHKeyOutput.Enabled != updateSSHKeyInput.Enabled {
-		t.Fatal("Key not successfully updated \nDesired: %s \nActual: %s", updateSSHKeyInput.Key, updateSSHKeyOutput.Key)
+		t.Fatalf("Key not successfully updated \nDesired: %s \nActual: %s", updateSSHKeyInput.Key, updateSSHKeyOutput.Key)
 	}
 	log.Printf("Successfully updated ssh key\n")
 
