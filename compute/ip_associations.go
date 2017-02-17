@@ -22,12 +22,6 @@ func (c *Client) IPAssociations() *IPAssociationsClient {
 		}}
 }
 
-// IPAssociationSpec defines an IP association to be created.
-type IPAssociationSpec struct {
-	VCable     string `json:"vcable"`
-	ParentPool string `json:"parentpool"`
-}
-
 // IPAssociationInfo describes an existing IP association.
 type IPAssociationInfo struct {
 	Name        string `json:"name"`
@@ -37,39 +31,44 @@ type IPAssociationInfo struct {
 	Reservation string `json:"reservation"`
 }
 
+type CreateIPAssociationInput struct {
+	VCable     string `json:"vcable"`
+	ParentPool string `json:"parentpool"`
+}
+
 // CreateIPAssociation creates a new IP association with the supplied vcable and parentpool.
-func (c *IPAssociationsClient) CreateIPAssociation(vcable, parentpool string) (*IPAssociationInfo, error) {
-	spec := IPAssociationSpec{
-		VCable:     c.getQualifiedName(vcable),
-		ParentPool: c.getQualifiedParentPoolName(parentpool),
-	}
+func (c *IPAssociationsClient) CreateIPAssociation(input *CreateIPAssociationInput) (*IPAssociationInfo, error) {
+	input.VCable = c.getQualifiedName(input.VCable)
+	input.ParentPool = c.getQualifiedParentPoolName(input.ParentPool)
 	var assocInfo IPAssociationInfo
-	if err := c.createResource(&spec, &assocInfo); err != nil {
+	if err := c.createResource(input, &assocInfo); err != nil {
 		return nil, err
 	}
 
 	return c.success(&assocInfo)
 }
 
-func (c *IPAssociationsClient) success(assocInfo *IPAssociationInfo) (*IPAssociationInfo, error) {
-	c.unqualify(&assocInfo.Name, &assocInfo.VCable)
-	c.unqualifyParentPoolName(&assocInfo.ParentPool)
-	return assocInfo, nil
+type GetIPAssociationInput struct {
+	Name string `json:"name"`
 }
 
 // GetIPAssociation retrieves the IP association with the given name.
-func (c *IPAssociationsClient) GetIPAssociation(name string) (*IPAssociationInfo, error) {
+func (c *IPAssociationsClient) GetIPAssociation(input *GetIPAssociationInput) (*IPAssociationInfo, error) {
 	var assocInfo IPAssociationInfo
-	if err := c.getResource(name, &assocInfo); err != nil {
+	if err := c.getResource(input.Name, &assocInfo); err != nil {
 		return nil, err
 	}
 
 	return c.success(&assocInfo)
 }
 
+type DeleteIPAssociationInput struct {
+	Name string `json:"name"`
+}
+
 // DeleteIPAssociation deletes the IP association with the given name.
-func (c *IPAssociationsClient) DeleteIPAssociation(name string) error {
-	return c.deleteResource(name)
+func (c *IPAssociationsClient) DeleteIPAssociation(input *DeleteIPAssociationInput) error {
+	return c.deleteResource(input.Name)
 }
 
 func (c *IPAssociationsClient) getQualifiedParentPoolName(parentpool string) string {
@@ -84,4 +83,11 @@ func (c *IPAssociationsClient) unqualifyParentPoolName(parentpool *string) {
 	pooltype := parts[0]
 	name := parts[1]
 	*parentpool = fmt.Sprintf("%s:%s", pooltype, c.getUnqualifiedName(name))
+}
+
+// Unqualifies identifiers
+func (c *IPAssociationsClient) success(assocInfo *IPAssociationInfo) (*IPAssociationInfo, error) {
+	c.unqualify(&assocInfo.Name, &assocInfo.VCable)
+	c.unqualifyParentPoolName(&assocInfo.ParentPool)
+	return assocInfo, nil
 }

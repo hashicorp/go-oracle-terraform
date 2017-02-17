@@ -3,6 +3,7 @@ package compute
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 )
 
@@ -54,5 +55,9 @@ func (c *ResourceClient) deleteResource(name string) error {
 func (c *ResourceClient) unmarshalResponseBody(resp *http.Response, iface interface{}) error {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(resp.Body)
-	return json.Unmarshal(buf.Bytes(), iface)
+	err := json.Unmarshal(buf.Bytes(), iface)
+	if err != nil {
+		return fmt.Errorf("Error unmarshalling response body: %s", err)
+	}
+	return nil
 }
