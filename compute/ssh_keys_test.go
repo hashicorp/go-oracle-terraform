@@ -1,7 +1,7 @@
 package compute
 
 import (
-	"fmt"
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -18,7 +18,7 @@ func TestAccSSHKeyLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Printf("Obtained SSH Key Client\n")
+	log.Printf("Obtained SSH Key Client\n")
 
 	createSSHKeyInput := CreateSSHKeyInput{
 		Name:    "test-key",
@@ -29,7 +29,7 @@ func TestAccSSHKeyLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Printf("Successfully created SSH Key: %+v\n", sshKey)
+	log.Printf("Successfully created SSH Key: %+v\n", sshKey)
 
 	getSSHKeyInput := GetSSHKeyInput{
 		Name: sshKey.Name,
@@ -41,7 +41,7 @@ func TestAccSSHKeyLifeCycle(t *testing.T) {
 	if sshKey.Key != getSSHKeyOutput.Key {
 		t.Fatal("Created and retrived keys don't match %s %s\n", sshKey.Key, getSSHKeyOutput.Key)
 	}
-	fmt.Printf("Successfully retrieved ssh key\n")
+	log.Printf("Successfully retrieved ssh key\n")
 
 	updateSSHKeyInput := UpdateSSHKeyInput{
 		Name:    sshKey.Name,
@@ -55,7 +55,7 @@ func TestAccSSHKeyLifeCycle(t *testing.T) {
 	if updateSSHKeyOutput.Enabled != updateSSHKeyInput.Enabled {
 		t.Fatal("Key not successfully updated \nDesired: %s \nActual: %s", updateSSHKeyInput.Key, updateSSHKeyOutput.Key)
 	}
-	fmt.Printf("Successfully updated ssh key\n")
+	log.Printf("Successfully updated ssh key\n")
 
 	deleteSSHKeyInput := DeleteSSHKeyInput{
 		Name: sshKey.Name,
@@ -64,7 +64,7 @@ func TestAccSSHKeyLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Printf("Successfully deleted SSH Key\n")
+	log.Printf("Successfully deleted SSH Key\n")
 }
 
 // Test that the client can create an instance.

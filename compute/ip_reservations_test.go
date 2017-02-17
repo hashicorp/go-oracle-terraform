@@ -1,7 +1,7 @@
 package compute
 
 import (
-	"fmt"
+	"log"
 	"testing"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
@@ -20,13 +20,13 @@ func TestAccIPReservationLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Printf("Obtained IP Reservation Client\n")
+	log.Printf("Obtained IP Reservation Client\n")
 
 	ipReservation, err := iprc.CreateIPReservation(&createIPReservation)
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Printf("Successfully created IP Reservation: %+v\n", ipReservation)
+	log.Printf("Successfully created IP Reservation: %+v\n", ipReservation)
 
 	getIPReservationInput := GetIPReservationInput{
 		Name: ipReservation.Name,
@@ -35,7 +35,7 @@ func TestAccIPReservationLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Printf("Successfully retrieved ip reservation\n")
+	log.Printf("Successfully retrieved ip reservation\n")
 
 	if ipReservation.IP != ipReservationOutput.IP {
 		t.Fatal("Created and retrived IP addresses don't match %s %s\n", ipReservation.IP, ipReservationOutput.IP)
@@ -48,7 +48,7 @@ func TestAccIPReservationLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	fmt.Printf("Successfully deleted IPReservation\n")
+	log.Printf("Successfully deleted IPReservation\n")
 }
 
 func getIPReservationsClient() (*IPReservationsClient, error) {
