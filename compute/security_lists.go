@@ -37,9 +37,7 @@ type CreateSecurityListInput struct {
 
 // CreateSecurityList creates a new security list with the given name, policy and outbound CIDR policy.
 func (c *SecurityListsClient) CreateSecurityList(createInput *CreateSecurityListInput) (*SecurityListInfo, error) {
-
 	createInput.Name = c.getQualifiedName(createInput.Name)
-
 	var listInfo SecurityListInfo
 	if err := c.createResource(createInput, &listInfo); err != nil {
 		return nil, err
@@ -74,7 +72,6 @@ type UpdateSecurityListInput struct {
 // UpdateSecurityList updates the policy and outbound CIDR pol
 func (c *SecurityListsClient) UpdateSecurityList(updateInput *UpdateSecurityListInput) (*SecurityListInfo, error) {
 	updateInput.Name = c.getQualifiedName(updateInput.Name)
-
 	var listInfo SecurityListInfo
 	if err := c.updateResource(updateInput.Name, updateInput, &listInfo); err != nil {
 		return nil, err

@@ -18,7 +18,7 @@ func TestAccSecurityListLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	log.Printf("Obtained Security List Client\n")
+	log.Printf("Obtained Security List Client")
 
 	createSecurityListInput := CreateSecurityListInput{
 		Name:               "test-sec-list",
@@ -29,7 +29,7 @@ func TestAccSecurityListLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	log.Printf("Successfully created Security List: %+v\n", securityList)
+	log.Printf("Successfully created Security List: %+v", securityList)
 
 	getSecurityListInput := GetSecurityListInput{
 		Name: securityList.Name,
@@ -39,9 +39,9 @@ func TestAccSecurityListLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 	if securityList.Policy != getSecurityListOutput.Policy {
-		t.Fatal("Created and retrived policies don't match %s %s\n", securityList.Policy, getSecurityListOutput.Policy)
+		t.Fatalf("Created and retrived policies don't match.\n Desired: %s\n Actual: %s", securityList.Policy, getSecurityListOutput.Policy)
 	}
-	log.Printf("Successfully retrieved Security List\n")
+	log.Printf("Successfully retrieved Security List")
 
 	updateSecurityListInput := UpdateSecurityListInput{
 		Name:               securityList.Name,
@@ -53,9 +53,9 @@ func TestAccSecurityListLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 	if updateSecurityListOutput.OutboundCIDRPolicy != "PERMIT" {
-		t.Fatal("Outbound policy not successfully updated \nDesired: %s \nActual: %s", updateSecurityListInput.OutboundCIDRPolicy, updateSecurityListOutput.OutboundCIDRPolicy)
+		t.Fatalf("Outbound policy not successfully updated \nDesired: %s \nActual: %s", updateSecurityListInput.OutboundCIDRPolicy, updateSecurityListOutput.OutboundCIDRPolicy)
 	}
-	log.Printf("Successfully updated Security List\n")
+	log.Printf("Successfully updated Security List")
 
 	deleteSecurityListInput := DeleteSecurityListInput{
 		Name: securityList.Name,
@@ -64,7 +64,7 @@ func TestAccSecurityListLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	log.Printf("Successfully deleted Security List\n")
+	log.Printf("Successfully deleted Security List")
 }
 
 // Test that the client can create an instance.
