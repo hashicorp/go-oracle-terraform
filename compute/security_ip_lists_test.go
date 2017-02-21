@@ -1,6 +1,7 @@
 package compute
 
 import (
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -8,7 +9,62 @@ import (
 	"testing"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
+	"github.com/hashicorp/go-oracle-terraform/opc"
 )
+
+func TestAccSecurityIPListLifeCycle(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
+
+	securityIPListClient, err := getSecurityIPListsClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	log.Printf("Obtained Security IP List Client")
+
+	createSecurityIPListInput := CreateSecurityIPListInput{
+		Name:         "test-sec-ip-list",
+		SecIPEntries: []string{"127.0.0.1", "127.0.0.2"},
+	}
+	securityIPList, err := securityIPListClient.CreateSecurityIPList(&createSecurityIPListInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	log.Printf("Successfully created Security IP List: %+v", securityIPList)
+
+	getSecurityIPListInput := GetSecurityIPListInput{
+		Name: securityIPList.Name,
+	}
+	getSecurityIPListOutput, err := securityIPListClient.GetSecurityIPList(&getSecurityIPListInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(securityIPList.SecIPEntries, getSecurityIPListOutput.SecIPEntries) {
+		t.Fatalf("Created and retrieved security IP entries do not match \nDesired: %s \nActual: %s", securityIPList.SecIPEntries, getSecurityIPListOutput.SecIPEntries)
+	}
+	log.Printf("Successfully retrieved Security IP List")
+
+	updateSecurityIPListInput := UpdateSecurityIPListInput{
+		Name:         securityIPList.Name,
+		SecIPEntries: []string{"127.0.0.3", "127.0.0.4"},
+	}
+	updateSecurityIPListOutput, err := securityIPListClient.UpdateSecurityIPList(&updateSecurityIPListInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(updateSecurityIPListInput.SecIPEntries, updateSecurityIPListOutput.SecIPEntries) {
+		t.Fatalf("Security IP Entry not successfully updated \nDesired: %s \nActual: %s", updateSecurityIPListInput.SecIPEntries[0], updateSecurityIPListOutput.SecIPEntries[0])
+	}
+	log.Printf("Successfully updated Security IP List")
+
+	deleteSecurityIPListInput := DeleteSecurityIPListInput{
+		Name: securityIPList.Name,
+	}
+	err = securityIPListClient.DeleteSecurityIPList(&deleteSecurityIPListInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	log.Printf("Successfully deleted Security IP List")
+}
 
 // Test that the client can create an instance.
 func TestAccSecurityIPListsClient_CreateKey(t *testing.T) {
@@ -23,7 +79,7 @@ func TestAccSecurityIPListsClient_CreateKey(t *testing.T) {
 			t.Errorf("Wrong HTTP URL %v, expected %v", r.URL, expectedPath)
 		}
 
-		listInfo := &SecurityIPListSpec{}
+		listInfo := &CreateSecurityIPListInput{}
 		unmarshalRequestBody(t, r, listInfo)
 
 		if listInfo.Name != "/Compute-test/test/test-list1" {
@@ -44,7 +100,11 @@ func TestAccSecurityIPListsClient_CreateKey(t *testing.T) {
 		t.Fatalf("error getting stub client: %s", err)
 	}
 
-	info, err := client.CreateSecurityIPList("test-list1", []string{"127.0.0.1", "168.10.0.0"})
+	createSecurityIPListInput := CreateSecurityIPListInput{
+		Name:         "test-list1",
+		SecIPEntries: []string{"127.0.0.1", "168.10.0.0"},
+	}
+	info, err := client.CreateSecurityIPList(&createSecurityIPListInput)
 	if err != nil {
 		t.Fatalf("Create security ip list request failed: %s", err)
 	}
@@ -63,6 +123,15 @@ func getStubSecurityIPListsClient(server *httptest.Server) (*SecurityIPListsClie
 	client, err := getStubClient(endpoint)
 	if err != nil {
 		return nil, err
+	}
+
+	return client.SecurityIPLists(), nil
+}
+
+func getSecurityIPListsClient() (*SecurityIPListsClient, error) {
+	client, err := getTestClient(&opc.Config{})
+	if err != nil {
+		return &SecurityIPListsClient{}, err
 	}
 
 	return client.SecurityIPLists(), nil
