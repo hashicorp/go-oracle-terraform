@@ -9,6 +9,64 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/helper"
 )
 
+
+func TestAccSecurityListLifeCycle(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
+
+	securityListClient, err := getSecurityListsClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	log.Printf("Obtained Security List Client")
+
+	createSecurityListInput := CreateSecurityListInput{
+		Name:               "test-sec-list",
+		OutboundCIDRPolicy: "DENY",
+		Policy:             "PERMIT",
+	}
+	securityList, err := securityListClient.CreateSecurityList(&createSecurityListInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	log.Printf("Successfully created Security List: %+v", securityList)
+
+	getSecurityListInput := GetSecurityListInput{
+		Name: securityList.Name,
+	}
+	getSecurityListOutput, err := securityListClient.GetSecurityList(&getSecurityListInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if securityList.Policy != getSecurityListOutput.Policy {
+		t.Fatalf("Created and retrived policies don't match.\n Desired: %s\n Actual: %s", securityList.Policy, getSecurityListOutput.Policy)
+	}
+	log.Printf("Successfully retrieved Security List")
+
+	updateSecurityListInput := UpdateSecurityListInput{
+		Name:               securityList.Name,
+		OutboundCIDRPolicy: "PERMIT",
+		Policy:             "DENY",
+	}
+	updateSecurityListOutput, err := securityListClient.UpdateSecurityList(&updateSecurityListInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if updateSecurityListOutput.OutboundCIDRPolicy != "PERMIT" {
+		t.Fatalf("Outbound policy not successfully updated \nDesired: %s \nActual: %s", updateSecurityListInput.OutboundCIDRPolicy, updateSecurityListOutput.OutboundCIDRPolicy)
+	}
+	log.Printf("Successfully updated Security List")
+
+	deleteSecurityListInput := DeleteSecurityListInput{
+		Name: securityList.Name,
+	}
+	err = securityListClient.DeleteSecurityList(&deleteSecurityListInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	log.Printf("Successfully deleted Security List")
+}
+
+
 // Test that the client can create an instance.
 func TestAccSecurityRulesClient_CreateRule(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
