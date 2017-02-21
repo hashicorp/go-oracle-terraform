@@ -5,6 +5,8 @@ import (
 
 	"log"
 
+	"fmt"
+
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
 )
@@ -15,8 +17,8 @@ func TestAccInstanceLifecycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 	defer func() {
 		if err := tearDownInstances(); err != nil {
-			log.Printf("Error deleting instance: %#v", createdInstance)
-			log.Print("Dangling resources may occur!")
+			log.Printf("[ERR] Error deleting instance: %#v", createdInstance)
+			log.Print("[ERR] Dangling resources may occur!")
 			t.Fatalf("Error: %v", err)
 		}
 	}()
@@ -45,16 +47,7 @@ func TestAccInstanceLifecycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	log.Printf("Instance created: %#v\n", createdInstance)
-
-	getInput := &GetInstanceInput{
-		Name: createdInstance.Name,
-		ID:   createdInstance.ID,
-	}
-	if err := svc.WaitForInstanceRunning(getInput, 300); err != nil {
-		t.Fatalf("Error waiting for instance to enter running state: %s", err)
-	}
-	log.Printf("Instance found: %#v\n", createdInstance)
+	svc.Client.debugLogStr(fmt.Sprintf("Instance created: %#v\n", createdInstance))
 }
 
 func tearDownInstances() error {
@@ -67,15 +60,8 @@ func tearDownInstances() error {
 		Name: createdInstance.Name,
 		ID:   createdInstance.ID,
 	}
-	if err := svc.DeleteInstance(input); err != nil {
-		return err
-	}
 
-	if err := svc.WaitForInstanceDeleted(input, 900); err != nil {
-		return err
-	}
-
-	return nil
+	return svc.DeleteInstance(input)
 }
 
 func getInstancesClient() (*InstancesClient, error) {

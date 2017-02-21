@@ -2,6 +2,9 @@ package compute
 
 import "fmt"
 
+const WaitForInstanceReadyTimeout = 300
+const WaitForInstanceDeleteTimeout = 600
+
 // InstancesClient is a client for the Instance functions of the Compute API.
 type InstancesClient struct {
 	ResourceClient
@@ -95,10 +98,21 @@ func (c *InstancesClient) CreateInstance(input *CreateInstanceInput) (*InstanceI
 		return nil, fmt.Errorf("No instance information returned: %#v", responseBody)
 	}
 
-	// Unqualify the instance name
-	responseBody.Instances[0].Name = input.Name
+	// Call wait for instance ready now, as creating the instance is an eventually consistent operation
+	getInput := &GetInstanceInput{
+		Name: input.Name,
+		ID:   responseBody.Instances[0].ID,
+	}
 
-	return &responseBody.Instances[0], nil
+	result, err := c.WaitForInstanceRunning(getInput, WaitForInstanceReadyTimeout)
+	if err != nil {
+		return nil, err
+	}
+
+	// Unqualify instance name
+	result.Name = input.Name
+
+	return result, nil
 }
 
 type GetInstanceInput struct {
@@ -148,15 +162,22 @@ func (d *DeleteInstanceInput) String() string {
 
 // DeleteInstance deletes an instance.
 func (c *InstancesClient) DeleteInstance(input *DeleteInstanceInput) error {
-	return c.deleteResource(input.String())
+	// Call to delete the instance
+	if err := c.deleteResource(input.String()); err != nil {
+		return err
+	}
+	// Wait for instance to be deleted
+	return c.WaitForInstanceDeleted(input, WaitForInstanceDeleteTimeout)
 }
 
 // WaitForInstanceRunning waits for an instance to be completely initialized and available.
-func (c *InstancesClient) WaitForInstanceRunning(input *GetInstanceInput, timeoutSeconds int) error {
-	err := waitFor("instance to be ready", timeoutSeconds, func() (bool, error) {
-		info, err := c.GetInstance(input)
-		if err != nil {
-			return false, err
+func (c *InstancesClient) WaitForInstanceRunning(input *GetInstanceInput, timeoutSeconds int) (*InstanceInfo, error) {
+	var info *InstanceInfo
+	var getErr error
+	err := c.waitFor("instance to be ready", timeoutSeconds, func() (bool, error) {
+		info, getErr = c.GetInstance(input)
+		if getErr != nil {
+			return false, getErr
 		}
 		if info.State == "error" {
 			return false, fmt.Errorf("Error initializing instance: %s", info.ErrorReason)
@@ -166,12 +187,12 @@ func (c *InstancesClient) WaitForInstanceRunning(input *GetInstanceInput, timeou
 		}
 		return false, nil
 	})
-	return err
+	return info, err
 }
 
 // WaitForInstanceDeleted waits for an instance to be fully deleted.
 func (c *InstancesClient) WaitForInstanceDeleted(input *DeleteInstanceInput, timeoutSeconds int) error {
-	return waitFor("instance to be deleted", timeoutSeconds, func() (bool, error) {
+	return c.waitFor("instance to be deleted", timeoutSeconds, func() (bool, error) {
 		var instanceInfo InstanceInfo
 		if err := c.getResource(input.String(), &instanceInfo); err != nil {
 			if WasNotFoundError(err) {

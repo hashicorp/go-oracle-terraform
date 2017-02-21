@@ -76,7 +76,7 @@ func (c *StorageAttachmentsClient) GetStorageAttachment(name string) (*StorageAt
 
 // WaitForStorageAttachmentCreated waits for the storage attachment with the given name to be fully attached, or times out.
 func (c *StorageAttachmentsClient) WaitForStorageAttachmentCreated(name string, timeoutSeconds int) error {
-	return waitFor("storage attachment to be attached", timeoutSeconds, func() (bool, error) {
+	return c.waitFor("storage attachment to be attached", timeoutSeconds, func() (bool, error) {
 		info, err := c.GetStorageAttachment(name)
 		if err != nil {
 			return false, err
@@ -90,7 +90,7 @@ func (c *StorageAttachmentsClient) WaitForStorageAttachmentCreated(name string, 
 
 // WaitForStorageAttachmentDeleted waits for the storage attachment with the given name to be fully deleted, or times out.
 func (c *StorageAttachmentsClient) WaitForStorageAttachmentDeleted(name string, timeoutSeconds int) error {
-	return waitFor("storage attachment to be deleted", timeoutSeconds, func() (bool, error) {
+	return c.waitFor("storage attachment to be deleted", timeoutSeconds, func() (bool, error) {
 		_, err := c.GetStorageAttachment(name)
 		if err != nil {
 			if WasNotFoundError(err) {

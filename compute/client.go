@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/url"
 	"strings"
@@ -37,15 +36,12 @@ func NewComputeClient(c *opc.Config) (*Client, error) {
 		password:       c.Password,
 		apiEndpoint:    c.APIEndpoint,
 		httpClient:     c.HTTPClient,
+		loglevel:       c.LogLevel,
 	}
 
 	// Setup logger; defaults to stdout
 	if c.Logger == nil {
 		client.logger = opc.NewDefaultLogger()
-	}
-
-	if &c.LogLevel == nil {
-		client.loglevel = opc.LogOff
 	}
 
 	if err := client.getAuthenticationCookie(); err != nil {
@@ -83,7 +79,8 @@ func (c *Client) executeRequest(method, path string, body interface{}) (*http.Re
 	}
 
 	// Log the request before the authentication cookie, so as not to leak credentials
-	c.debugLogReq(req)
+	// TODO: FIX ME!
+	//c.debugLogReq(req)
 
 	// If we have an authentication cookie, let's authenticate, refreshing cookie if need be
 	if c.authCookie != nil {
@@ -100,8 +97,6 @@ func (c *Client) executeRequest(method, path string, body interface{}) (*http.Re
 	if err != nil {
 		return nil, err
 	}
-
-	c.debugLogResp(resp)
 
 	if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
 		return resp, nil
@@ -173,23 +168,29 @@ func (c *Client) debugLogReq(req *http.Request) {
 		req.Method, req.URL.String(), buf.String()))
 }
 
-func (c *Client) debugLogResp(resp *http.Response) {
-	// Don't need to log this if not debugging
-	if c.loglevel != opc.LogDebug {
-		return
-	}
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(resp.Body)
-	c.logger.Log(fmt.Sprintf("DEBUG: HTTP Resp (%d): %s",
-		resp.StatusCode, buf.String()))
-}
-
 // Log a string if debug logs are on
 func (c *Client) debugLogStr(str string) {
 	if c.loglevel != opc.LogDebug {
 		return
 	}
-	c.logger.Log(fmt.Sprintf("DEBUG: %s", str))
+	c.logger.Log(fmt.Sprintf("[DEBUG]: %s", str))
+}
+
+// Retry function
+func (c *Client) waitFor(description string, timeoutSeconds int, test func() (bool, error)) error {
+	tick := time.Tick(1 * time.Second)
+
+	for i := 0; i < timeoutSeconds; i++ {
+		select {
+		case <-tick:
+			completed, err := test()
+			c.debugLogStr(fmt.Sprintf("Waiting for %s (%d/%ds)", description, i, timeoutSeconds))
+			if err != nil || completed {
+				return err
+			}
+		}
+	}
+	return fmt.Errorf("Timeout waiting for %s", description)
 }
 
 // Used to determine if the checked resource was found or not.
@@ -199,21 +200,4 @@ func WasNotFoundError(e error) bool {
 		return err.StatusCode == 404
 	}
 	return false
-}
-
-// Retry function
-func waitFor(description string, timeoutSeconds int, test func() (bool, error)) error {
-	tick := time.Tick(1 * time.Second)
-
-	for i := 0; i < timeoutSeconds; i++ {
-		select {
-		case <-tick:
-			completed, err := test()
-			log.Printf("Waiting for %s (%d/%ds)", description, i, timeoutSeconds)
-			if err != nil || completed {
-				return err
-			}
-		}
-	}
-	return fmt.Errorf("Timeout waiting for %s", description)
 }

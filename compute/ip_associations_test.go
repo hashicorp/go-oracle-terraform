@@ -4,6 +4,8 @@ import (
 	"log"
 	"testing"
 
+	"fmt"
+
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
 )
@@ -11,18 +13,26 @@ import (
 func TestAccIPAssociationLifeCycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 	var (
-		vcable        string
 		parentPool    string = "ippool:/oracle/public/ippool"
 		instanceImage string = "/oracle/public/oel_6.7_apaas_16.4.5_1610211300"
 	)
+
+	defer func() {
+		if err := tearDownInstances(); err != nil {
+			log.Printf("Error deleting instance: %#v", createdInstance)
+			log.Print("Dangling resources may occur!")
+			t.Fatalf("Error: %v", err)
+		}
+	}()
+
 	svc, err := getInstancesClient()
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	input := &CreateInstanceInput{
-		Name:      "test",
-		Label:     "test",
+		Name:      "testacc-ip-association",
+		Label:     "testacc-ip-association",
 		Shape:     "oc3",
 		ImageList: instanceImage,
 		Storage:   nil,
@@ -41,19 +51,9 @@ func TestAccIPAssociationLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	log.Printf("Instance created: %#v\n", createdInstance)
+	svc.Client.debugLogStr(fmt.Sprintf("Instance created: %#v\n", createdInstance))
 
-	getInput := &GetInstanceInput{
-		Name: createdInstance.Name,
-		ID:   createdInstance.ID,
-	}
-
-	if err := svc.WaitForInstanceRunning(getInput, 300); err != nil {
-		t.Fatal(err)
-	}
-	log.Print("Instance retrieved")
-
-	vcable = createdInstance.VCableID
+	vcable := createdInstance.VCableID
 
 	ipac, err := getIPAssociationsClient()
 	if err != nil {
@@ -69,7 +69,8 @@ func TestAccIPAssociationLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	log.Printf("Created IP Association: %+v\n", createdIPAssociation)
+
+	svc.Client.debugLogStr(fmt.Sprintf("Created IP Association: %+v\n", createdIPAssociation))
 
 	getIPInput := &GetIPAssociationInput{
 		Name: createdIPAssociation.Name,
@@ -81,7 +82,7 @@ func TestAccIPAssociationLifeCycle(t *testing.T) {
 	if createdIPAssociation.URI != ipAssociationInfo.URI {
 		t.Fatal("IP Association URIs don't match")
 	}
-	log.Printf("Successfully retrived ip association\n")
+	svc.Client.debugLogStr("Successfully retrived ip association")
 
 	deleteIPInput := &DeleteIPAssociationInput{
 		Name: ipAssociationInfo.Name,
@@ -90,21 +91,9 @@ func TestAccIPAssociationLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	log.Printf("Successfully deleted IP Association\n")
+	svc.Client.debugLogStr("Successfully deleted IP Association")
 
-	deleteInput := &DeleteInstanceInput{
-		Name: createdInstance.Name,
-		ID:   createdInstance.ID,
-	}
-	if err := svc.DeleteInstance(deleteInput); err != nil {
-		panic(err)
-	}
-
-	log.Print("Sent Delete instance req")
-
-	if err := svc.WaitForInstanceDeleted(deleteInput, 600); err != nil {
-		panic(err)
-	}
+	// Instance deletion should be covered by the deferred cleanup function
 }
 
 func getIPAssociationsClient() (*IPAssociationsClient, error) {
