@@ -3,8 +3,6 @@ package compute
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
-	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -13,16 +11,20 @@ import (
 
 	"time"
 
+	"log"
+
 	"github.com/hashicorp/go-oracle-terraform/opc"
 )
 
 func newAuthenticatingServer(handler func(w http.ResponseWriter, r *http.Request)) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		fmt.Printf("Received request: %s, %s\n", r.Method, r.URL)
+		if os.Getenv("ORACLE_LOG") != "" {
+			log.Printf("[DEBUG] Received request: %s, %s\n", r.Method, r.URL)
+		}
 
 		if r.URL.Path == "/authenticate/" {
 			http.SetCookie(w, &http.Cookie{Name: "testAuthCookie", Value: "cookie value"})
-			w.WriteHeader(200)
+			//	w.WriteHeader(200)
 		} else {
 			handler(w, r)
 		}
@@ -94,20 +96,4 @@ func unmarshalRequestBody(t *testing.T, r *http.Request, target interface{}) {
 	if err != nil {
 		t.Fatalf("Error marshalling request: %s", err)
 	}
-	if _, err := io.Copy(os.Stdout, buf); err != nil {
-		t.Fatalf("Error copying file: %s", err)
-	}
 }
-
-// Unused Function
-/*func marshalToBytes(target interface{}) []byte {
-	marshalled, err := json.Marshal(target)
-	if err != nil {
-		panic(err)
-	}
-	buf := new(bytes.Buffer)
-	buf.Read(marshalled)
-	io.Copy(os.Stdout, buf)
-	fmt.Println()
-	return marshalled
-}*/

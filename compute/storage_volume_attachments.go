@@ -49,10 +49,10 @@ func (c *StorageAttachmentsClient) success(attachmentInfo *StorageAttachmentInfo
 }
 
 // CreateStorageAttachment creates a storage attachment attaching the given volume to the given instance at the given index.
-func (c *StorageAttachmentsClient) CreateStorageAttachment(index int, instanceName *InstanceName, storageVolumeName string) (*StorageAttachmentInfo, error) {
+func (c *StorageAttachmentsClient) CreateStorageAttachment(index int, instanceInfo *InstanceInfo, storageVolumeName string) (*StorageAttachmentInfo, error) {
 	spec := StorageAttachmentSpec{
 		Index:             index,
-		InstanceName:      c.getQualifiedName(instanceName.String()),
+		InstanceName:      c.getQualifiedName(instanceInfo.getInstanceName()),
 		StorageVolumeName: c.getQualifiedName(storageVolumeName),
 	}
 
@@ -76,7 +76,7 @@ func (c *StorageAttachmentsClient) GetStorageAttachment(name string) (*StorageAt
 
 // WaitForStorageAttachmentCreated waits for the storage attachment with the given name to be fully attached, or times out.
 func (c *StorageAttachmentsClient) WaitForStorageAttachmentCreated(name string, timeoutSeconds int) error {
-	return waitFor("storage attachment to be attached", timeoutSeconds, func() (bool, error) {
+	return c.waitFor("storage attachment to be attached", timeoutSeconds, func() (bool, error) {
 		info, err := c.GetStorageAttachment(name)
 		if err != nil {
 			return false, err
@@ -90,7 +90,7 @@ func (c *StorageAttachmentsClient) WaitForStorageAttachmentCreated(name string, 
 
 // WaitForStorageAttachmentDeleted waits for the storage attachment with the given name to be fully deleted, or times out.
 func (c *StorageAttachmentsClient) WaitForStorageAttachmentDeleted(name string, timeoutSeconds int) error {
-	return waitFor("storage attachment to be deleted", timeoutSeconds, func() (bool, error) {
+	return c.waitFor("storage attachment to be deleted", timeoutSeconds, func() (bool, error) {
 		_, err := c.GetStorageAttachment(name)
 		if err != nil {
 			if WasNotFoundError(err) {
@@ -103,9 +103,9 @@ func (c *StorageAttachmentsClient) WaitForStorageAttachmentDeleted(name string, 
 }
 
 // GetStorageAttachmentsForInstance retrieves all of the storage attachments for the given instance.
-func (c *StorageAttachmentsClient) GetStorageAttachmentsForInstance(name *InstanceName) (*[]StorageAttachmentInfo, error) {
+func (c *StorageAttachmentsClient) GetStorageAttachmentsForInstance(info *InstanceInfo) (*[]StorageAttachmentInfo, error) {
 	return c.getStorageAttachments(
-		fmt.Sprintf("instance_name=%s", c.getQualifiedName(name.String())),
+		fmt.Sprintf("instance_name=%s", c.getQualifiedName(info.getInstanceName())),
 		"instance",
 	)
 }

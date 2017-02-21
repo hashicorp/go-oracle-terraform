@@ -32,10 +32,12 @@ func TestAccStorageAttachmentsClient_GetStorageAttachmentsForInstance(t *testing
 		t.Fatalf("error getting stub client: %s", err)
 	}
 
-	_, err = client.GetStorageAttachmentsForInstance(&InstanceName{
+	instance := &InstanceInfo{
 		Name: "test-instance",
 		ID:   "test-id",
-	})
+	}
+
+	_, err = client.GetStorageAttachmentsForInstance(instance)
 
 	if err != nil {
 		t.Fatalf("Get security attachments request failed: %s", err)

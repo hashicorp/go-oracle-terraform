@@ -119,7 +119,7 @@ func (c *StorageVolumeClient) CreateStorageVolume(spec *StorageVolumeSpec) error
 func (c *StorageVolumeClient) WaitForStorageVolumeOnline(name string, timeoutSeconds int) (*StorageVolumeInfo, error) {
 	var waitResult *StorageVolumeInfo
 
-	err := waitFor(
+	err := c.waitFor(
 		fmt.Sprintf("storage volume %s to be online", c.getQualifiedName(name)),
 		timeoutSeconds,
 		func() (bool, error) {
@@ -180,7 +180,7 @@ func (c *StorageVolumeClient) DeleteStorageVolume(name string) error {
 
 // WaitForStorageVolumeDeleted waits until the specified storage volume has been deleted.
 func (c *StorageVolumeClient) WaitForStorageVolumeDeleted(name string, timeoutSeconds int) error {
-	return waitFor(
+	return c.waitFor(
 		fmt.Sprintf("storage volume %s to be deleted", c.getQualifiedName(name)),
 		timeoutSeconds,
 		func() (bool, error) {
