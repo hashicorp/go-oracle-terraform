@@ -17,12 +17,6 @@ func (c *Client) SecurityIPLists() *SecurityIPListsClient {
 		}}
 }
 
-// SecurityIPListSpec defines a security IP list to be created.
-type SecurityIPListSpec struct {
-	Name         string   `json:"name"`
-	SecIPEntries []string `json:"secipentries"`
-}
-
 // SecurityIPListInfo describes an existing security IP list.
 type SecurityIPListInfo struct {
 	Name         string   `json:"name"`
@@ -30,52 +24,68 @@ type SecurityIPListInfo struct {
 	URI          string   `json:"uri"`
 }
 
-func (c *SecurityIPListsClient) success(listInfo *SecurityIPListInfo) (*SecurityIPListInfo, error) {
-	c.unqualify(&listInfo.Name)
-	return listInfo, nil
+// CreateSecurityIPListInput defines a security IP list to be created.
+type CreateSecurityIPListInput struct {
+	Description  string   `json:"description"`
+	Name         string   `json:"name"`
+	SecIPEntries []string `json:"secipentries"`
 }
 
 // CreateSecurityIPList creates a security IP list with the given name and entries.
-func (c *SecurityIPListsClient) CreateSecurityIPList(name string, entries []string) (*SecurityIPListInfo, error) {
-	spec := SecurityIPListSpec{
-		Name:         c.getQualifiedName(name),
-		SecIPEntries: entries,
-	}
-
+func (c *SecurityIPListsClient) CreateSecurityIPList(createInput *CreateSecurityIPListInput) (*SecurityIPListInfo, error) {
+	createInput.Name = c.getQualifiedName(createInput.Name)
 	var listInfo SecurityIPListInfo
-	if err := c.createResource(&spec, &listInfo); err != nil {
+	if err := c.createResource(createInput, &listInfo); err != nil {
 		return nil, err
 	}
 
 	return c.success(&listInfo)
+}
+
+// GetSecurityIPListInput describes the Security IP List to obtain
+type GetSecurityIPListInput struct {
+	Name string `json:"name"`
 }
 
 // GetSecurityIPList gets the security IP list with the given name.
-func (c *SecurityIPListsClient) GetSecurityIPList(name string) (*SecurityIPListInfo, error) {
+func (c *SecurityIPListsClient) GetSecurityIPList(getInput *GetSecurityIPListInput) (*SecurityIPListInfo, error) {
 	var listInfo SecurityIPListInfo
-	if err := c.getResource(name, &listInfo); err != nil {
+	if err := c.getResource(getInput.Name, &listInfo); err != nil {
 		return nil, err
 	}
 
 	return c.success(&listInfo)
+}
+
+// UpdateSecurityIPListInput describes the security ip list to update
+type UpdateSecurityIPListInput struct {
+	Description  string   `json:"description"`
+	Name         string   `json:"name"`
+	SecIPEntries []string `json:"secipentries"`
 }
 
 // UpdateSecurityIPList modifies the entries in the security IP list with the given name.
-func (c *SecurityIPListsClient) UpdateSecurityIPList(name string, entries []string) (*SecurityIPListInfo, error) {
-	spec := SecurityIPListSpec{
-		Name:         c.getQualifiedName(name),
-		SecIPEntries: entries,
-	}
-
+func (c *SecurityIPListsClient) UpdateSecurityIPList(updateInput *UpdateSecurityIPListInput) (*SecurityIPListInfo, error) {
+	updateInput.Name = c.getQualifiedName(updateInput.Name)
 	var listInfo SecurityIPListInfo
-	if err := c.updateResource(name, &spec, &listInfo); err != nil {
+	if err := c.updateResource(updateInput.Name, updateInput, &listInfo); err != nil {
 		return nil, err
 	}
 
 	return c.success(&listInfo)
 }
 
+// DeleteSecurityIPListInput describes the security ip list to delete.
+type DeleteSecurityIPListInput struct {
+	Name string `json:"name"`
+}
+
 // DeleteSecurityIPList deletes the security IP list with the given name.
-func (c *SecurityIPListsClient) DeleteSecurityIPList(name string) error {
-	return c.deleteResource(name)
+func (c *SecurityIPListsClient) DeleteSecurityIPList(deleteInput *DeleteSecurityIPListInput) error {
+	return c.deleteResource(deleteInput.Name)
+}
+
+func (c *SecurityIPListsClient) success(listInfo *SecurityIPListInfo) (*SecurityIPListInfo, error) {
+	c.unqualify(&listInfo.Name)
+	return listInfo, nil
 }
