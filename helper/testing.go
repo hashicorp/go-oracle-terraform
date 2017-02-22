@@ -2,7 +2,10 @@ package helper
 
 import (
 	"fmt"
+	"log"
 	"os"
+
+	"github.com/hashicorp/go-oracle-terraform/opc"
 )
 
 const TestEnvVar = "ORACLE_ACC"
@@ -18,6 +21,13 @@ func Test(t TestT, c TestCase) {
 		t.Skip(fmt.Sprintf("Acceptance tests skipped unless env '%s' is set", TestEnvVar))
 		return
 	}
+
+	// Setup logging Output
+	logWriter, err := opc.LogOutput()
+	if err != nil {
+		t.Error(fmt.Sprintf("Error setting up log writer: %s", err))
+	}
+	log.SetOutput(logWriter)
 }
 
 type TestT interface {
