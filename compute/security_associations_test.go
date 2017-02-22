@@ -43,7 +43,7 @@ func TestAccSecurityAssociationLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	log.Printf("Instance created: %#v\n", createdInstance)
+	log.Printf("Instance created: %#v", createdInstance)
 
 	securityListClient, err := getSecurityListsClient()
 	if err != nil {
