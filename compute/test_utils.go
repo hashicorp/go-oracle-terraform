@@ -67,11 +67,6 @@ func getTestClient(c *opc.Config) (*Client, error) {
 		}
 	}
 
-	// Test Client should be able to log debug levels if required
-	if os.Getenv("ORACLE_LOG") != "" {
-		c.LogLevel = opc.LogDebug
-	}
-
 	return NewComputeClient(c)
 }
 
