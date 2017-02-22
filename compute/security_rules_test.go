@@ -10,14 +10,13 @@ import (
 )
 
 
-func TestAccSecurityListLifeCycle(t *testing.T) {
+func TestAccSecurityRuleLifeCycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
 	securityListClient, err := getSecurityListsClient()
 	if err != nil {
 		t.Fatal(err)
 	}
-	log.Printf("Obtained Security List Client")
 
 	createSecurityListInput := CreateSecurityListInput{
 		Name:               "test-sec-list",
@@ -30,31 +29,83 @@ func TestAccSecurityListLifeCycle(t *testing.T) {
 	}
 	log.Printf("Successfully created Security List: %+v", securityList)
 
-	getSecurityListInput := GetSecurityListInput{
-		Name: securityList.Name,
-	}
-	getSecurityListOutput, err := securityListClient.GetSecurityList(&getSecurityListInput)
+	securityIPListClient, err := getSecurityIPListsClient()
 	if err != nil {
 		t.Fatal(err)
 	}
-	if securityList.Policy != getSecurityListOutput.Policy {
-		t.Fatalf("Created and retrived policies don't match.\n Desired: %s\n Actual: %s", securityList.Policy, getSecurityListOutput.Policy)
-	}
-	log.Printf("Successfully retrieved Security List")
+	log.Printf("Obtained Security IP List Client")
 
-	updateSecurityListInput := UpdateSecurityListInput{
-		Name:               securityList.Name,
+	createSecurityIPListInput := CreateSecurityIPListInput{
+		Name:         "test-sec-ip-list",
+		SecIPEntries: []string{"127.0.0.1", "127.0.0.2"},
+	}
+	securityIPList, err := securityIPListClient.CreateSecurityIPList(&createSecurityIPListInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	log.Printf("Successfully created Security IP List: %+v", securityIPList)
+
+
+	securityRuleClient, err := getSecurityRulesClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	log.Printf("Obtained Security Rule Client")
+
+	createSecurityRuleInput := CreateSecurityRuleInput{
+		Name:               "test-sec-rule",
+		Action: "PERMIT",
+		Disabled: false,
+	}
+	securityRule, err := securityRuleClient.CreateSecurityRule(&createSecurityRuleInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	log.Printf("Successfully created Security Rule: %+v", securityRule)
+
+	getSecurityRuleInput := GetSecurityRuleInput{
+		Name: securityRule.Name,
+	}
+	getSecurityRuleOutput, err := securityRuleClient.GetSecurityRule(&getSecurityRuleInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if securityRule.Policy != getSecurityRuleOutput.Policy {
+		t.Fatalf("Created and retrived policies don't match.\n Desired: %s\n Actual: %s", securityRule.Policy, getSecurityRuleOutput.Policy)
+	}
+	log.Printf("Successfully retrieved Security Rule")
+
+	updateSecurityRuleInput := UpdateSecurityRuleInput{
+		Name:               securityRule.Name,
 		OutboundCIDRPolicy: "PERMIT",
 		Policy:             "DENY",
 	}
-	updateSecurityListOutput, err := securityListClient.UpdateSecurityList(&updateSecurityListInput)
+	updateSecurityRuleOutput, err := securityRuleClient.UpdateSecurityRule(&updateSecurityRuleInput)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if updateSecurityListOutput.OutboundCIDRPolicy != "PERMIT" {
-		t.Fatalf("Outbound policy not successfully updated \nDesired: %s \nActual: %s", updateSecurityListInput.OutboundCIDRPolicy, updateSecurityListOutput.OutboundCIDRPolicy)
+	if updateSecurityRuleOutput.OutboundCIDRPolicy != "PERMIT" {
+		t.Fatalf("Outbound policy not successfully updated \nDesired: %s \nActual: %s", updateSecurityRuleInput.OutboundCIDRPolicy, updateSecurityRuleOutput.OutboundCIDRPolicy)
 	}
-	log.Printf("Successfully updated Security List")
+	log.Printf("Successfully updated Security Rule")
+
+	deleteSecurityRuleInput := DeleteSecurityRuleInput{
+		Name: securityRule.Name,
+	}
+	err = securityRuleClient.DeleteSecurityRule(&deleteSecurityRuleInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	log.Printf("Successfully deleted Security Rule")
+
+	deleteSecurityIPListInput := DeleteSecurityIPListInput{
+		Name: securityIPList.Name,
+	}
+	err = securityIPListClient.DeleteSecurityIPList(&deleteSecurityIPListInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	log.Printf("Successfully deleted Security IP List")
 
 	deleteSecurityListInput := DeleteSecurityListInput{
 		Name: securityList.Name,
@@ -145,6 +196,15 @@ func getStubSecurityRulesClient(server *httptest.Server) (*SecurityRulesClient, 
 	client, err := getStubClient(endpoint)
 	if err != nil {
 		return nil, err
+	}
+
+	return client.SecurityRules(), nil
+}
+
+func getSecurityRulesClient() (*SecurityRulesClient, error) {
+	client, err := getTestClient(&opc.Config{})
+	if err != nil {
+		return &SecurityRulesClient{}, err
 	}
 
 	return client.SecurityRules(), nil
