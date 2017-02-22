@@ -22,8 +22,8 @@ type SecurityApplicationInfo struct {
 	Name        string                      `json:"name"`
 	Protocol    SecurityApplicationProtocol `json:"protocol"`
 	DPort       string                      `json:"dport"`
-	ICMPType    string                      `json:"icmptype"`
-	ICMPCode    string                      `json:"icmpcode"`
+	ICMPType    SecurityApplicationICMPType `json:"icmptype"`
+	ICMPCode    SecurityApplicationICMPCode `json:"icmpcode"`
 	Description string                      `json:"description"`
 	URI         string                      `json:"uri"`
 }
@@ -31,13 +31,42 @@ type SecurityApplicationInfo struct {
 type SecurityApplicationProtocol string
 
 const (
-	All   SecurityApplicationProtocol = "All"
-	TCP   SecurityApplicationProtocol = "TCP"
-	UDP   SecurityApplicationProtocol = "UDP"
-	ICMP  SecurityApplicationProtocol = "ICMP"
-	GRE   SecurityApplicationProtocol = "GRE"
-	ESP   SecurityApplicationProtocol = "ESP"
-	Other SecurityApplicationProtocol = "Other"
+	All    SecurityApplicationProtocol = "all"
+	AH     SecurityApplicationProtocol = "ah"
+	ESP    SecurityApplicationProtocol = "esp"
+	ICMP   SecurityApplicationProtocol = "icmp"
+	ICMPV6 SecurityApplicationProtocol = "icmpv6"
+	IGMP   SecurityApplicationProtocol = "igmp"
+	IPIP   SecurityApplicationProtocol = "ipip"
+	GRE    SecurityApplicationProtocol = "gre"
+	MPLSIP SecurityApplicationProtocol = "mplsip"
+	OSPF   SecurityApplicationProtocol = "ospf"
+	PIM    SecurityApplicationProtocol = "pim"
+	RDP    SecurityApplicationProtocol = "rdp"
+	SCTP   SecurityApplicationProtocol = "sctp"
+	TCP    SecurityApplicationProtocol = "tcp"
+	UDP    SecurityApplicationProtocol = "udp"
+)
+
+type SecurityApplicationICMPCode string
+
+const (
+	Admin    SecurityApplicationICMPCode = "admin"
+	Df       SecurityApplicationICMPCode = "df"
+	Host     SecurityApplicationICMPCode = "host"
+	Network  SecurityApplicationICMPCode = "network"
+	Port     SecurityApplicationICMPCode = "port"
+	Protocol SecurityApplicationICMPCode = "protocol"
+)
+
+type SecurityApplicationICMPType string
+
+const (
+	Echo        SecurityApplicationICMPType = "echo"
+	Reply       SecurityApplicationICMPType = "reply"
+	TTL         SecurityApplicationICMPType = "ttl"
+	TraceRoute  SecurityApplicationICMPType = "traceroute"
+	Unreachable SecurityApplicationICMPType = "unreachable"
 )
 
 func (c *SecurityApplicationsClient) success(result *SecurityApplicationInfo) (*SecurityApplicationInfo, error) {
@@ -50,8 +79,8 @@ type CreateSecurityApplicationInput struct {
 	Name        string                      `json:"name"`
 	Protocol    SecurityApplicationProtocol `json:"protocol"`
 	DPort       string                      `json:"dport"`
-	ICMPType    string                      `json:"icmptype,omitempty"`
-	ICMPCode    string                      `json:"icmpcode,omitempty"`
+	ICMPCode    SecurityApplicationICMPCode `json:"icmpcode,omitempty"`
+	ICMPType    SecurityApplicationICMPType `json:"icmptype,omitempty"`
 	Description string                      `json:"description"`
 }
 

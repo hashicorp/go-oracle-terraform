@@ -67,7 +67,7 @@ func TestAccSecurityApplicationsICMPLifeCycle(t *testing.T) {
 		Name:        "test-sec-app-icmp",
 		Description: "Terraform Acceptance Test ICMP Lifecycle",
 		Protocol:    SecurityApplicationProtocol(ICMP),
-		ICMPType:    "echo",
+		ICMPType:    SecurityApplicationICMPType(Echo),
 	}
 
 	createdSecurityApplication, err := securityApplicationsClient.CreateSecurityApplication(&createInput)
