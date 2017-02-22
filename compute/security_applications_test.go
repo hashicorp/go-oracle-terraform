@@ -1,11 +1,12 @@
 package compute
 
 import (
-	"github.com/hashicorp/go-oracle-terraform/helper"
-	"github.com/hashicorp/go-oracle-terraform/opc"
 	"log"
 	"reflect"
 	"testing"
+
+	"github.com/hashicorp/go-oracle-terraform/helper"
+	"github.com/hashicorp/go-oracle-terraform/opc"
 )
 
 func TestAccSecurityApplicationsTCPLifeCycle(t *testing.T) {
