@@ -72,7 +72,10 @@ func TestAccStorageVolumeClient_GetStorageVolume(t *testing.T) {
 		t.Fatalf("error getting stub client: %s", err)
 	}
 
-	info, err := sv.GetStorageVolume("myVolume")
+	getRequest := &GetStorageVolumeInput{
+		Name: "myVolume",
+	}
+	info, err := sv.GetStorageVolume(getRequest)
 	if err != nil {
 		t.Fatal(err)
 	}

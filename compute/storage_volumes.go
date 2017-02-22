@@ -106,7 +106,10 @@ func (c *StorageVolumeClient) WaitForStorageVolumeOnline(name string, timeoutSec
 		fmt.Sprintf("storage volume %s to be online", c.getQualifiedName(name)),
 		timeoutSeconds,
 		func() (bool, error) {
-			result, err := c.GetStorageVolume(name)
+			getRequest := &GetStorageVolumeInput{
+				Name: name,
+			}
+			result, err := c.GetStorageVolume(getRequest)
 
 			if err != nil {
 				return false, err
@@ -130,11 +133,16 @@ type StorageVolumeResult struct {
 	Result []StorageVolumeInfo `json:"result"`
 }
 
+// GetStorageVolumeInput represents the body of an API request to obtain a Storage Volume.
+type GetStorageVolumeInput struct {
+	Name string `json:"name"`
+}
+
 var emptyResult = StorageVolumeResult{Result: []StorageVolumeInfo{}}
 
 // GetStorageVolume gets Storage Volume information for the specified storage volume.
-func (c *StorageVolumeClient) GetStorageVolume(name string) (*StorageVolumeResult, error) {
-	resp, err := c.executeRequest("GET", c.getStorageVolumePath(name), nil)
+func (c *StorageVolumeClient) GetStorageVolume(input *GetStorageVolumeInput) (*StorageVolumeResult, error) {
+	resp, err := c.executeRequest("GET", c.getStorageVolumePath(input.Name), nil)
 	if err != nil {
 		return &emptyResult, err
 	}
@@ -172,7 +180,10 @@ func (c *StorageVolumeClient) WaitForStorageVolumeDeleted(name string, timeoutSe
 		fmt.Sprintf("storage volume %s to be deleted", c.getQualifiedName(name)),
 		timeoutSeconds,
 		func() (bool, error) {
-			result, err := c.GetStorageVolume(name)
+			getRequest := &GetStorageVolumeInput{
+				Name: name,
+			}
+			result, err := c.GetStorageVolume(getRequest)
 			if err != nil {
 				return false, err
 			}
