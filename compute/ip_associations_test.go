@@ -4,8 +4,6 @@ import (
 	"log"
 	"testing"
 
-	"fmt"
-
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
 )
@@ -51,7 +49,7 @@ func TestAccIPAssociationLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	svc.Client.debugLogStr(fmt.Sprintf("Instance created: %#v\n", createdInstance))
+	log.Printf("Instance created: %#v\n", createdInstance)
 
 	vcable := createdInstance.VCableID
 
@@ -70,7 +68,7 @@ func TestAccIPAssociationLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	svc.Client.debugLogStr(fmt.Sprintf("Created IP Association: %+v\n", createdIPAssociation))
+	log.Printf("Created IP Association: %+v\n", createdIPAssociation)
 
 	getIPInput := &GetIPAssociationInput{
 		Name: createdIPAssociation.Name,
@@ -82,7 +80,7 @@ func TestAccIPAssociationLifeCycle(t *testing.T) {
 	if createdIPAssociation.URI != ipAssociationInfo.URI {
 		t.Fatal("IP Association URIs don't match")
 	}
-	svc.Client.debugLogStr("Successfully retrived ip association")
+	log.Print("Successfully retrived ip association")
 
 	deleteIPInput := &DeleteIPAssociationInput{
 		Name: ipAssociationInfo.Name,
@@ -91,7 +89,7 @@ func TestAccIPAssociationLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	svc.Client.debugLogStr("Successfully deleted IP Association")
+	log.Print("Successfully deleted IP Association")
 
 	// Instance deletion should be covered by the deferred cleanup function
 }

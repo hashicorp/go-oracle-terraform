@@ -14,6 +14,7 @@ import (
 )
 
 const CMP_USERNAME = "/Compute-%s/%s"
+const CMP_QUALIFIED_NAME = "%s/%s"
 
 // Client represents an authenticated compute client, with compute credentials and an api client.
 type Client struct {
@@ -42,6 +43,12 @@ func NewComputeClient(c *opc.Config) (*Client, error) {
 	// Setup logger; defaults to stdout
 	if c.Logger == nil {
 		client.logger = opc.NewDefaultLogger()
+	}
+
+	// If LogLevel was not set to something different,
+	// double check for env var
+	if c.LogLevel == 0 {
+		client.loglevel = opc.LogLevel()
 	}
 
 	if err := client.getAuthenticationCookie(); err != nil {
@@ -132,7 +139,7 @@ func (c *Client) getQualifiedName(name string) string {
 	if strings.HasPrefix(name, "/oracle") || strings.HasPrefix(name, "/Compute-") {
 		return name
 	}
-	return fmt.Sprintf("%s/%s", c.getUserName(), name)
+	return fmt.Sprintf(CMP_QUALIFIED_NAME, c.getUserName(), name)
 }
 
 func (c *Client) getObjectPath(root, name string) string {
@@ -157,25 +164,6 @@ func (c *Client) unqualify(names ...*string) {
 	}
 }
 
-func (c *Client) debugLogReq(req *http.Request) {
-	// Don't need to log this if not debugging
-	if c.loglevel != opc.LogDebug {
-		return
-	}
-	buf := new(bytes.Buffer)
-	buf.ReadFrom(req.Body)
-	c.logger.Log(fmt.Sprintf("DEBUG: HTTP %s Req %s: %s",
-		req.Method, req.URL.String(), buf.String()))
-}
-
-// Log a string if debug logs are on
-func (c *Client) debugLogStr(str string) {
-	if c.loglevel != opc.LogDebug {
-		return
-	}
-	c.logger.Log(fmt.Sprintf("[DEBUG]: %s", str))
-}
-
 // Retry function
 func (c *Client) waitFor(description string, timeoutSeconds int, test func() (bool, error)) error {
 	tick := time.Tick(1 * time.Second)
@@ -184,7 +172,7 @@ func (c *Client) waitFor(description string, timeoutSeconds int, test func() (bo
 		select {
 		case <-tick:
 			completed, err := test()
-			c.debugLogStr(fmt.Sprintf("Waiting for %s (%d/%ds)", description, i, timeoutSeconds))
+			c.debugLogString(fmt.Sprintf("Waiting for %s (%d/%ds)", description, i, timeoutSeconds))
 			if err != nil || completed {
 				return err
 			}
