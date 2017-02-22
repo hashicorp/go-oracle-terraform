@@ -10,15 +10,21 @@ import (
 
 func TestAccStorageVolumeLifecycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
-	defer tearDownStorageVolumes()
+
+	name := "myVolume"
+	defer tearDownStorageVolumes(name)
 
 	svc, err := getStorageVolumeClient()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	spec := svc.NewStorageVolumeSpec("10G", []string{"/oracle/public/storage/default"}, "myVolume")
-	spec.SetDescription("MyDescription")
+	spec := &StorageVolumeSpec{
+		Name:        name,
+		Description: "MyDescription",
+		Size:        "10G",
+		Properties:  []string{"/oracle/public/storage/default"},
+	}
 
 	err = svc.CreateStorageVolume(spec)
 
@@ -26,7 +32,7 @@ func TestAccStorageVolumeLifecycle(t *testing.T) {
 		t.Fatalf("Create volume failed: %s\n", err)
 	}
 
-	info, err := svc.WaitForStorageVolumeOnline("myVolume", 30)
+	info, err := svc.WaitForStorageVolumeOnline(name, 30)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -36,12 +42,12 @@ func TestAccStorageVolumeLifecycle(t *testing.T) {
 		t.Fatalf("Expected storage volume size %s, but was %s", expectedSize, info.Size)
 	}
 
-	err = svc.UpdateStorageVolume("myVolume", "20G", "redescribe", []string{})
+	err = svc.UpdateStorageVolume(name, "20G", "redescribe", []string{})
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	info, err = svc.WaitForStorageVolumeOnline("myVolume", 30)
+	info, err = svc.WaitForStorageVolumeOnline(name, 30)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -52,19 +58,19 @@ func TestAccStorageVolumeLifecycle(t *testing.T) {
 	}
 }
 
-func tearDownStorageVolumes() {
+func tearDownStorageVolumes(name string) {
 	svc, err := getStorageVolumeClient()
 	if err != nil {
 		panic(err)
 	}
 
-	err = svc.DeleteStorageVolume("myVolume")
+	err = svc.DeleteStorageVolume(name)
 	if err != nil {
 		panic(err)
 
 	}
 
-	err = svc.WaitForStorageVolumeDeleted("myVolume", 30)
+	err = svc.WaitForStorageVolumeDeleted(name, 30)
 	if err != nil {
 		panic(err)
 	}

@@ -37,25 +37,6 @@ type StorageVolumeSpec struct {
 	Tags            []string `json:"tags,omitempty"`
 }
 
-// NewStorageVolumeSpec creates a new StorageVolumeSpec.
-func (c *StorageVolumeClient) NewStorageVolumeSpec(size string, properties []string, name string) *StorageVolumeSpec {
-	return &StorageVolumeSpec{
-		Size:       size,
-		Properties: properties,
-		Name:       c.getQualifiedName(name),
-	}
-}
-
-// SetTags sets the tags on a StorageVolumeSpec.
-func (s *StorageVolumeSpec) SetTags(tags []string) {
-	s.Tags = tags
-}
-
-// SetDescription sets the description on a StorageVolumeSpec.
-func (s *StorageVolumeSpec) SetDescription(description string) {
-	s.Description = description
-}
-
 // SetBootableImage sets "bootable" on a StorageVolumeSpec to "true", and specifies the bootable image to use.
 func (s *StorageVolumeSpec) SetBootableImage(imagelist string, imagelistentry int) {
 	s.Bootable = true
@@ -107,6 +88,8 @@ func (c *StorageVolumeClient) getStorageVolumePath(name string) string {
 
 // CreateStorageVolume uses the given StorageVolumeSpec to create a new Storage Volume.
 func (c *StorageVolumeClient) CreateStorageVolume(spec *StorageVolumeSpec) error {
+
+	spec.Name = c.getQualifiedName(spec.Name)
 	_, err := c.executeRequest("POST", c.ContainerPath, spec)
 	if err != nil {
 		return err

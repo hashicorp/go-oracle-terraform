@@ -39,7 +39,11 @@ func TestAccStorageVolumeClient_CreateStorageVolume(t *testing.T) {
 		t.Fatalf("error getting stub client: %s", err)
 	}
 
-	err = sv.CreateStorageVolume(sv.NewStorageVolumeSpec("15G", []string{}, "myVolume"))
+	volume := StorageVolumeSpec{
+		Name: "myVolume",
+		Size: "15G",
+	}
+	err = sv.CreateStorageVolume(&volume)
 	if err != nil {
 		t.Fatalf("Create storage volume request failed: %s", err)
 	}
