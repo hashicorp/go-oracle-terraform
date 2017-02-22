@@ -11,7 +11,7 @@ import (
 func TestAccStorageVolumeLifecycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
-	name := "myVolume"
+	name := "test-storage-volume-lifecycle"
 	defer tearDownStorageVolumes(name)
 
 	svc, err := getStorageVolumeClient()
@@ -21,7 +21,7 @@ func TestAccStorageVolumeLifecycle(t *testing.T) {
 
 	createRequest := &CreateStorageVolumeInput{
 		Name:        name,
-		Description: "MyDescription",
+		Description: "original description",
 		Size:        "10G",
 		Properties:  []string{"/oracle/public/storage/default"},
 	}
