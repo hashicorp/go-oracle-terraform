@@ -68,24 +68,6 @@ type CreateStorageVolumeInput struct {
 	Tags            []string `json:"tags,omitempty"`
 }
 
-// SetBootableImage sets "bootable" on a CreateStorageVolumeInput to "true", and specifies the bootable image to use.
-func (s *CreateStorageVolumeInput) SetBootableImage(imagelist string, imagelistentry int) {
-	s.Bootable = true
-	s.ImageList = imagelist
-	s.ImageListEntry = imagelistentry
-}
-
-// SetSnapshot sets the snapshot and snapshot account of the CreateStorageVolumeInput.
-func (s *CreateStorageVolumeInput) SetSnapshot(snapshot, snapshotAccount string) {
-	s.Snapshot = snapshot
-	s.SnapshotAccount = snapshotAccount
-}
-
-// SetSnapshotID sets the snapshot ID of the CreateStorageVolumeInput.
-func (s *CreateStorageVolumeInput) SetSnapshotID(snapshotID string) {
-	s.SnapshotID = snapshotID
-}
-
 // CreateStorageVolume uses the given CreateStorageVolumeInput to create a new Storage Volume.
 func (c *StorageVolumeClient) CreateStorageVolume(spec *CreateStorageVolumeInput) error {
 
