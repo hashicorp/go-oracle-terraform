@@ -17,21 +17,20 @@ func TestAccSecurityApplicationsTCPLifeCycle(t *testing.T) {
 	}
 	log.Printf("Obtained Security Applications List Client")
 
-	name := "test-sec-app-tcp"
-	protocol := "all"
-	dport := "19336"
-	icmpType := ""
-	icmpCode := ""
-	description := "Terraform Acceptance Test TCP Lifecycle"
-
-	createdSecurityApplication, err := securityApplicationsClient.CreateSecurityApplication(name, protocol, dport, icmpType, icmpCode, description)
+	createInput := CreateSecurityApplicationInput{
+		Name:        "test-sec-app-tcp",
+		Description: "Terraform Acceptance Test TCP Lifecycle",
+		Protocol:    "all",
+		DPort:       "19336",
+	}
+	createdSecurityApplication, err := securityApplicationsClient.CreateSecurityApplication(&createInput)
 	if err != nil {
 		t.Fatal(err)
 	}
 	log.Printf("Successfully created Security Application: %+v", createdSecurityApplication)
 
 	retrieveInput := GetSecurityApplicationInput{
-		Name: name,
+		Name: createInput.Name,
 	}
 	retrievedSecurityApplication, err := securityApplicationsClient.GetSecurityApplication(&retrieveInput)
 	if err != nil {
@@ -45,7 +44,7 @@ func TestAccSecurityApplicationsTCPLifeCycle(t *testing.T) {
 	log.Printf("Successfully retrieved Security Application")
 
 	deleteInput := DeleteSecurityApplicationInput{
-		Name: name,
+		Name: createInput.Name,
 	}
 	err = securityApplicationsClient.DeleteSecurityApplication(&deleteInput)
 	if err != nil {
@@ -64,21 +63,21 @@ func TestAccSecurityApplicationsICMPLifeCycle(t *testing.T) {
 	}
 	log.Printf("Obtained Security Applications List Client")
 
-	name := "test-sec-app-icmp"
-	protocol := "icmp"
-	dport := ""
-	icmpType := "echo"
-	icmpCode := ""
-	description := "Terraform Acceptance Test ICMP Lifecycle"
+	createInput := CreateSecurityApplicationInput{
+		Name:        "test-sec-app-icmp",
+		Description: "Terraform Acceptance Test ICMP Lifecycle",
+		Protocol:    "icmp",
+		ICMPType:    "echo",
+	}
 
-	createdSecurityApplication, err := securityApplicationsClient.CreateSecurityApplication(name, protocol, dport, icmpType, icmpCode, description)
+	createdSecurityApplication, err := securityApplicationsClient.CreateSecurityApplication(&createInput)
 	if err != nil {
 		t.Fatal(err)
 	}
 	log.Printf("Successfully created Security Application: %+v", createdSecurityApplication)
 
 	retrieveInput := GetSecurityApplicationInput{
-		Name: name,
+		Name: createInput.Name,
 	}
 	retrievedSecurityApplication, err := securityApplicationsClient.GetSecurityApplication(&retrieveInput)
 	if err != nil {
@@ -92,7 +91,7 @@ func TestAccSecurityApplicationsICMPLifeCycle(t *testing.T) {
 	log.Printf("Successfully retrieved Security Application")
 
 	deleteInput := DeleteSecurityApplicationInput{
-		Name: name,
+		Name: createInput.Name,
 	}
 	err = securityApplicationsClient.DeleteSecurityApplication(&deleteInput)
 	if err != nil {

@@ -17,16 +17,6 @@ func (c *Client) SecurityApplications() *SecurityApplicationsClient {
 		}}
 }
 
-// SecurityApplicationSpec defines a security application to be created.
-type SecurityApplicationSpec struct {
-	Name        string `json:"name"`
-	Protocol    string `json:"protocol"`
-	DPort       string `json:"dport"`
-	ICMPType    string `json:"icmptype,omitempty"`
-	ICMPCode    string `json:"icmpcode,omitempty"`
-	Description string `json:"description"`
-}
-
 // SecurityApplicationInfo describes an existing security application.
 type SecurityApplicationInfo struct {
 	Name        string `json:"name"`
@@ -43,19 +33,22 @@ func (c *SecurityApplicationsClient) success(result *SecurityApplicationInfo) (*
 	return result, nil
 }
 
+// CreateSecurityApplicationInput describes the Security Application to create
+type CreateSecurityApplicationInput struct {
+	Name        string `json:"name"`
+	Protocol    string `json:"protocol"`
+	DPort       string `json:"dport"`
+	ICMPType    string `json:"icmptype,omitempty"`
+	ICMPCode    string `json:"icmpcode,omitempty"`
+	Description string `json:"description"`
+}
+
 // CreateSecurityApplication creates a new security application.
-func (c *SecurityApplicationsClient) CreateSecurityApplication(name, protocol, dport, icmptype, icmpcode, description string) (*SecurityApplicationInfo, error) {
-	spec := SecurityApplicationSpec{
-		Name:        c.getQualifiedName(name),
-		Protocol:    protocol,
-		DPort:       dport,
-		ICMPType:    icmptype,
-		ICMPCode:    icmpcode,
-		Description: description,
-	}
+func (c *SecurityApplicationsClient) CreateSecurityApplication(input *CreateSecurityApplicationInput) (*SecurityApplicationInfo, error) {
+	input.Name = c.getQualifiedName(input.Name)
 
 	var appInfo SecurityApplicationInfo
-	if err := c.createResource(&spec, &appInfo); err != nil {
+	if err := c.createResource(&input, &appInfo); err != nil {
 		return nil, err
 	}
 
