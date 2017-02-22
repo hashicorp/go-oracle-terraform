@@ -151,9 +151,14 @@ func (c *StorageVolumeClient) GetStorageVolume(name string) (*StorageVolumeResul
 	return &result, nil
 }
 
+// DeleteStorageVolumeInput represents the body of an API request to delete a Storage Volume.
+type DeleteStorageVolumeInput struct {
+	Name string `json:"name"`
+}
+
 // DeleteStorageVolume deletes the specified storage volume.
-func (c *StorageVolumeClient) DeleteStorageVolume(name string) error {
-	_, err := c.executeRequest("DELETE", c.getStorageVolumePath(name), nil)
+func (c *StorageVolumeClient) DeleteStorageVolume(input *DeleteStorageVolumeInput) error {
+	_, err := c.executeRequest("DELETE", c.getStorageVolumePath(input.Name), nil)
 	if err != nil {
 		return err
 	}

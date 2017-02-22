@@ -69,7 +69,10 @@ func tearDownStorageVolumes(name string) {
 		panic(err)
 	}
 
-	err = svc.DeleteStorageVolume(name)
+	deleteRequest := &DeleteStorageVolumeInput{
+		Name: name,
+	}
+	err = svc.DeleteStorageVolume(deleteRequest)
 	if err != nil {
 		panic(err)
 
