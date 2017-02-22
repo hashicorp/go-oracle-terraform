@@ -77,7 +77,12 @@ func (c *SecurityApplicationsClient) GetSecurityApplication(input *GetSecurityAp
 	return c.success(&appInfo)
 }
 
+// DeleteSecurityApplicationInput  describes the Security Application to delete
+type DeleteSecurityApplicationInput struct {
+	Name string `json:"name"`
+}
+
 // DeleteSecurityApplication deletes the security application with the given name.
-func (c *SecurityApplicationsClient) DeleteSecurityApplication(name string) error {
-	return c.deleteResource(name)
+func (c *SecurityApplicationsClient) DeleteSecurityApplication(input *DeleteSecurityApplicationInput) error {
+	return c.deleteResource(input.Name)
 }

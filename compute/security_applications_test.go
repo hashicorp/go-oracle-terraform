@@ -44,7 +44,10 @@ func TestAccSecurityApplicationsTCPLifeCycle(t *testing.T) {
 
 	log.Printf("Successfully retrieved Security Application")
 
-	err = securityApplicationsClient.DeleteSecurityApplication(name)
+	deleteInput := DeleteSecurityApplicationInput{
+		Name: name,
+	}
+	err = securityApplicationsClient.DeleteSecurityApplication(&deleteInput)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -88,7 +91,10 @@ func TestAccSecurityApplicationsICMPLifeCycle(t *testing.T) {
 
 	log.Printf("Successfully retrieved Security Application")
 
-	err = securityApplicationsClient.DeleteSecurityApplication(name)
+	deleteInput := DeleteSecurityApplicationInput{
+		Name: name,
+	}
+	err = securityApplicationsClient.DeleteSecurityApplication(&deleteInput)
 	if err != nil {
 		t.Fatal(err)
 	}
