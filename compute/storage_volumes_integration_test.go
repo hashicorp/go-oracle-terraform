@@ -19,13 +19,12 @@ func TestAccStorageVolumeLifecycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	spec := &StorageVolumeSpec{
+	spec := &CreateStorageVolumeInput{
 		Name:        name,
 		Description: "MyDescription",
 		Size:        "10G",
 		Properties:  []string{"/oracle/public/storage/default"},
 	}
-
 	err = svc.CreateStorageVolume(spec)
 
 	if err != nil {

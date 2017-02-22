@@ -22,39 +22,6 @@ func (c *Client) StorageVolumes() *StorageVolumeClient {
 
 }
 
-// StorageVolumeSpec represents the body of an API request to create a new Storage Volume.
-type StorageVolumeSpec struct {
-	Bootable        bool     `json:"bootable,omitempty"`
-	Description     string   `json:"description,omitempty"`
-	ImageList       string   `json:"imagelist,omitempty"`
-	ImageListEntry  int      `json:"imagelist_entry,omitempty"`
-	Name            string   `json:"name"`
-	Properties      []string `json:"properties,omitempty"`
-	Size            string   `json:"size"`
-	Snapshot        string   `json:"snapshot,omitempty"`
-	SnapshotAccount string   `json:"snapshot_account,omitempty"`
-	SnapshotID      string   `json:"snapshot_id,omitempty"`
-	Tags            []string `json:"tags,omitempty"`
-}
-
-// SetBootableImage sets "bootable" on a StorageVolumeSpec to "true", and specifies the bootable image to use.
-func (s *StorageVolumeSpec) SetBootableImage(imagelist string, imagelistentry int) {
-	s.Bootable = true
-	s.ImageList = imagelist
-	s.ImageListEntry = imagelistentry
-}
-
-// SetSnapshot sets the snapshot and snapshot account of the StorageVolumeSpec.
-func (s *StorageVolumeSpec) SetSnapshot(snapshot, snapshotAccount string) {
-	s.Snapshot = snapshot
-	s.SnapshotAccount = snapshotAccount
-}
-
-// SetSnapshotID sets the snapshot ID of the StorageVolumeSpec.
-func (s *StorageVolumeSpec) SetSnapshotID(snapshotID string) {
-	s.SnapshotID = snapshotID
-}
-
 // StorageVolumeInfo represents information retrieved from the service about a Storage Volume.
 type StorageVolumeInfo struct {
 	Managed         bool     `json:"managed,omitempty"`
@@ -86,8 +53,41 @@ func (c *StorageVolumeClient) getStorageVolumePath(name string) string {
 	return c.getObjectPath("/storage/volume", name) + "/"
 }
 
-// CreateStorageVolume uses the given StorageVolumeSpec to create a new Storage Volume.
-func (c *StorageVolumeClient) CreateStorageVolume(spec *StorageVolumeSpec) error {
+// CreateStorageVolumeInput represents the body of an API request to create a new Storage Volume.
+type CreateStorageVolumeInput struct {
+	Bootable        bool     `json:"bootable,omitempty"`
+	Description     string   `json:"description,omitempty"`
+	ImageList       string   `json:"imagelist,omitempty"`
+	ImageListEntry  int      `json:"imagelist_entry,omitempty"`
+	Name            string   `json:"name"`
+	Properties      []string `json:"properties,omitempty"`
+	Size            string   `json:"size"`
+	Snapshot        string   `json:"snapshot,omitempty"`
+	SnapshotAccount string   `json:"snapshot_account,omitempty"`
+	SnapshotID      string   `json:"snapshot_id,omitempty"`
+	Tags            []string `json:"tags,omitempty"`
+}
+
+// SetBootableImage sets "bootable" on a CreateStorageVolumeInput to "true", and specifies the bootable image to use.
+func (s *CreateStorageVolumeInput) SetBootableImage(imagelist string, imagelistentry int) {
+	s.Bootable = true
+	s.ImageList = imagelist
+	s.ImageListEntry = imagelistentry
+}
+
+// SetSnapshot sets the snapshot and snapshot account of the CreateStorageVolumeInput.
+func (s *CreateStorageVolumeInput) SetSnapshot(snapshot, snapshotAccount string) {
+	s.Snapshot = snapshot
+	s.SnapshotAccount = snapshotAccount
+}
+
+// SetSnapshotID sets the snapshot ID of the CreateStorageVolumeInput.
+func (s *CreateStorageVolumeInput) SetSnapshotID(snapshotID string) {
+	s.SnapshotID = snapshotID
+}
+
+// CreateStorageVolume uses the given CreateStorageVolumeInput to create a new Storage Volume.
+func (c *StorageVolumeClient) CreateStorageVolume(spec *CreateStorageVolumeInput) error {
 
 	spec.Name = c.getQualifiedName(spec.Name)
 	_, err := c.executeRequest("POST", c.ContainerPath, spec)

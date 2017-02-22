@@ -24,7 +24,7 @@ func TestAccStorageVolumeClient_CreateStorageVolume(t *testing.T) {
 			t.Fatalf("Wrong HTTP URL %v, expected %v", r.URL, expectedPath)
 		}
 
-		spec := &StorageVolumeSpec{}
+		spec := &CreateStorageVolumeInput{}
 		unmarshalRequestBody(t, r, spec)
 
 		if spec.Size != "15G" {
@@ -39,7 +39,7 @@ func TestAccStorageVolumeClient_CreateStorageVolume(t *testing.T) {
 		t.Fatalf("error getting stub client: %s", err)
 	}
 
-	volume := StorageVolumeSpec{
+	volume := CreateStorageVolumeInput{
 		Name: "myVolume",
 		Size: "15G",
 	}
