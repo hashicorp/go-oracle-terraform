@@ -62,10 +62,15 @@ func (c *SecurityApplicationsClient) CreateSecurityApplication(name, protocol, d
 	return c.success(&appInfo)
 }
 
+// GetSecurityApplicationInput describes the Security Application to obtain
+type GetSecurityApplicationInput struct {
+	Name string `json:"name"`
+}
+
 // GetSecurityApplication retrieves the security application with the given name.
-func (c *SecurityApplicationsClient) GetSecurityApplication(name string) (*SecurityApplicationInfo, error) {
+func (c *SecurityApplicationsClient) GetSecurityApplication(input *GetSecurityApplicationInput) (*SecurityApplicationInfo, error) {
 	var appInfo SecurityApplicationInfo
-	if err := c.getResource(name, &appInfo); err != nil {
+	if err := c.getResource(input.Name, &appInfo); err != nil {
 		return nil, err
 	}
 

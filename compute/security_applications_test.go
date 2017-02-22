@@ -30,7 +30,10 @@ func TestAccSecurityApplicationsTCPLifeCycle(t *testing.T) {
 	}
 	log.Printf("Successfully created Security Application: %+v", createdSecurityApplication)
 
-	retrievedSecurityApplication, err := securityApplicationsClient.GetSecurityApplication(name)
+	retrieveInput := GetSecurityApplicationInput{
+		Name: name,
+	}
+	retrievedSecurityApplication, err := securityApplicationsClient.GetSecurityApplication(&retrieveInput)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -71,7 +74,10 @@ func TestAccSecurityApplicationsICMPLifeCycle(t *testing.T) {
 	}
 	log.Printf("Successfully created Security Application: %+v", createdSecurityApplication)
 
-	retrievedSecurityApplication, err := securityApplicationsClient.GetSecurityApplication(name)
+	retrieveInput := GetSecurityApplicationInput{
+		Name: name,
+	}
+	retrievedSecurityApplication, err := securityApplicationsClient.GetSecurityApplication(&retrieveInput)
 	if err != nil {
 		t.Fatal(err)
 	}
