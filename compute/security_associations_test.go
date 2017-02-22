@@ -21,6 +21,11 @@ func TestAccSecurityAssociationLifeCycle(t *testing.T) {
 			log.Print("Dangling resources may occur!")
 			t.Fatalf("Error: %v", err)
 		}
+		if err := tearDownSecurityLists(); err != nil {
+			log.Printf("Error deleting security list: %#v", createdSecurityList)
+			log.Print("Dangling resources may occur!")
+			t.Fatalf("Error: %v", err)
+		}
 	}()
 
 	svc, err := getInstancesClient()
@@ -56,11 +61,11 @@ func TestAccSecurityAssociationLifeCycle(t *testing.T) {
 		Policy:             "PERMIT",
 	}
 
-	securityList, err := securityListClient.CreateSecurityList(&createSecurityListInput)
+	createdSecurityList, err = securityListClient.CreateSecurityList(&createSecurityListInput)
 	if err != nil {
 		t.Fatal(err)
 	}
-	log.Printf("Successfully created Security List: %+v", securityList)
+	log.Printf("Successfully created Security List: %+v", createdSecurityList)
 
 	securityAssociationClient, err := getSecurityAssociationsClient()
 	if err != nil {
@@ -69,7 +74,7 @@ func TestAccSecurityAssociationLifeCycle(t *testing.T) {
 	log.Printf("Obtained Security Association Client")
 
 	createSecurityAssociationInput := CreateSecurityAssociationInput{
-		SecList: securityList.Name,
+		SecList: createdSecurityList.Name,
 		VCable:  createdInstance.VCableID,
 	}
 	securityAssociation, err := securityAssociationClient.CreateSecurityAssociation(&createSecurityAssociationInput)
@@ -98,15 +103,6 @@ func TestAccSecurityAssociationLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 	log.Printf("Successfully deleted Security Association")
-
-	deleteSecurityListInput := DeleteSecurityListInput{
-		Name: securityList.Name,
-	}
-	err = securityListClient.DeleteSecurityList(&deleteSecurityListInput)
-	if err != nil {
-		t.Fatal(err)
-	}
-	log.Printf("Successfully deleted Security List")
 }
 
 func getSecurityAssociationsClient() (*SecurityAssociationsClient, error) {
