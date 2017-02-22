@@ -15,7 +15,7 @@ func TestAccSecurityApplicationsTCPLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	log.Printf("Obtained Security Applications List Client")
+	log.Printf("Obtained Security Applications Client")
 
 	createInput := CreateSecurityApplicationInput{
 		Name:        "test-sec-app-tcp",
@@ -61,7 +61,7 @@ func TestAccSecurityApplicationsICMPLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	log.Printf("Obtained Security Applications List Client")
+	log.Printf("Obtained Security Applications Client")
 
 	createInput := CreateSecurityApplicationInput{
 		Name:        "test-sec-app-icmp",
