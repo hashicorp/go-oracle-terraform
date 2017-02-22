@@ -161,7 +161,13 @@ func TestAccStorageVolumeClient_UpdateStorageVolume(t *testing.T) {
 		t.Fatalf("error getting stub client: %s", err)
 	}
 
-	err = sv.UpdateStorageVolume("myVolume", "12G", "updated description", []string{"foo", "bar"})
+	updateRequest := &UpdateStorageVolumeInput{
+		Name:        "myVolume",
+		Size:        "12G",
+		Description: "updated description",
+		Tags:        []string{"foo", "bar"},
+	}
+	err = sv.UpdateStorageVolume(updateRequest)
 	if err != nil {
 		t.Fatal(err)
 	}

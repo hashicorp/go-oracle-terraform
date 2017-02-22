@@ -176,24 +176,25 @@ func (c *StorageVolumeClient) WaitForStorageVolumeDeleted(name string, timeoutSe
 		})
 }
 
+// UpdateStorageVolumeInput represents the body of an API request to update a Storage Volume.
+type UpdateStorageVolumeInput struct {
+	Description     string   `json:"description,omitempty"`
+	ImageList       string   `json:"imagelist,omitempty"`
+	ImageListEntry  int      `json:"imagelist_entry,omitempty"`
+	Name            string   `json:"name"`
+	Properties      []string `json:"properties"`
+	Size            string   `json:"size"`
+	Snapshot        string   `json:"snapshot,omitempty"`
+	SnapshotAccount string   `json:"snapshot_account,omitempty"`
+	SnapshotID      string   `json:"snapshot_id,omitempty"`
+	Tags            []string `json:"tags,omitempty"`
+}
+
 // UpdateStorageVolume updates the specified storage volume, optionally modifying size, description and tags.
-func (c *StorageVolumeClient) UpdateStorageVolume(name, size, description string, tags []string) error {
-	result, err := c.GetStorageVolume(name)
-	if err != nil {
-		return err
-	}
-
-	if len(result.Result) == 0 {
-		return fmt.Errorf("No storage volume information found for volume %s", c.getQualifiedName(name))
-	}
-
-	volumeInfo := result.Result[0]
-	volumeInfo.Size = size
-	volumeInfo.Tags = tags
-	volumeInfo.Description = description
-
-	//req, err := c.newAuthenticatedPutRequest(c.getStorageVolumePath(name), volumeInfo)
-	_, err = c.executeRequest("PUT", c.getStorageVolumePath(name), volumeInfo)
+func (c *StorageVolumeClient) UpdateStorageVolume(input *UpdateStorageVolumeInput) error {
+	input.Name = c.getQualifiedName(input.Name)
+	path := c.getStorageVolumePath(input.Name)
+	_, err := c.executeRequest("PUT", path, input)
 	if err != nil {
 		return err
 	}

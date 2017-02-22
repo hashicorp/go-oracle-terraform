@@ -19,13 +19,13 @@ func TestAccStorageVolumeLifecycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	spec := &CreateStorageVolumeInput{
+	createRequest := &CreateStorageVolumeInput{
 		Name:        name,
 		Description: "MyDescription",
 		Size:        "10G",
 		Properties:  []string{"/oracle/public/storage/default"},
 	}
-	err = svc.CreateStorageVolume(spec)
+	err = svc.CreateStorageVolume(createRequest)
 
 	if err != nil {
 		t.Fatalf("Create volume failed: %s\n", err)
@@ -41,7 +41,13 @@ func TestAccStorageVolumeLifecycle(t *testing.T) {
 		t.Fatalf("Expected storage volume size %s, but was %s", expectedSize, info.Size)
 	}
 
-	err = svc.UpdateStorageVolume(name, "20G", "redescribe", []string{})
+	updateRequest := &UpdateStorageVolumeInput{
+		Name:        name,
+		Size:        "20G",
+		Description: "updated description",
+		Properties:  []string{"/oracle/public/storage/default"},
+	}
+	err = svc.UpdateStorageVolume(updateRequest)
 	if err != nil {
 		t.Fatal(err)
 	}
