@@ -49,6 +49,11 @@ type StorageVolumeInfo struct {
 	Snapshot        string   `json:"snapshot,omitempty"`
 }
 
+// StorageVolumeResult represents the body of a response to a query for Storage Volume information.
+type StorageVolumeResult struct {
+	Result []StorageVolumeInfo `json:"result"`
+}
+
 func (c *StorageVolumeClient) getStorageVolumePath(name string) string {
 	return c.getObjectPath("/storage/volume", name) + "/"
 }
@@ -80,39 +85,19 @@ func (c *StorageVolumeClient) CreateStorageVolume(spec *CreateStorageVolumeInput
 	return nil
 }
 
-// WaitForStorageVolumeOnline waits until a new Storage Volume is online (i.e. has finished initialising or updating).
-func (c *StorageVolumeClient) WaitForStorageVolumeOnline(name string, timeoutSeconds int) (*StorageVolumeInfo, error) {
-	var waitResult *StorageVolumeInfo
-
-	err := c.waitFor(
-		fmt.Sprintf("storage volume %s to be online", c.getQualifiedName(name)),
-		timeoutSeconds,
-		func() (bool, error) {
-			getRequest := &GetStorageVolumeInput{
-				Name: name,
-			}
-			result, err := c.GetStorageVolume(getRequest)
-
-			if err != nil {
-				return false, err
-			}
-
-			if len(result.Result) > 0 {
-				waitResult = &result.Result[0]
-				if waitResult.Status == "Online" {
-					return true, nil
-				}
-			}
-
-			return false, nil
-		})
-
-	return waitResult, err
+// DeleteStorageVolumeInput represents the body of an API request to delete a Storage Volume.
+type DeleteStorageVolumeInput struct {
+	Name string `json:"name"`
 }
 
-// StorageVolumeResult represents the body of a response to a query for Storage Volume information.
-type StorageVolumeResult struct {
-	Result []StorageVolumeInfo `json:"result"`
+// DeleteStorageVolume deletes the specified storage volume.
+func (c *StorageVolumeClient) DeleteStorageVolume(input *DeleteStorageVolumeInput) error {
+	_, err := c.executeRequest("DELETE", c.getStorageVolumePath(input.Name), nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // GetStorageVolumeInput represents the body of an API request to obtain a Storage Volume.
@@ -141,39 +126,6 @@ func (c *StorageVolumeClient) GetStorageVolume(input *GetStorageVolumeInput) (*S
 	return &result, nil
 }
 
-// DeleteStorageVolumeInput represents the body of an API request to delete a Storage Volume.
-type DeleteStorageVolumeInput struct {
-	Name string `json:"name"`
-}
-
-// DeleteStorageVolume deletes the specified storage volume.
-func (c *StorageVolumeClient) DeleteStorageVolume(input *DeleteStorageVolumeInput) error {
-	_, err := c.executeRequest("DELETE", c.getStorageVolumePath(input.Name), nil)
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-// WaitForStorageVolumeDeleted waits until the specified storage volume has been deleted.
-func (c *StorageVolumeClient) WaitForStorageVolumeDeleted(name string, timeoutSeconds int) error {
-	return c.waitFor(
-		fmt.Sprintf("storage volume %s to be deleted", c.getQualifiedName(name)),
-		timeoutSeconds,
-		func() (bool, error) {
-			getRequest := &GetStorageVolumeInput{
-				Name: name,
-			}
-			result, err := c.GetStorageVolume(getRequest)
-			if err != nil {
-				return false, err
-			}
-
-			return len(result.Result) == 0, nil
-		})
-}
-
 // UpdateStorageVolumeInput represents the body of an API request to update a Storage Volume.
 type UpdateStorageVolumeInput struct {
 	Description     string   `json:"description,omitempty"`
@@ -198,4 +150,52 @@ func (c *StorageVolumeClient) UpdateStorageVolume(input *UpdateStorageVolumeInpu
 	}
 
 	return nil
+}
+
+// WaitForStorageVolumeToBecomeAvailable waits until a new Storage Volume is available (i.e. has finished initialising or updating).
+func (c *StorageVolumeClient) WaitForStorageVolumeToBecomeAvailable(name string, timeoutSeconds int) (*StorageVolumeInfo, error) {
+	var waitResult *StorageVolumeInfo
+
+	err := c.waitFor(
+		fmt.Sprintf("storage volume %s to become available", c.getQualifiedName(name)),
+		timeoutSeconds,
+		func() (bool, error) {
+			getRequest := &GetStorageVolumeInput{
+				Name: name,
+			}
+			result, err := c.GetStorageVolume(getRequest)
+
+			if err != nil {
+				return false, err
+			}
+
+			if len(result.Result) > 0 {
+				waitResult = &result.Result[0]
+				if waitResult.Status == "Online" {
+					return true, nil
+				}
+			}
+
+			return false, nil
+		})
+
+	return waitResult, err
+}
+
+// WaitForStorageVolumeToBeDeleted waits until the specified storage volume has been deleted.
+func (c *StorageVolumeClient) WaitForStorageVolumeToBeDeleted(name string, timeoutSeconds int) error {
+	return c.waitFor(
+		fmt.Sprintf("storage volume %s to be deleted", c.getQualifiedName(name)),
+		timeoutSeconds,
+		func() (bool, error) {
+			getRequest := &GetStorageVolumeInput{
+				Name: name,
+			}
+			result, err := c.GetStorageVolume(getRequest)
+			if err != nil {
+				return false, err
+			}
+
+			return len(result.Result) == 0, nil
+		})
 }

@@ -31,7 +31,7 @@ func TestAccStorageVolumeLifecycle(t *testing.T) {
 		t.Fatalf("Create volume failed: %s\n", err)
 	}
 
-	info, err := svc.WaitForStorageVolumeOnline(name, 30)
+	info, err := svc.WaitForStorageVolumeToBecomeAvailable(name, 30)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -52,7 +52,7 @@ func TestAccStorageVolumeLifecycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	info, err = svc.WaitForStorageVolumeOnline(name, 30)
+	info, err = svc.WaitForStorageVolumeToBecomeAvailable(name, 30)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -78,7 +78,7 @@ func tearDownStorageVolumes(name string) {
 
 	}
 
-	err = svc.WaitForStorageVolumeDeleted(name, 30)
+	err = svc.WaitForStorageVolumeToBeDeleted(name, 30)
 	if err != nil {
 		panic(err)
 	}
