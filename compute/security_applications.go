@@ -19,14 +19,26 @@ func (c *Client) SecurityApplications() *SecurityApplicationsClient {
 
 // SecurityApplicationInfo describes an existing security application.
 type SecurityApplicationInfo struct {
-	Name        string `json:"name"`
-	Protocol    string `json:"protocol"`
-	DPort       string `json:"dport"`
-	ICMPType    string `json:"icmptype"`
-	ICMPCode    string `json:"icmpcode"`
-	Description string `json:"description"`
-	URI         string `json:"uri"`
+	Name        string                      `json:"name"`
+	Protocol    SecurityApplicationProtocol `json:"protocol"`
+	DPort       string                      `json:"dport"`
+	ICMPType    string                      `json:"icmptype"`
+	ICMPCode    string                      `json:"icmpcode"`
+	Description string                      `json:"description"`
+	URI         string                      `json:"uri"`
 }
+
+type SecurityApplicationProtocol string
+
+const (
+	All   SecurityApplicationProtocol = "All"
+	TCP   SecurityApplicationProtocol = "TCP"
+	UDP   SecurityApplicationProtocol = "UDP"
+	ICMP  SecurityApplicationProtocol = "ICMP"
+	GRE   SecurityApplicationProtocol = "GRE"
+	ESP   SecurityApplicationProtocol = "ESP"
+	Other SecurityApplicationProtocol = "Other"
+)
 
 func (c *SecurityApplicationsClient) success(result *SecurityApplicationInfo) (*SecurityApplicationInfo, error) {
 	c.unqualify(&result.Name)
@@ -35,12 +47,12 @@ func (c *SecurityApplicationsClient) success(result *SecurityApplicationInfo) (*
 
 // CreateSecurityApplicationInput describes the Security Application to create
 type CreateSecurityApplicationInput struct {
-	Name        string `json:"name"`
-	Protocol    string `json:"protocol"`
-	DPort       string `json:"dport"`
-	ICMPType    string `json:"icmptype,omitempty"`
-	ICMPCode    string `json:"icmpcode,omitempty"`
-	Description string `json:"description"`
+	Name        string                      `json:"name"`
+	Protocol    SecurityApplicationProtocol `json:"protocol"`
+	DPort       string                      `json:"dport"`
+	ICMPType    string                      `json:"icmptype,omitempty"`
+	ICMPCode    string                      `json:"icmpcode,omitempty"`
+	Description string                      `json:"description"`
 }
 
 // CreateSecurityApplication creates a new security application.

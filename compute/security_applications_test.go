@@ -20,7 +20,7 @@ func TestAccSecurityApplicationsTCPLifeCycle(t *testing.T) {
 	createInput := CreateSecurityApplicationInput{
 		Name:        "test-sec-app-tcp",
 		Description: "Terraform Acceptance Test TCP Lifecycle",
-		Protocol:    "all",
+		Protocol:    SecurityApplicationProtocol(TCP),
 		DPort:       "19336",
 	}
 	createdSecurityApplication, err := securityApplicationsClient.CreateSecurityApplication(&createInput)
@@ -66,7 +66,7 @@ func TestAccSecurityApplicationsICMPLifeCycle(t *testing.T) {
 	createInput := CreateSecurityApplicationInput{
 		Name:        "test-sec-app-icmp",
 		Description: "Terraform Acceptance Test ICMP Lifecycle",
-		Protocol:    "icmp",
+		Protocol:    SecurityApplicationProtocol(ICMP),
 		ICMPType:    "echo",
 	}
 
