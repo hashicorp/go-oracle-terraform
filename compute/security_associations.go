@@ -27,7 +27,7 @@ type SecurityAssociationInfo struct {
 
 // CreateSecurityAssociationInput defines a security association to be created.
 type CreateSecurityAssociationInput struct {
-	Name    string `json:name`
+	Name    string `json:"name"`
 	SecList string `json:"seclist"`
 	VCable  string `json:"vcable"`
 }
