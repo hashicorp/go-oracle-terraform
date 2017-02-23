@@ -6,8 +6,114 @@ import (
 	"net/url"
 	"testing"
 
+	"log"
+	"reflect"
+
 	"github.com/hashicorp/go-oracle-terraform/helper"
+	"github.com/hashicorp/go-oracle-terraform/opc"
 )
+
+func TestAccStorageAttachmentsLifecycle(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
+
+	attachmentName := "test-acc-stor-att-lc"
+	instanceName := "test-acc-stor-att-instance"
+	volumeName := "test-acc-stor-att-volume"
+	var instanceInfo *InstanceInfo
+
+	instancesClient, storageVolumesClient, attachmentsClient, err := buildStorageAttachmentsClients()
+	if err != nil {
+		panic(err)
+	}
+
+	defer tearDownStorageAttachments(instancesClient, storageVolumesClient, attachmentsClient, instanceInfo, volumeName, attachmentName)
+
+	createInstanceInput := &CreateInstanceInput{
+		Name:      instanceName,
+		Label:     "test-acc-stor-acc-lifecycle",
+		Shape:     "oc3",
+		ImageList: "/oracle/public/oel_6.7_apaas_16.4.5_1610211300",
+		Storage:   nil,
+		BootOrder: nil,
+		SSHKeys:   []string{},
+		Attributes: map[string]interface{}{
+			"attr1": 12,
+			"attr2": map[string]interface{}{
+				"inner_attr1": "foo",
+			},
+		},
+	}
+	instanceInfo, err = instancesClient.CreateInstance(createInstanceInput)
+	if err != nil {
+		panic(err)
+	}
+
+	createStorageVolumeInput := &StorageVolumeSpec{
+		Name:       volumeName,
+		Size:       "10G",
+		Properties: []string{"/oracle/public/storage/default"},
+	}
+	err = storageVolumesClient.CreateStorageVolume(createStorageVolumeInput)
+	if err != nil {
+		panic(err)
+	}
+
+	createResult, err := attachmentsClient.CreateStorageAttachment(1, instanceInfo, createStorageVolumeInput.Name)
+	if err != nil {
+		panic(err)
+	}
+
+	getResult, err := attachmentsClient.GetStorageAttachment(attachmentName)
+	if err != nil {
+		panic(err)
+	}
+
+	if !reflect.DeepEqual(createResult, getResult) {
+		t.Fatalf("Retrieved Storage Volume Attachment did not match Expected. \nDesired: %s \nActual: %s", createResult, getResult)
+	}
+
+	log.Printf("Attachment created: %#v\n", getResult)
+}
+func tearDownStorageAttachments(instancesClient *InstancesClient, volumesClient *StorageVolumeClient, attachmentsClient *StorageAttachmentsClient,
+	instanceInfo *InstanceInfo, volumeName string, attachmentName string) {
+
+	// delete the storage attachment only if it exists
+	attachment, _ := attachmentsClient.GetStorageAttachment(attachmentName)
+	if attachment == nil {
+		err := attachmentsClient.DeleteStorageAttachment(attachmentName)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	_, err := volumesClient.GetStorageVolume(volumeName)
+	if err != nil {
+		err = volumesClient.DeleteStorageVolume(volumeName)
+		if err != nil {
+			panic(err)
+		}
+	}
+
+	if instanceInfo != nil {
+		deleteInstanceInput := &DeleteInstanceInput{
+			Name: instanceInfo.Name,
+			ID:   instanceInfo.ID,
+		}
+		err = instancesClient.DeleteInstance(deleteInstanceInput)
+		if err != nil {
+			panic(err)
+		}
+	}
+}
+
+func getStorageAttachmentsClient() (*StorageAttachmentsClient, error) {
+	client, err := getTestClient(&opc.Config{})
+	if err != nil {
+		return &StorageAttachmentsClient{}, err
+	}
+
+	return client.StorageAttachments(), nil
+}
 
 // Test that the client can create an instance.
 func TestAccStorageAttachmentsClient_GetStorageAttachmentsForInstance(t *testing.T) {
@@ -85,3 +191,23 @@ var exampleGetStorageAttachmentsResponse = `
  ]
 }
 `
+
+func buildStorageAttachmentsClients() (*InstancesClient, *StorageVolumeClient, *StorageAttachmentsClient, error) {
+
+	instancesClient, err := getInstancesClient()
+	if err != nil {
+		return instancesClient, nil, nil, err
+	}
+
+	storageVolumesClient, err := getStorageVolumeClient()
+	if err != nil {
+		return instancesClient, nil, nil, err
+	}
+
+	storageAttachmentsClient, err := getStorageAttachmentsClient()
+	if err != nil {
+		return instancesClient, storageVolumesClient, nil, err
+	}
+
+	return instancesClient, storageVolumesClient, storageAttachmentsClient, nil
+}
