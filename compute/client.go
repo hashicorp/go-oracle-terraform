@@ -67,8 +67,9 @@ func (c *Client) executeRequest(method, path string, body interface{}) (*http.Re
 
 	// Marshall request body
 	var requestBody io.ReadSeeker
+	var marshaled []byte
 	if body != nil {
-		marshaled, err := json.Marshal(body)
+		marshaled, err = json.Marshal(body)
 		if err != nil {
 			return nil, err
 		}
@@ -81,13 +82,17 @@ func (c *Client) executeRequest(method, path string, body interface{}) (*http.Re
 		return nil, err
 	}
 
+	debugReqString := fmt.Sprintf("HTTP %s Req (%s)", method, path)
 	if body != nil {
 		req.Header.Set("Content-Type", "application/oracle-compute-v3+json")
+		// Don't leak creds in STDERR
+		if path != "/authenticate/" {
+			debugReqString = fmt.Sprintf("%s:\n %s", debugReqString, string(marshaled))
+		}
 	}
 
 	// Log the request before the authentication cookie, so as not to leak credentials
-	// TODO: FIX ME!
-	//c.debugLogReq(req)
+	c.debugLogString(debugReqString)
 
 	// If we have an authentication cookie, let's authenticate, refreshing cookie if need be
 	if c.authCookie != nil {
