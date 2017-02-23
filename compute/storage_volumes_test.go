@@ -20,7 +20,8 @@ func TestAccStorageVolumeClient_WaitForStorageVolumeOnline(t *testing.T) {
 		t.Fatalf("error getting stub client: %s", err)
 	}
 
-	info, err := sv.WaitForStorageVolumeToBecomeAvailable("test", 10)
+	sv.VolumeModificationTimeout = 10
+	info, err := sv.waitForStorageVolumeToBecomeAvailable("test")
 	if err != nil {
 		t.Fatalf("Wait for storage volume online request failed: %s", err)
 	}
@@ -40,8 +41,8 @@ func TestAccStorageVolumeClient_WaitForStorageVolumeOnlineTimeout(t *testing.T) 
 	if err != nil {
 		t.Fatalf("error getting stub client: %s", err)
 	}
-
-	_, err = sv.WaitForStorageVolumeToBecomeAvailable("test", 3)
+	sv.VolumeModificationTimeout = 3
+	_, err = sv.waitForStorageVolumeToBecomeAvailable("test")
 	if err == nil {
 		t.Fatal("Expected timeout error")
 	}

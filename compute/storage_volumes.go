@@ -7,12 +7,15 @@ import (
 // StorageVolumeClient is a client for the Storage Volume functions of the Compute API.
 type StorageVolumeClient struct {
 	ResourceClient
+
+	VolumeModificationTimeout int
 }
 
 // StorageVolumes obtains a StorageVolumeClient which can be used to access to the
 // Storage Volume functions of the Compute API
 func (c *Client) StorageVolumes() *StorageVolumeClient {
 	return &StorageVolumeClient{
+		VolumeModificationTimeout: 30,
 		ResourceClient: ResourceClient{
 			Client:              c,
 			ResourceDescription: "storage volume",
@@ -152,13 +155,13 @@ func (c *StorageVolumeClient) UpdateStorageVolume(input *UpdateStorageVolumeInpu
 	return nil
 }
 
-// WaitForStorageVolumeToBecomeAvailable waits until a new Storage Volume is available (i.e. has finished initialising or updating).
-func (c *StorageVolumeClient) WaitForStorageVolumeToBecomeAvailable(name string, timeoutSeconds int) (*StorageVolumeInfo, error) {
+// waitForStorageVolumeToBecomeAvailable waits until a new Storage Volume is available (i.e. has finished initialising or updating).
+func (c *StorageVolumeClient) waitForStorageVolumeToBecomeAvailable(name string) (*StorageVolumeInfo, error) {
 	var waitResult *StorageVolumeInfo
 
 	err := c.waitFor(
 		fmt.Sprintf("storage volume %s to become available", c.getQualifiedName(name)),
-		timeoutSeconds,
+		c.VolumeModificationTimeout,
 		func() (bool, error) {
 			getRequest := &GetStorageVolumeInput{
 				Name: name,
