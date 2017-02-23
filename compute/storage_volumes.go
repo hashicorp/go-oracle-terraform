@@ -4,18 +4,18 @@ import (
 	"fmt"
 )
 
+const WaitForVolumeReadyTimeout = 30
+const WaitForVolumeDeleteTimeout = 30
+
 // StorageVolumeClient is a client for the Storage Volume functions of the Compute API.
 type StorageVolumeClient struct {
 	ResourceClient
-
-	VolumeModificationTimeout int
 }
 
 // StorageVolumes obtains a StorageVolumeClient which can be used to access to the
 // Storage Volume functions of the Compute API
 func (c *Client) StorageVolumes() *StorageVolumeClient {
 	return &StorageVolumeClient{
-		VolumeModificationTimeout: 30,
 		ResourceClient: ResourceClient{
 			Client:              c,
 			ResourceDescription: "storage volume",
@@ -85,7 +85,7 @@ func (c *StorageVolumeClient) CreateStorageVolume(input *CreateStorageVolumeInpu
 		return err
 	}
 
-	_, err = c.waitForStorageVolumeToBecomeAvailable(input.Name)
+	_, err = c.waitForStorageVolumeToBecomeAvailable(input.Name, WaitForVolumeReadyTimeout)
 	if err != nil {
 		return err
 	}
@@ -105,7 +105,7 @@ func (c *StorageVolumeClient) DeleteStorageVolume(input *DeleteStorageVolumeInpu
 		return err
 	}
 
-	err = c.waitForStorageVolumeToBeDeleted(input.Name)
+	err = c.waitForStorageVolumeToBeDeleted(input.Name, WaitForVolumeDeleteTimeout)
 	if err != nil {
 		return err
 	}
@@ -162,7 +162,7 @@ func (c *StorageVolumeClient) UpdateStorageVolume(input *UpdateStorageVolumeInpu
 		return err
 	}
 
-	_, err = c.waitForStorageVolumeToBecomeAvailable(input.Name)
+	_, err = c.waitForStorageVolumeToBecomeAvailable(input.Name, WaitForVolumeReadyTimeout)
 	if err != nil {
 		return err
 	}
@@ -171,12 +171,12 @@ func (c *StorageVolumeClient) UpdateStorageVolume(input *UpdateStorageVolumeInpu
 }
 
 // waitForStorageVolumeToBecomeAvailable waits until a new Storage Volume is available (i.e. has finished initialising or updating).
-func (c *StorageVolumeClient) waitForStorageVolumeToBecomeAvailable(name string) (*StorageVolumeInfo, error) {
+func (c *StorageVolumeClient) waitForStorageVolumeToBecomeAvailable(name string, timeoutInSeconds int) (*StorageVolumeInfo, error) {
 	var waitResult *StorageVolumeInfo
 
 	err := c.waitFor(
 		fmt.Sprintf("storage volume %s to become available", c.getQualifiedName(name)),
-		c.VolumeModificationTimeout,
+		timeoutInSeconds,
 		func() (bool, error) {
 			getRequest := &GetStorageVolumeInput{
 				Name: name,
@@ -201,10 +201,10 @@ func (c *StorageVolumeClient) waitForStorageVolumeToBecomeAvailable(name string)
 }
 
 // waitForStorageVolumeToBeDeleted waits until the specified storage volume has been deleted.
-func (c *StorageVolumeClient) waitForStorageVolumeToBeDeleted(name string) error {
+func (c *StorageVolumeClient) waitForStorageVolumeToBeDeleted(name string, timeoutInSeconds int) error {
 	return c.waitFor(
 		fmt.Sprintf("storage volume %s to be deleted", c.getQualifiedName(name)),
-		c.VolumeModificationTimeout,
+		timeoutInSeconds,
 		func() (bool, error) {
 			getRequest := &GetStorageVolumeInput{
 				Name: name,

@@ -21,8 +21,7 @@ func TestAccStorageVolumeClient_WaitForStorageVolumeToBeDeletedSuccessful(t *tes
 		t.Fatalf("error getting stub client: %s", err)
 	}
 
-	sv.VolumeModificationTimeout = 10
-	err = sv.waitForStorageVolumeToBeDeleted(name)
+	err = sv.waitForStorageVolumeToBeDeleted(name, 10)
 	if err != nil {
 		t.Fatalf("Wait for storage volume deleted request failed: %s", err)
 	}
@@ -51,8 +50,7 @@ func TestAccStorageVolumeClient_WaitForStorageVolumeToBeDeletedTimeout(t *testin
 		t.Fatalf("error getting stub client: %s", err)
 	}
 
-	sv.VolumeModificationTimeout = 3
-	err = sv.waitForStorageVolumeToBeDeleted(name)
+	err = sv.waitForStorageVolumeToBeDeleted(name, 3)
 	if err == nil {
 		t.Fatal("Expected timeout error")
 	}
@@ -68,8 +66,7 @@ func TestAccStorageVolumeClient_WaitForStorageVolumeToBecomeAvailableSuccessful(
 		t.Fatalf("error getting stub client: %s", err)
 	}
 
-	sv.VolumeModificationTimeout = 10
-	info, err := sv.waitForStorageVolumeToBecomeAvailable("test")
+	info, err := sv.waitForStorageVolumeToBecomeAvailable("test", 10)
 	if err != nil {
 		t.Fatalf("Wait for storage volume online request failed: %s", err)
 	}
@@ -89,8 +86,7 @@ func TestAccStorageVolumeClient_WaitForStorageVolumeToBecomeAvailableTimeout(t *
 	if err != nil {
 		t.Fatalf("error getting stub client: %s", err)
 	}
-	sv.VolumeModificationTimeout = 3
-	_, err = sv.waitForStorageVolumeToBecomeAvailable("test")
+	_, err = sv.waitForStorageVolumeToBecomeAvailable("test", 3)
 	if err == nil {
 		t.Fatal("Expected timeout error")
 	}
