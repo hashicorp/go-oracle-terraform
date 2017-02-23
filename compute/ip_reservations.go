@@ -19,14 +19,14 @@ func (c *Client) IPReservations() *IPReservationsClient {
 
 // IPReservationInput describes an existing IP reservation.
 type IPReservation struct {
-	Account    string   `json:account`
+	Account    string   `json:"account"`
 	IP         string   `json:"ip"`
 	Name       string   `json:"name"`
 	ParentPool string   `json:"parentpool"`
 	Permanent  bool     `json:"permanent"`
 	Tags       []string `json:"tags"`
-	Uri        string   `json:uri`
-	Used       bool     `json:used`
+	Uri        string   `json:"uri"`
+	Used       bool     `json:"used"`
 }
 
 // CreateIPReservationInput defines an IP reservation to be created.
