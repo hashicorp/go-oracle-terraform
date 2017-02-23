@@ -55,7 +55,7 @@ func (c *ResourceClient) deleteResource(name string) error {
 func (c *ResourceClient) unmarshalResponseBody(resp *http.Response, iface interface{}) error {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(resp.Body)
-	c.debugLogStr(fmt.Sprintf("HTTP Resp (%d): %s", resp.StatusCode, buf.String()))
+	c.debugLogString(fmt.Sprintf("HTTP Resp (%d): %s", resp.StatusCode, buf.String()))
 	err := json.Unmarshal(buf.Bytes(), iface)
 	if err != nil {
 		return fmt.Errorf("Error unmarshalling response body: %s", err)

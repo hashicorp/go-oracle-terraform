@@ -1,11 +1,8 @@
 package compute
 
 import (
-	"testing"
-
 	"log"
-
-	"fmt"
+	"testing"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
@@ -47,7 +44,7 @@ func TestAccInstanceLifecycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	svc.Client.debugLogStr(fmt.Sprintf("Instance created: %#v\n", createdInstance))
+	log.Printf("Instance created: %#v\n", createdInstance)
 }
 
 func tearDownInstances() error {

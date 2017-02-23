@@ -17,51 +17,60 @@ func (c *Client) SecurityAssociations() *SecurityAssociationsClient {
 		}}
 }
 
-// SecurityAssociationSpec defines a security association to be created.
-type SecurityAssociationSpec struct {
-	VCable  string `json:"vcable"`
-	SecList string `json:"seclist"`
-}
-
 // SecurityAssociationInfo describes an existing security association.
 type SecurityAssociationInfo struct {
 	Name    string `json:"name"`
-	VCable  string `json:"vcable"`
 	SecList string `json:"seclist"`
+	VCable  string `json:"vcable"`
 	URI     string `json:"uri"`
+}
+
+// CreateSecurityAssociationInput defines a security association to be created.
+type CreateSecurityAssociationInput struct {
+	Name    string `json:"name"`
+	SecList string `json:"seclist"`
+	VCable  string `json:"vcable"`
+}
+
+// CreateSecurityAssociation creates a security association between the given VCable and security list.
+func (c *SecurityAssociationsClient) CreateSecurityAssociation(createInput *CreateSecurityAssociationInput) (*SecurityAssociationInfo, error) {
+	createInput.VCable = c.getQualifiedName(createInput.VCable)
+	createInput.SecList = c.getQualifiedName(createInput.SecList)
+
+	var assocInfo SecurityAssociationInfo
+	if err := c.createResource(&createInput, &assocInfo); err != nil {
+		return nil, err
+	}
+
+	return c.success(&assocInfo)
+}
+
+// GetSecurityAssociationInput describes the security association to get
+type GetSecurityAssociationInput struct {
+	Name string `json:"name"`
+}
+
+// GetSecurityAssociation retrieves the security association with the given name.
+func (c *SecurityAssociationsClient) GetSecurityAssociation(getInput *GetSecurityAssociationInput) (*SecurityAssociationInfo, error) {
+	var assocInfo SecurityAssociationInfo
+	if err := c.getResource(getInput.Name, &assocInfo); err != nil {
+		return nil, err
+	}
+
+	return c.success(&assocInfo)
+}
+
+// DeleteSecurityAssociationInput describes the security association to delete
+type DeleteSecurityAssociationInput struct {
+	Name string `json:"name"`
+}
+
+// DeleteSecurityAssociation deletes the security association with the given name.
+func (c *SecurityAssociationsClient) DeleteSecurityAssociation(deleteInput *DeleteSecurityAssociationInput) error {
+	return c.deleteResource(deleteInput.Name)
 }
 
 func (c *SecurityAssociationsClient) success(assocInfo *SecurityAssociationInfo) (*SecurityAssociationInfo, error) {
 	c.unqualify(&assocInfo.Name, &assocInfo.SecList, &assocInfo.VCable)
 	return assocInfo, nil
-}
-
-// CreateSecurityAssociation creates a security association between the given VCable and security list.
-func (c *SecurityAssociationsClient) CreateSecurityAssociation(vcable, seclist string) (*SecurityAssociationInfo, error) {
-	spec := SecurityAssociationSpec{
-		VCable:  c.getQualifiedName(vcable),
-		SecList: c.getQualifiedName(seclist),
-	}
-
-	var assocInfo SecurityAssociationInfo
-	if err := c.createResource(&spec, &assocInfo); err != nil {
-		return nil, err
-	}
-
-	return c.success(&assocInfo)
-}
-
-// GetSecurityAssociation retrieves the security association with the given name.
-func (c *SecurityAssociationsClient) GetSecurityAssociation(name string) (*SecurityAssociationInfo, error) {
-	var assocInfo SecurityAssociationInfo
-	if err := c.getResource(name, &assocInfo); err != nil {
-		return nil, err
-	}
-
-	return c.success(&assocInfo)
-}
-
-// DeleteSecurityAssociation deletes the security association with the given name.
-func (c *SecurityAssociationsClient) DeleteSecurityAssociation(name string) error {
-	return c.deleteResource(name)
 }

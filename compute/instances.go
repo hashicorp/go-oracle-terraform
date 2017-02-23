@@ -39,7 +39,7 @@ type InstanceInfo struct {
 }
 
 func (i *InstanceInfo) getInstanceName() string {
-	return fmt.Sprintf("%s/%s", i.Name, i.ID)
+	return fmt.Sprintf(CMP_QUALIFIED_NAME, i.Name, i.ID)
 }
 
 type CreateInstanceInput struct {
@@ -85,7 +85,7 @@ func (c *InstancesClient) CreateInstance(input *CreateInstanceInput) (*InstanceI
 	}
 	input.Storage = qualifiedStorageAttachments
 
-	input.Name = fmt.Sprintf("%s/%s", c.getUserName(), input.Name)
+	input.Name = fmt.Sprintf(CMP_QUALIFIED_NAME, c.getUserName(), input.Name)
 
 	plan := LaunchPlanInput{Instances: []CreateInstanceInput{*input}}
 
@@ -121,7 +121,7 @@ type GetInstanceInput struct {
 }
 
 func (g *GetInstanceInput) String() string {
-	return fmt.Sprintf("%s/%s", g.Name, g.ID)
+	return fmt.Sprintf(CMP_QUALIFIED_NAME, g.Name, g.ID)
 }
 
 // GetInstance retrieves information about an instance.
@@ -157,7 +157,7 @@ type DeleteInstanceInput struct {
 }
 
 func (d *DeleteInstanceInput) String() string {
-	return fmt.Sprintf("%s/%s", d.Name, d.ID)
+	return fmt.Sprintf(CMP_QUALIFIED_NAME, d.Name, d.ID)
 }
 
 // DeleteInstance deletes an instance.
