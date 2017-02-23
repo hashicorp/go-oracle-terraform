@@ -77,10 +77,15 @@ type CreateStorageVolumeInput struct {
 }
 
 // CreateStorageVolume uses the given CreateStorageVolumeInput to create a new Storage Volume.
-func (c *StorageVolumeClient) CreateStorageVolume(spec *CreateStorageVolumeInput) error {
+func (c *StorageVolumeClient) CreateStorageVolume(input *CreateStorageVolumeInput) error {
 
-	spec.Name = c.getQualifiedName(spec.Name)
-	_, err := c.executeRequest("POST", c.ContainerPath, spec)
+	input.Name = c.getQualifiedName(input.Name)
+	_, err := c.executeRequest("POST", c.ContainerPath, input)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.waitForStorageVolumeToBecomeAvailable(input.Name)
 	if err != nil {
 		return err
 	}
@@ -148,6 +153,11 @@ func (c *StorageVolumeClient) UpdateStorageVolume(input *UpdateStorageVolumeInpu
 	input.Name = c.getQualifiedName(input.Name)
 	path := c.getStorageVolumePath(input.Name)
 	_, err := c.executeRequest("PUT", path, input)
+	if err != nil {
+		return err
+	}
+
+	_, err = c.waitForStorageVolumeToBecomeAvailable(input.Name)
 	if err != nil {
 		return err
 	}

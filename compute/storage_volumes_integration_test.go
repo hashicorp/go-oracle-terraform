@@ -31,14 +31,14 @@ func TestAccStorageVolumeLifecycle(t *testing.T) {
 		t.Fatalf("Create volume failed: %s\n", err)
 	}
 
-	info, err := svc.waitForStorageVolumeToBecomeAvailable(name)
+	createResponse, err := svc.waitForStorageVolumeToBecomeAvailable(name)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	expectedSize := strconv.Itoa(10 << 30)
-	if info.Size != expectedSize {
-		t.Fatalf("Expected storage volume size %s, but was %s", expectedSize, info.Size)
+	if createResponse.Size != expectedSize {
+		t.Fatalf("Expected storage volume size %s, but was %s", expectedSize, createResponse.Size)
 	}
 
 	updateRequest := &UpdateStorageVolumeInput{
@@ -52,14 +52,14 @@ func TestAccStorageVolumeLifecycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	info, err = svc.waitForStorageVolumeToBecomeAvailable(name)
+	updateResponse, err := svc.waitForStorageVolumeToBecomeAvailable(name)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	expectedSize = strconv.Itoa(20 << 30)
-	if info.Size != expectedSize {
-		t.Fatalf("Expected storage volume size %s, but was %s", expectedSize, info.Size)
+	if updateResponse.Size != expectedSize {
+		t.Fatalf("Expected storage volume size %s, but was %s", expectedSize, updateResponse.Size)
 	}
 }
 
@@ -73,12 +73,6 @@ func tearDownStorageVolumes(name string) {
 		Name: name,
 	}
 	err = svc.DeleteStorageVolume(deleteRequest)
-	if err != nil {
-		panic(err)
-
-	}
-
-	err = svc.WaitForStorageVolumeToBeDeleted(name, 30)
 	if err != nil {
 		panic(err)
 	}
