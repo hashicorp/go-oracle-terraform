@@ -10,9 +10,9 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/helper"
 )
 
-func TestAccStorageVolumeClient_WaitForStorageVolumeOnline(t *testing.T) {
+func TestAccStorageVolumeClient_WaitForStorageVolumeToBecomeAvailableSuccessful(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
-	server := serverThatReturnsOnlineStorageVolumeAfterThreeSeconds(t)
+	server := serverWhereStorageVolumeBecomesAvailableAfterThreeSeconds(t)
 
 	defer server.Close()
 	sv, err := getStubStorageVolumeClient(server)
@@ -32,9 +32,9 @@ func TestAccStorageVolumeClient_WaitForStorageVolumeOnline(t *testing.T) {
 	}
 }
 
-func TestAccStorageVolumeClient_WaitForStorageVolumeOnlineTimeout(t *testing.T) {
+func TestAccStorageVolumeClient_WaitForStorageVolumeToBecomeAvailableTimeout(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
-	server := serverThatReturnsOnlineStorageVolumeAfterThreeSeconds(t)
+	server := serverWhereStorageVolumeBecomesAvailableAfterThreeSeconds(t)
 
 	defer server.Close()
 	sv, err := getStubStorageVolumeClient(server)
@@ -48,7 +48,7 @@ func TestAccStorageVolumeClient_WaitForStorageVolumeOnlineTimeout(t *testing.T) 
 	}
 }
 
-func serverThatReturnsOnlineStorageVolumeAfterThreeSeconds(t *testing.T) *httptest.Server {
+func serverWhereStorageVolumeBecomesAvailableAfterThreeSeconds(t *testing.T) *httptest.Server {
 	count := 0
 	return newAuthenticatingServer(func(w http.ResponseWriter, r *http.Request) {
 		var status string
