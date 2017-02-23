@@ -31,10 +31,10 @@ type VirtualNICSet struct {
 
 type CreateVirtualNICSetInput struct {
 	Name            string   `json:"name"`
-	AppliedACLs     []string `json:"appliedAcls,omitempty`
-	Description     string   `json:"description,omitempty"`
-	Tags            []string `json:"tags,omitempty"`
-	VirtualNICNames []string `json:"vnics,omitempty"`
+	AppliedACLs     []string `json:"appliedAcls"`
+	Description     string   `json:"description"`
+	Tags            []string `json:"tags"`
+	VirtualNICNames []string `json:"vnics"`
 }
 
 func (c *VirtNICSetsClient) CreateVirtualNICSet(input *CreateVirtualNICSetInput) (*VirtualNICSet, error) {
@@ -70,9 +70,9 @@ func (c *VirtNICSetsClient) GetVirtualNICSet(input *GetVirtualNICSetInput) (*Vir
 
 type UpdateVirtualNICSetInput struct {
 	Name            string   `json:"name"`
-	AppliedACLs     []string `json:"appliedAcls,omitempty"`
-	Description     string   `json:"description,omitempty"`
-	Tags            []string `json:"tags,omitempty"`
+	AppliedACLs     []string `json:"appliedAcls"`
+	Description     string   `json:"description"`
+	Tags            []string `json:"tags"`
 	VirtualNICNames []string `json:"vnics"`
 }
 

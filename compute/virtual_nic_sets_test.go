@@ -10,8 +10,6 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/opc"
 )
 
-var createdSet *VirtualNICSet
-
 func TestAccVirtNICSetsLifeCycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
@@ -20,24 +18,16 @@ func TestAccVirtNICSetsLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	defer func() {
-		input := &DeleteVirtualNICSetInput{
-			Name: createdSet.Name,
-		}
-		if err := svc.DeleteVirtualNICSet(input); err != nil {
-			t.Fatalf("Error deleting set: %v", err)
-		}
-	}()
-
 	input := &CreateVirtualNICSetInput{
 		Name:        "test-acc-nic-set",
 		Description: "testing-nic-set",
 	}
 
-	createdSet, err = svc.CreateVirtualNICSet(input)
+	createdSet, err := svc.CreateVirtualNICSet(input)
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer deleteVirtualNICSet(t, svc, createdSet.Name)
 	log.Printf("Created NIC Set: %#v", createdSet)
 
 	getInput := &GetVirtualNICSetInput{
@@ -88,4 +78,13 @@ func getVirtNICSetsClient() (*VirtNICSetsClient, error) {
 		return nil, err
 	}
 	return client.VirtNICSets(), nil
+}
+
+func deleteVirtualNICSet(t *testing.T, svc *VirtNICSetsClient, name string) {
+	input := &DeleteVirtualNICSetInput{
+		Name: name,
+	}
+	if err := svc.DeleteVirtualNICSet(input); err != nil {
+		t.Fatalf("Error deleting set: %v", err)
+	}
 }
