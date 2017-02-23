@@ -105,6 +105,11 @@ func (c *StorageVolumeClient) DeleteStorageVolume(input *DeleteStorageVolumeInpu
 		return err
 	}
 
+	err = c.waitForStorageVolumeToBeDeleted(input.Name)
+	if err != nil {
+		return err
+	}
+
 	return nil
 }
 
@@ -195,11 +200,11 @@ func (c *StorageVolumeClient) waitForStorageVolumeToBecomeAvailable(name string)
 	return waitResult, err
 }
 
-// WaitForStorageVolumeToBeDeleted waits until the specified storage volume has been deleted.
-func (c *StorageVolumeClient) WaitForStorageVolumeToBeDeleted(name string, timeoutSeconds int) error {
+// waitForStorageVolumeToBeDeleted waits until the specified storage volume has been deleted.
+func (c *StorageVolumeClient) waitForStorageVolumeToBeDeleted(name string) error {
 	return c.waitFor(
 		fmt.Sprintf("storage volume %s to be deleted", c.getQualifiedName(name)),
-		timeoutSeconds,
+		c.VolumeModificationTimeout,
 		func() (bool, error) {
 			getRequest := &GetStorageVolumeInput{
 				Name: name,

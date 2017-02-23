@@ -21,7 +21,8 @@ func TestAccStorageVolumeClient_WaitForStorageVolumeToBeDeletedSuccessful(t *tes
 		t.Fatalf("error getting stub client: %s", err)
 	}
 
-	err = sv.WaitForStorageVolumeToBeDeleted(name, 10)
+	sv.VolumeModificationTimeout = 10
+	err = sv.waitForStorageVolumeToBeDeleted(name)
 	if err != nil {
 		t.Fatalf("Wait for storage volume deleted request failed: %s", err)
 	}
@@ -50,7 +51,8 @@ func TestAccStorageVolumeClient_WaitForStorageVolumeToBeDeletedTimeout(t *testin
 		t.Fatalf("error getting stub client: %s", err)
 	}
 
-	err = sv.WaitForStorageVolumeToBeDeleted(name, 3)
+	sv.VolumeModificationTimeout = 3
+	err = sv.waitForStorageVolumeToBeDeleted(name)
 	if err == nil {
 		t.Fatal("Expected timeout error")
 	}
