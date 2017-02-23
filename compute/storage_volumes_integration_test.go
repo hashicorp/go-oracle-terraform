@@ -19,14 +19,13 @@ func TestAccStorageVolumeLifecycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	createRequest := &CreateStorageVolumeInput{
+	createRequest := CreateStorageVolumeInput{
 		Name:        name,
 		Description: "original description",
 		Size:        "10G",
 		Properties:  []string{"/oracle/public/storage/default"},
 	}
-	err = svc.CreateStorageVolume(createRequest)
-
+	createResponse, err := svc.CreateStorageVolume(&createRequest)
 	if err != nil {
 		t.Fatalf("Create volume failed: %s\n", err)
 	}
@@ -34,34 +33,42 @@ func TestAccStorageVolumeLifecycle(t *testing.T) {
 	getRequest := &GetStorageVolumeInput{
 		Name: name,
 	}
-	createResponse, err := svc.GetStorageVolume(getRequest)
+	createdResponse, err := svc.GetStorageVolume(getRequest)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	actualSize := createResponse.Result[0].Size
+	if createResponse.Size != createdResponse.Result[0].Size {
+		t.Fatalf("Retrieved Storage Volume Size did not match Expected. \nDesired: %s \nActual: %s", createResponse, createdResponse.Result[0])
+	}
+
+	actualSize := createdResponse.Result[0].Size
 	expectedSize := strconv.Itoa(10 << 30)
 	if actualSize != expectedSize {
 		t.Fatalf("Expected storage volume size %s, but was %s", expectedSize, actualSize)
 	}
 
-	updateRequest := &UpdateStorageVolumeInput{
+	updateRequest := UpdateStorageVolumeInput{
 		Name:        name,
 		Size:        "20G",
 		Description: "updated description",
 		Properties:  []string{"/oracle/public/storage/default"},
 	}
-	err = svc.UpdateStorageVolume(updateRequest)
+	updateResponse, err := svc.UpdateStorageVolume(&updateRequest)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	updateResponse, err := svc.GetStorageVolume(getRequest)
+	updatedResponse, err := svc.GetStorageVolume(getRequest)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	actualSize = updateResponse.Result[0].Size
+	if updateResponse.Size != updatedResponse.Result[0].Size {
+		t.Fatalf("Retrieved Storage Volume did not match Expected. \nDesired: %s \nActual: %s", updateResponse, updatedResponse.Result[0])
+	}
+
+	actualSize = updatedResponse.Result[0].Size
 	expectedSize = strconv.Itoa(20 << 30)
 	if actualSize != expectedSize {
 		t.Fatalf("Expected storage volume size %s, but was %s", expectedSize, actualSize)
