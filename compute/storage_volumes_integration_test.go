@@ -31,14 +31,18 @@ func TestAccStorageVolumeLifecycle(t *testing.T) {
 		t.Fatalf("Create volume failed: %s\n", err)
 	}
 
-	createResponse, err := svc.waitForStorageVolumeToBecomeAvailable(name)
+	getRequest := &GetStorageVolumeInput{
+		Name: name,
+	}
+	createResponse, err := svc.GetStorageVolume(getRequest)
 	if err != nil {
 		t.Fatal(err)
 	}
 
+	actualSize := createResponse.Result[0].Size
 	expectedSize := strconv.Itoa(10 << 30)
-	if createResponse.Size != expectedSize {
-		t.Fatalf("Expected storage volume size %s, but was %s", expectedSize, createResponse.Size)
+	if actualSize != expectedSize {
+		t.Fatalf("Expected storage volume size %s, but was %s", expectedSize, actualSize)
 	}
 
 	updateRequest := &UpdateStorageVolumeInput{
@@ -52,14 +56,15 @@ func TestAccStorageVolumeLifecycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	updateResponse, err := svc.waitForStorageVolumeToBecomeAvailable(name)
+	updateResponse, err := svc.GetStorageVolume(getRequest)
 	if err != nil {
 		t.Fatal(err)
 	}
 
+	actualSize = updateResponse.Result[0].Size
 	expectedSize = strconv.Itoa(20 << 30)
-	if updateResponse.Size != expectedSize {
-		t.Fatalf("Expected storage volume size %s, but was %s", expectedSize, updateResponse.Size)
+	if actualSize != expectedSize {
+		t.Fatalf("Expected storage volume size %s, but was %s", expectedSize, actualSize)
 	}
 }
 
