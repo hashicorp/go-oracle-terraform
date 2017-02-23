@@ -10,6 +10,52 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/helper"
 )
 
+func TestAccStorageVolumeClient_WaitForStorageVolumeToBeDeletedSuccessful(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
+	server := serverWhereStorageVolumeGetsDeletedAfterThreeSeconds(t)
+	name := "test"
+
+	defer server.Close()
+	sv, err := getStubStorageVolumeClient(server)
+	if err != nil {
+		t.Fatalf("error getting stub client: %s", err)
+	}
+
+	err = sv.WaitForStorageVolumeToBeDeleted(name, 10)
+	if err != nil {
+		t.Fatalf("Wait for storage volume deleted request failed: %s", err)
+	}
+
+	getRequest := &GetStorageVolumeInput{
+		Name: name,
+	}
+	getResponse, err := sv.GetStorageVolume(getRequest)
+	if err != nil {
+		t.Fatalf("error getting storage volume: %s", err)
+	}
+
+	if len(getResponse.Result) > 0 {
+		t.Fatal("Expected Storage Volume to be Deleted")
+	}
+}
+
+func TestAccStorageVolumeClient_WaitForStorageVolumeToBeDeletedTimeout(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
+	server := serverWhereStorageVolumeGetsDeletedAfterThreeSeconds(t)
+	name := "test"
+
+	defer server.Close()
+	sv, err := getStubStorageVolumeClient(server)
+	if err != nil {
+		t.Fatalf("error getting stub client: %s", err)
+	}
+
+	err = sv.WaitForStorageVolumeToBeDeleted(name, 3)
+	if err == nil {
+		t.Fatal("Expected timeout error")
+	}
+}
+
 func TestAccStorageVolumeClient_WaitForStorageVolumeToBecomeAvailableSuccessful(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 	server := serverWhereStorageVolumeBecomesAvailableAfterThreeSeconds(t)
@@ -63,6 +109,22 @@ func serverWhereStorageVolumeBecomesAvailableAfterThreeSeconds(t *testing.T) *ht
 
 		w.Write([]byte(svr))
 		w.WriteHeader(200)
+	})
+}
+
+func serverWhereStorageVolumeGetsDeletedAfterThreeSeconds(t *testing.T) *httptest.Server {
+	count := 0
+	return newAuthenticatingServer(func(w http.ResponseWriter, r *http.Request) {
+		var status string
+		if count < 3 {
+			status = "{\"result\":[{\"name\":\"/storage/volume/test\",\"size\":\"16G\",\"status\":\"Deleting\"}]}"
+		} else {
+			status = "{\"result\": []}"
+		}
+		count++
+
+		w.Write([]byte(status))
+		w.WriteHeader(400)
 	})
 }
 
