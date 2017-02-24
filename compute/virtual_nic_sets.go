@@ -40,6 +40,13 @@ type CreateVirtualNICSetInput struct {
 func (c *VirtNICSetsClient) CreateVirtualNICSet(input *CreateVirtualNICSetInput) (*VirtualNICSet, error) {
 	input.Name = c.getQualifiedName(input.Name)
 	input.AppliedACLs = c.getQualifiedAcls(input.AppliedACLs)
+	qualifiedNics := []string{}
+	for _, v := range input.VirtualNICNames {
+		qualifiedNics = append(qualifiedNics, c.getQualifiedName(v))
+	}
+	if len(qualifiedNics) != 0 {
+		input.VirtualNICNames = qualifiedNics
+	}
 
 	var virtNicSet VirtualNICSet
 	if err := c.createResource(input, &virtNicSet); err != nil {
@@ -65,6 +72,14 @@ func (c *VirtNICSetsClient) GetVirtualNICSet(input *GetVirtualNICSetInput) (*Vir
 	if err := c.getResource(input.Name, &virtNicSet); err != nil {
 		return nil, err
 	}
+
+	// Populate the VirtNICs field
+	if virtNicSet.VirtualNICNames != nil {
+		if err := c.populateVirtualNICs(&virtNicSet); err != nil {
+			return nil, err
+		}
+	}
+
 	return c.success(&virtNicSet)
 }
 

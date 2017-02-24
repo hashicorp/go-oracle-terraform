@@ -8,7 +8,7 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/opc"
 )
 
-func TestAccInstanceLifecycle(t *testing.T) {
+func TestAccInstanceLifeCycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
 	svc, err := getInstancesClient()

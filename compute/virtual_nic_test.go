@@ -24,13 +24,13 @@ func TestAccVirtNICLifeCycle(t *testing.T) {
 	// TODO: Remove hardcoded IP Network when the IP Network resource is added
 
 	instanceInput := &CreateInstanceInput{
-		Name:      "test-acc",
+		Name:      "test-acc-virt-nic-lifecycle",
 		Label:     "test",
 		Shape:     "oc3",
 		ImageList: "/oracle/public/Oracle_Solaris_11.3",
 		Networking: map[string]NetworkingInfo{
 			"eth0": {
-				IPNetwork: "test-acc",
+				IPNetwork: "testing-1",
 				Vnic:      "eth0",
 			},
 		},
