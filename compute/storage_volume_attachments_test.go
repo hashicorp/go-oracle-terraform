@@ -16,17 +16,17 @@ import (
 func TestAccStorageAttachmentsLifecycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
-	attachmentName := "test-acc-stor-att-lc"
 	instanceName := "test-acc-stor-att-instance"
 	volumeName := "test-acc-stor-att-volume"
-	var instanceInfo *InstanceInfo
+	var attachmentName string
+	var instanceInfo InstanceInfo
 
 	instancesClient, storageVolumesClient, attachmentsClient, err := buildStorageAttachmentsClients()
 	if err != nil {
 		panic(err)
 	}
 
-	defer tearDownStorageAttachments(instancesClient, storageVolumesClient, attachmentsClient, instanceInfo, volumeName, attachmentName)
+	defer tearDownStorageAttachments(instancesClient, storageVolumesClient, attachmentsClient, &instanceInfo, volumeName, &attachmentName)
 
 	createInstanceInput := &CreateInstanceInput{
 		Name:      instanceName,
@@ -43,22 +43,31 @@ func TestAccStorageAttachmentsLifecycle(t *testing.T) {
 			},
 		},
 	}
-	instanceInfo, err = instancesClient.CreateInstance(createInstanceInput)
+
+	info, err := instancesClient.CreateInstance(createInstanceInput)
 	if err != nil {
 		panic(err)
 	}
+	instanceInfo = *info
 
-	createStorageVolumeInput := &StorageVolumeSpec{
-		Name:       volumeName,
-		Size:       "10G",
-		Properties: []string{"/oracle/public/storage/default"},
-	}
+	createStorageVolumeInput := storageVolumesClient.NewStorageVolumeSpec("10G", []string{"/oracle/public/storage/default"}, volumeName)
 	err = storageVolumesClient.CreateStorageVolume(createStorageVolumeInput)
 	if err != nil {
 		panic(err)
 	}
 
-	createResult, err := attachmentsClient.CreateStorageAttachment(1, instanceInfo, createStorageVolumeInput.Name)
+	_, err = storageVolumesClient.WaitForStorageVolumeOnline(volumeName, 30)
+	if err != nil {
+		panic(err)
+	}
+
+	createResult, err := attachmentsClient.CreateStorageAttachment(1, info, createStorageVolumeInput.Name)
+	if err != nil {
+		panic(err)
+	}
+
+	attachmentName = createResult.Name
+	err = attachmentsClient.WaitForStorageAttachmentCreated(attachmentName, 30)
 	if err != nil {
 		panic(err)
 	}
@@ -68,33 +77,45 @@ func TestAccStorageAttachmentsLifecycle(t *testing.T) {
 		panic(err)
 	}
 
-	if !reflect.DeepEqual(createResult, getResult) {
+	if !reflect.DeepEqual(createResult.Index, getResult.Index) {
 		t.Fatalf("Retrieved Storage Volume Attachment did not match Expected. \nDesired: %s \nActual: %s", createResult, getResult)
 	}
 
 	log.Printf("Attachment created: %#v\n", getResult)
 }
+
 func tearDownStorageAttachments(instancesClient *InstancesClient, volumesClient *StorageVolumeClient, attachmentsClient *StorageAttachmentsClient,
-	instanceInfo *InstanceInfo, volumeName string, attachmentName string) {
+	instanceInfo *InstanceInfo, volumeName string, attachmentName *string) {
 
 	// delete the storage attachment only if it exists
-	attachment, _ := attachmentsClient.GetStorageAttachment(attachmentName)
-	if attachment == nil {
-		err := attachmentsClient.DeleteStorageAttachment(attachmentName)
+	if *attachmentName != "" {
+		log.Printf("Deleting Storage Attachment %s", *attachmentName)
+		err := attachmentsClient.DeleteStorageAttachment(*attachmentName)
+		if err != nil {
+			panic(err)
+		}
+
+		err = attachmentsClient.WaitForStorageAttachmentDeleted(*attachmentName, 30)
 		if err != nil {
 			panic(err)
 		}
 	}
 
-	_, err := volumesClient.GetStorageVolume(volumeName)
-	if err != nil {
-		err = volumesClient.DeleteStorageVolume(volumeName)
+	qualifiedVolumeName := volumesClient.getQualifiedName(volumeName)
+	volume, err := volumesClient.GetStorageVolume(qualifiedVolumeName)
+	if volume != nil {
+		log.Printf("Deleting Storage Volume %s", volumeName)
+
+		_ = volumesClient.DeleteStorageVolume(qualifiedVolumeName)
+
+		err = volumesClient.WaitForStorageVolumeDeleted(volumeName, 30)
 		if err != nil {
 			panic(err)
 		}
 	}
 
 	if instanceInfo != nil {
+		log.Printf("Deleting Instance %s", instanceInfo.Name)
 		deleteInstanceInput := &DeleteInstanceInput{
 			Name: instanceInfo.Name,
 			ID:   instanceInfo.ID,
