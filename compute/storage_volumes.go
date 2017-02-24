@@ -75,7 +75,6 @@ type CreateStorageVolumeInput struct {
 
 // CreateStorageVolume uses the given CreateStorageVolumeInput to create a new Storage Volume.
 func (c *StorageVolumeClient) CreateStorageVolume(input *CreateStorageVolumeInput) (*StorageVolumeInfo, error) {
-
 	input.Name = c.getQualifiedName(input.Name)
 	_, err := c.executeRequest("POST", c.ContainerPath, input)
 	if err != nil {
@@ -109,27 +108,23 @@ type GetStorageVolumeInput struct {
 	Name string `json:"name"`
 }
 
+func (c *StorageVolumeClient) success(result *StorageVolumeInfo) (*StorageVolumeInfo, error) {
+	c.unqualify(&result.Name)
+	return result, nil
+}
+
 // GetStorageVolume gets Storage Volume information for the specified storage volume.
 func (c *StorageVolumeClient) GetStorageVolume(input *GetStorageVolumeInput) (*StorageVolumeInfo, error) {
-	resp, err := c.executeRequest("GET", c.getStorageVolumePath(input.Name), nil)
-	if WasNotFoundError(err) {
-		return nil, nil
-	}
+	var appInfo StorageVolumeInfo
+	if err := c.getResource(input.Name, &appInfo); err != nil {
+		if WasNotFoundError(err) {
+			return nil, nil
+		}
 
-	if err != nil {
 		return nil, err
 	}
 
-	var result *StorageVolumeInfo
-	err = c.unmarshalResponseBody(resp, &result)
-	if err != nil {
-		return nil, err
-	}
-
-	if result != nil {
-		c.unqualify(&result.Name)
-	}
-	return result, nil
+	return c.success(&appInfo)
 }
 
 // UpdateStorageVolumeInput represents the body of an API request to update a Storage Volume.
