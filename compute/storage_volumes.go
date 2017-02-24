@@ -54,13 +54,8 @@ type StorageVolumeInfo struct {
 	WriteCache      bool     `json:"writecache,omitempty"`
 }
 
-// StorageVolumeResult represents the body of a response to a query for Storage Volume information.
-type StorageVolumeResult struct {
-	Result []StorageVolumeInfo `json:"result"`
-}
-
 func (c *StorageVolumeClient) getStorageVolumePath(name string) string {
-	return c.getObjectPath("/storage/volume", name) + "/"
+	return c.getObjectPath("/storage/volume", name)
 }
 
 // CreateStorageVolumeInput represents the body of an API request to create a new Storage Volume.
@@ -121,22 +116,26 @@ type GetStorageVolumeInput struct {
 }
 
 // GetStorageVolume gets Storage Volume information for the specified storage volume.
-func (c *StorageVolumeClient) GetStorageVolume(input *GetStorageVolumeInput) (*StorageVolumeResult, error) {
+func (c *StorageVolumeClient) GetStorageVolume(input *GetStorageVolumeInput) (*StorageVolumeInfo, error) {
 	resp, err := c.executeRequest("GET", c.getStorageVolumePath(input.Name), nil)
+	if WasNotFoundError(err) {
+		return nil, nil
+	}
+
 	if err != nil {
 		return nil, err
 	}
 
-	var result StorageVolumeResult
+	var result *StorageVolumeInfo
 	err = c.unmarshalResponseBody(resp, &result)
 	if err != nil {
 		return nil, err
 	}
 
-	if len(result.Result) > 0 {
-		c.unqualify(&result.Result[0].Name)
+	if result != nil {
+		c.unqualify(&result.Name)
 	}
-	return &result, nil
+	return result, nil
 }
 
 // UpdateStorageVolumeInput represents the body of an API request to update a Storage Volume.
@@ -187,8 +186,8 @@ func (c *StorageVolumeClient) waitForStorageVolumeToBecomeAvailable(name string,
 				return false, err
 			}
 
-			if len(result.Result) > 0 {
-				waitResult = &result.Result[0]
+			if result != nil {
+				waitResult = result
 				if waitResult.Status == "Online" {
 					return true, nil
 				}
@@ -210,10 +209,14 @@ func (c *StorageVolumeClient) waitForStorageVolumeToBeDeleted(name string, timeo
 				Name: name,
 			}
 			result, err := c.GetStorageVolume(getRequest)
+			if result == nil {
+				return true, nil
+			}
+
 			if err != nil {
 				return false, err
 			}
 
-			return len(result.Result) == 0, nil
+			return result == nil, nil
 		})
 }

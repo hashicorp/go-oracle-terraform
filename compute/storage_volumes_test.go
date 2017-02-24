@@ -34,7 +34,7 @@ func TestAccStorageVolumeClient_WaitForStorageVolumeToBeDeletedSuccessful(t *tes
 		t.Fatalf("error getting storage volume: %s", err)
 	}
 
-	if len(getResponse.Result) > 0 {
+	if getResponse != nil {
 		t.Fatal("Expected Storage Volume to be Deleted")
 	}
 }
@@ -95,6 +95,7 @@ func TestAccStorageVolumeClient_WaitForStorageVolumeToBecomeAvailableTimeout(t *
 func serverWhereStorageVolumeBecomesAvailableAfterThreeSeconds(t *testing.T) *httptest.Server {
 	count := 0
 	return newAuthenticatingServer(func(w http.ResponseWriter, r *http.Request) {
+
 		var status string
 		if count < 3 {
 			status = "Initializing"
@@ -103,7 +104,7 @@ func serverWhereStorageVolumeBecomesAvailableAfterThreeSeconds(t *testing.T) *ht
 		}
 		count++
 		svr := fmt.Sprintf(
-			"{\"result\":[{\"name\":\"/Compute-test/test/test\",\"size\":\"16G\",\"status\":\"%s\"}]}", status)
+			"{\"name\":\"/Compute-test/test/test\",\"size\":\"16G\",\"status\":\"%s\"}", status)
 
 		w.Write([]byte(svr))
 		w.WriteHeader(200)
@@ -113,16 +114,17 @@ func serverWhereStorageVolumeBecomesAvailableAfterThreeSeconds(t *testing.T) *ht
 func serverWhereStorageVolumeGetsDeletedAfterThreeSeconds(t *testing.T) *httptest.Server {
 	count := 0
 	return newAuthenticatingServer(func(w http.ResponseWriter, r *http.Request) {
-		var status string
 		if count < 3 {
-			status = "{\"result\":[{\"name\":\"/storage/volume/test\",\"size\":\"16G\",\"status\":\"Deleting\"}]}"
+			status := "{\"name\":\"/storage/volume/test\",\"size\":\"16G\",\"status\":\"Deleting\"}"
+			w.WriteHeader(200)
+			w.Write([]byte(status))
 		} else {
-			status = "{\"result\": []}"
+			status := "{}"
+			w.WriteHeader(404)
+			w.Write([]byte(status))
 		}
 		count++
 
-		w.Write([]byte(status))
-		w.WriteHeader(400)
 	})
 }
 

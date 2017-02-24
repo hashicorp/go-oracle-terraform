@@ -38,11 +38,11 @@ func TestAccStorageVolumeLifecycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if createResponse.Size != createdResponse.Result[0].Size {
-		t.Fatalf("Retrieved Storage Volume Size did not match Expected. \nDesired: %s \nActual: %s", createResponse, createdResponse.Result[0])
+	if createResponse.Size != createdResponse.Size {
+		t.Fatalf("Retrieved Storage Volume Size did not match Expected. \nDesired: %s \nActual: %s", createResponse, createdResponse)
 	}
 
-	actualSize := createdResponse.Result[0].Size
+	actualSize := createdResponse.Size
 	expectedSize := strconv.Itoa(10 << 30)
 	if actualSize != expectedSize {
 		t.Fatalf("Expected storage volume size %s, but was %s", expectedSize, actualSize)
@@ -64,11 +64,11 @@ func TestAccStorageVolumeLifecycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if updateResponse.Size != updatedResponse.Result[0].Size {
-		t.Fatalf("Retrieved Storage Volume did not match Expected. \nDesired: %s \nActual: %s", updateResponse, updatedResponse.Result[0])
+	if updateResponse.Size != updatedResponse.Size {
+		t.Fatalf("Retrieved Storage Volume did not match Expected. \nDesired: %s \nActual: %s", updateResponse, updatedResponse)
 	}
 
-	actualSize = updatedResponse.Result[0].Size
+	actualSize = updatedResponse.Size
 	expectedSize = strconv.Itoa(20 << 30)
 	if actualSize != expectedSize {
 		t.Fatalf("Expected storage volume size %s, but was %s", expectedSize, actualSize)
