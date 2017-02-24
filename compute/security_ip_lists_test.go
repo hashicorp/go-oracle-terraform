@@ -25,26 +25,28 @@ func TestAccSecurityIPListLifeCycle(t *testing.T) {
 		Name:         "test-sec-ip-list",
 		SecIPEntries: []string{"127.0.0.1", "127.0.0.2"},
 	}
-	securityIPList, err := securityIPListClient.CreateSecurityIPList(&createSecurityIPListInput)
+	defer deleteSecurityIPList(t, securityIPListClient, createSecurityIPListInput.Name)
+
+	createdSecurityIPList, err := securityIPListClient.CreateSecurityIPList(&createSecurityIPListInput)
 	if err != nil {
 		t.Fatal(err)
 	}
-	log.Printf("Successfully created Security IP List: %+v", securityIPList)
+	log.Printf("Successfully created Security IP List: %+v", createdSecurityIPList)
 
 	getSecurityIPListInput := GetSecurityIPListInput{
-		Name: securityIPList.Name,
+		Name: createdSecurityIPList.Name,
 	}
 	getSecurityIPListOutput, err := securityIPListClient.GetSecurityIPList(&getSecurityIPListInput)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !reflect.DeepEqual(securityIPList.SecIPEntries, getSecurityIPListOutput.SecIPEntries) {
-		t.Fatalf("Created and retrieved security IP entries do not match \nDesired: %s \nActual: %s", securityIPList.SecIPEntries, getSecurityIPListOutput.SecIPEntries)
+	if !reflect.DeepEqual(createdSecurityIPList.SecIPEntries, getSecurityIPListOutput.SecIPEntries) {
+		t.Fatalf("Created and retrieved security IP entries do not match \nDesired: %s \nActual: %s", createdSecurityIPList.SecIPEntries, getSecurityIPListOutput.SecIPEntries)
 	}
 	log.Printf("Successfully retrieved Security IP List")
 
 	updateSecurityIPListInput := UpdateSecurityIPListInput{
-		Name:         securityIPList.Name,
+		Name:         createdSecurityIPList.Name,
 		SecIPEntries: []string{"127.0.0.3", "127.0.0.4"},
 	}
 	updateSecurityIPListOutput, err := securityIPListClient.UpdateSecurityIPList(&updateSecurityIPListInput)
@@ -55,15 +57,6 @@ func TestAccSecurityIPListLifeCycle(t *testing.T) {
 		t.Fatalf("Security IP Entry not successfully updated \nDesired: %s \nActual: %s", updateSecurityIPListInput.SecIPEntries[0], updateSecurityIPListOutput.SecIPEntries[0])
 	}
 	log.Printf("Successfully updated Security IP List")
-
-	deleteSecurityIPListInput := DeleteSecurityIPListInput{
-		Name: securityIPList.Name,
-	}
-	err = securityIPListClient.DeleteSecurityIPList(&deleteSecurityIPListInput)
-	if err != nil {
-		t.Fatal(err)
-	}
-	log.Printf("Successfully deleted Security IP List")
 }
 
 // Test that the client can create an instance.
@@ -147,3 +140,15 @@ var exampleCreateSecurityIPListResponse = `
   "uri": "https://api.compute.us0.oraclecloud.com/seciplist/Compute-acme/jack.jones@example.com/es_iplist"
 }
 `
+
+func deleteSecurityIPList(t *testing.T, client *SecurityIPListsClient, name string) {
+	deleteInput := DeleteSecurityIPListInput{
+		Name: name,
+	}
+	err := client.DeleteSecurityIPList(&deleteInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	log.Printf("Successfully deleted Security IP List")
+}

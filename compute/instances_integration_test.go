@@ -8,17 +8,8 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/opc"
 )
 
-var createdInstance *InstanceInfo
-
 func TestAccInstanceLifecycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
-	defer func() {
-		if err := tearDownInstances(); err != nil {
-			log.Printf("[ERR] Error deleting instance: %#v", createdInstance)
-			log.Print("[ERR] Dangling resources may occur!")
-			t.Fatalf("Error: %v", err)
-		}
-	}()
 
 	svc, err := getInstancesClient()
 	if err != nil {
@@ -40,25 +31,25 @@ func TestAccInstanceLifecycle(t *testing.T) {
 			},
 		},
 	}
-	createdInstance, err = svc.CreateInstance(input)
+	createdInstance, err := svc.CreateInstance(input)
 	if err != nil {
 		t.Fatal(err)
 	}
 	log.Printf("Instance created: %#v\n", createdInstance)
+	defer deleteInstance(t, svc, createdInstance.Name, createdInstance.ID)
 }
 
-func tearDownInstances() error {
-	svc, err := getInstancesClient()
+func deleteInstance(t *testing.T, client *InstancesClient, name string, id string) {
+	deleteInput := DeleteInstanceInput{
+		Name: name,
+		ID:   id,
+	}
+	err := client.DeleteInstance(&deleteInput)
 	if err != nil {
-		return err
+		t.Fatal(err)
 	}
 
-	input := &DeleteInstanceInput{
-		Name: createdInstance.Name,
-		ID:   createdInstance.ID,
-	}
-
-	return svc.DeleteInstance(input)
+	log.Printf("Successfully deleted Instance")
 }
 
 func getInstancesClient() (*InstancesClient, error) {

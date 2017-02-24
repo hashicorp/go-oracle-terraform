@@ -15,14 +15,6 @@ func TestAccIPAssociationLifeCycle(t *testing.T) {
 		instanceImage string = "/oracle/public/oel_6.7_apaas_16.4.5_1610211300"
 	)
 
-	defer func() {
-		if err := tearDownInstances(); err != nil {
-			log.Printf("Error deleting instance: %#v", createdInstance)
-			log.Print("Dangling resources may occur!")
-			t.Fatalf("Error: %v", err)
-		}
-	}()
-
 	svc, err := getInstancesClient()
 	if err != nil {
 		t.Fatal(err)
@@ -44,10 +36,11 @@ func TestAccIPAssociationLifeCycle(t *testing.T) {
 		},
 	}
 
-	createdInstance, err = svc.CreateInstance(input)
+	createdInstance, err := svc.CreateInstance(input)
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer deleteInstance(t, svc, createdInstance.Name, createdInstance.ID)
 
 	log.Printf("Instance created: %#v\n", createdInstance)
 

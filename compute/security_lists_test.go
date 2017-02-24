@@ -11,19 +11,8 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/opc"
 )
 
-var createdSecurityList *SecurityListInfo
-
 func TestAccSecurityListLifeCycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
-
-	defer func() {
-		if err := tearDownSecurityLists(); err != nil {
-			log.Printf("Error deleting security list: %#v", createdSecurityList)
-			log.Print("Dangling resources may occur!")
-			t.Fatalf("Error: %v", err)
-		}
-		log.Printf("Successfully deleted Security List")
-	}()
 
 	securityListClient, err := getSecurityListsClient()
 	if err != nil {
@@ -31,19 +20,24 @@ func TestAccSecurityListLifeCycle(t *testing.T) {
 	}
 	log.Printf("Obtained Security List Client")
 
+	name := "test-sec-list"
+
 	createSecurityListInput := CreateSecurityListInput{
-		Name:               "test-sec-list",
+		Name:               name,
 		OutboundCIDRPolicy: "DENY",
 		Policy:             "PERMIT",
 	}
-	createdSecurityList, err = securityListClient.CreateSecurityList(&createSecurityListInput)
+
+	createdSecurityList, err := securityListClient.CreateSecurityList(&createSecurityListInput)
 	if err != nil {
 		t.Fatal(err)
 	}
 	log.Printf("Successfully created Security List: %+v", createdSecurityList)
 
+	defer deleteSecurityList(t, securityListClient, name)
+
 	getSecurityListInput := GetSecurityListInput{
-		Name: createdSecurityList.Name,
+		Name: name,
 	}
 	getSecurityListOutput, err := securityListClient.GetSecurityList(&getSecurityListInput)
 	if err != nil {
@@ -55,7 +49,7 @@ func TestAccSecurityListLifeCycle(t *testing.T) {
 	log.Printf("Successfully retrieved Security List")
 
 	updateSecurityListInput := UpdateSecurityListInput{
-		Name:               createdSecurityList.Name,
+		Name:               name,
 		OutboundCIDRPolicy: "PERMIT",
 		Policy:             "DENY",
 	}
@@ -155,15 +149,14 @@ var exampleCreateSecurityListResponse = `
 }
 `
 
-func tearDownSecurityLists() error {
-	slc, err := getSecurityListsClient()
+func deleteSecurityList(t *testing.T, client *SecurityListsClient, name string) {
+	deleteInput := DeleteSecurityListInput{
+		Name: name,
+	}
+	err := client.DeleteSecurityList(&deleteInput)
 	if err != nil {
-		return err
+		t.Fatal(err)
 	}
 
-	input := &DeleteSecurityListInput{
-		Name: createdSecurityList.Name,
-	}
-
-	return slc.DeleteSecurityList(input)
+	log.Printf("Successfully deleted Security List")
 }

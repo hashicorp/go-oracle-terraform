@@ -87,10 +87,14 @@ type UpdateSecurityRuleInput struct {
 }
 
 // UpdateSecurityRule modifies the properties of the security rule with the given name.
-func (c *SecurityRulesClient) UpdateSecurityRule(udpateInput *UpdateSecurityRuleInput) (*SecurityRuleInfo, error) {
-  updateInput.Name = c.getQualifiedName(updateInput.Name)
+func (c *SecurityRulesClient) UpdateSecurityRule(updateInput *UpdateSecurityRuleInput) (*SecurityRuleInfo, error) {
+	updateInput.Name = c.getQualifiedName(updateInput.Name)
+	updateInput.SourceList = c.getQualifiedListName(updateInput.SourceList)
+	updateInput.DestinationList = c.getQualifiedListName(updateInput.DestinationList)
+	updateInput.Application = c.getQualifiedName(updateInput.Application)
+
 	var ruleInfo SecurityRuleInfo
-	if err := c.updateResource(updateInput.Name), updateInput, &ruleInfo); err != nil {
+	if err := c.updateResource(updateInput.Name, updateInput, &ruleInfo); err != nil {
 		return nil, err
 	}
 
