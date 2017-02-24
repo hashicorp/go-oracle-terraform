@@ -35,7 +35,7 @@ func TestAccInstanceLifecycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	log.Printf("Instance created: %#v\n", createdInstance)
+	log.Printf("Instance created: %#v", createdInstance)
 	defer deleteInstance(t, svc, createdInstance.Name, createdInstance.ID)
 }
 
