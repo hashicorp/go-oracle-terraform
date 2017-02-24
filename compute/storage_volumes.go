@@ -97,17 +97,11 @@ type DeleteStorageVolumeInput struct {
 
 // DeleteStorageVolume deletes the specified storage volume.
 func (c *StorageVolumeClient) DeleteStorageVolume(input *DeleteStorageVolumeInput) error {
-	_, err := c.executeRequest("DELETE", c.getStorageVolumePath(input.Name), nil)
-	if err != nil {
+	if err := c.deleteResource(input.Name); err != nil {
 		return err
 	}
 
-	err = c.waitForStorageVolumeToBeDeleted(input.Name, WaitForVolumeDeleteTimeout)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return c.waitForStorageVolumeToBeDeleted(input.Name, WaitForVolumeDeleteTimeout)
 }
 
 // GetStorageVolumeInput represents the body of an API request to obtain a Storage Volume.
