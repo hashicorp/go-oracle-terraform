@@ -5,6 +5,8 @@ import (
 	"log"
 )
 
+const WaitForVolumeAttachmentReadyTimeout = 30
+
 // StorageAttachmentsClient is a client for the Storage Attachment functions of the Compute API.
 type StorageAttachmentsClient struct {
 	ResourceClient
@@ -73,7 +75,7 @@ func (c *StorageAttachmentsClient) CreateStorageAttachment(input *CreateStorageA
 		return nil, err
 	}
 
-	err := c.WaitForStorageAttachmentCreated(attachmentInfo.Name, 30)
+	err := c.WaitForStorageAttachmentCreated(attachmentInfo.Name, WaitForVolumeAttachmentReadyTimeout)
 	if err != nil {
 		return nil, err
 	}
