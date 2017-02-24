@@ -61,16 +61,18 @@ func TestAccStorageAttachmentsLifecycle(t *testing.T) {
 		panic(err)
 	}
 
-	createResult, err := attachmentsClient.CreateStorageAttachment(1, info, createStorageVolumeInput.Name)
+	createRequest := &CreateStorageAttachmentInput{
+		Index:             1,
+		InstanceName:      info.Name,
+		InstanceId:        info.ID,
+		StorageVolumeName: createStorageVolumeInput.Name,
+	}
+	createResult, err := attachmentsClient.CreateStorageAttachment(createRequest)
 	if err != nil {
 		panic(err)
 	}
 
 	attachmentName = createResult.Name
-	err = attachmentsClient.WaitForStorageAttachmentCreated(attachmentName, 30)
-	if err != nil {
-		panic(err)
-	}
 
 	getResult, err := attachmentsClient.GetStorageAttachment(attachmentName)
 	if err != nil {

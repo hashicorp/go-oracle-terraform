@@ -48,16 +48,33 @@ func (c *StorageAttachmentsClient) success(attachmentInfo *StorageAttachmentInfo
 	return attachmentInfo, nil
 }
 
+type CreateStorageAttachmentInput struct {
+	Index             int
+	InstanceName      string
+	InstanceId        string
+	StorageVolumeName string
+}
+
 // CreateStorageAttachment creates a storage attachment attaching the given volume to the given instance at the given index.
-func (c *StorageAttachmentsClient) CreateStorageAttachment(index int, instanceInfo *InstanceInfo, storageVolumeName string) (*StorageAttachmentInfo, error) {
+func (c *StorageAttachmentsClient) CreateStorageAttachment(input *CreateStorageAttachmentInput) (*StorageAttachmentInfo, error) {
+	instanceInfo := InstanceInfo{
+		Name: input.InstanceName,
+		ID:   input.InstanceId,
+	}
+	storageVolumeName := c.getQualifiedName(input.StorageVolumeName)
 	spec := StorageAttachmentSpec{
-		Index:             index,
+		Index:             input.Index,
 		InstanceName:      c.getQualifiedName(instanceInfo.getInstanceName()),
-		StorageVolumeName: c.getQualifiedName(storageVolumeName),
+		StorageVolumeName: storageVolumeName,
 	}
 
 	var attachmentInfo StorageAttachmentInfo
 	if err := c.createResource(&spec, &attachmentInfo); err != nil {
+		return nil, err
+	}
+
+	err := c.WaitForStorageAttachmentCreated(attachmentInfo.Name, 30)
+	if err != nil {
 		return nil, err
 	}
 
