@@ -94,6 +94,15 @@ type UpdateVirtualNICSetInput struct {
 func (c *VirtNICSetsClient) UpdateVirtualNICSet(input *UpdateVirtualNICSetInput) (*VirtualNICSet, error) {
 	input.Name = c.getQualifiedName(input.Name)
 	input.AppliedACLs = c.getQualifiedAcls(input.AppliedACLs)
+	// Qualify VirtualNICNames
+	qualifiedNames := []string{}
+	for _, v := range input.VirtualNICNames {
+		qualifiedNames = append(qualifiedNames, c.getQualifiedName(v))
+	}
+	if len(qualifiedNames) != 0 {
+		input.VirtualNICNames = qualifiedNames
+	}
+
 	var virtNICSet VirtualNICSet
 	if err := c.updateResource(input.Name, input, &virtNICSet); err != nil {
 		return nil, err
