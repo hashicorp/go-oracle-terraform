@@ -44,6 +44,7 @@ func TestAccSecurityRuleLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 	log.Printf("Successfully created Security IP List: %+v", createdSecurityIPList)
+	defer deleteSecurityIPList(t, securityIPListClient, name)
 
 	securityApplicationsClient, err := getSecurityApplicationsClient()
 	if err != nil {
