@@ -31,6 +31,7 @@ type GetVirtualNICInput struct {
 
 func (c *VirtNICsClient) GetVirtualNIC(input *GetVirtualNICInput) (*VirtualNIC, error) {
 	var virtNIC VirtualNIC
+	input.Name = c.getQualifiedName(input.Name)
 	if err := c.getResource(input.Name, &virtNIC); err != nil {
 		return nil, err
 	}

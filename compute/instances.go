@@ -24,18 +24,19 @@ func (c *Client) Instances() *InstancesClient {
 
 // InstanceInfo represents the Compute API's view of the state of an instance.
 type InstanceInfo struct {
-	ID          string                 `json:"id"`
-	Shape       string                 `json:"shape"`
-	ImageList   string                 `json:"imagelist"`
-	Name        string                 `json:"name"`
-	Label       string                 `json:"label"`
-	BootOrder   []int                  `json:"boot_order"`
-	SSHKeys     []string               `json:"sshkeys"`
-	State       string                 `json:"state"`
-	ErrorReason string                 `json:"error_reason"`
-	IPAddress   string                 `json:"ip"`
-	VCableID    string                 `json:"vcable_id"`
-	Attributes  map[string]interface{} `json:"attributes"`
+	ID          string                    `json:"id"`
+	Shape       string                    `json:"shape"`
+	ImageList   string                    `json:"imagelist"`
+	Name        string                    `json:"name"`
+	Label       string                    `json:"label"`
+	BootOrder   []int                     `json:"boot_order"`
+	SSHKeys     []string                  `json:"sshkeys"`
+	State       string                    `json:"state"`
+	ErrorReason string                    `json:"error_reason"`
+	IPAddress   string                    `json:"ip"`
+	VCableID    string                    `json:"vcable_id"`
+	Networking  map[string]NetworkingInfo `json:"networking"`
+	Attributes  map[string]interface{}    `json:"attributes"`
 }
 
 func (i *InstanceInfo) getInstanceName() string {
@@ -43,19 +44,33 @@ func (i *InstanceInfo) getInstanceName() string {
 }
 
 type CreateInstanceInput struct {
-	Shape      string                 `json:"shape"`
-	ImageList  string                 `json:"imagelist"`
-	Name       string                 `json:"name"`
-	Label      string                 `json:"label"`
-	Storage    []StorageAttachment    `json:"storage_attachments"`
-	BootOrder  []int                  `json:"boot_order"`
-	SSHKeys    []string               `json:"sshkeys"`
-	Attributes map[string]interface{} `json:"attributes"`
+	Shape      string                    `json:"shape"`
+	ImageList  string                    `json:"imagelist"`
+	Name       string                    `json:"name"`
+	Label      string                    `json:"label"`
+	Storage    []StorageAttachment       `json:"storage_attachments"`
+	BootOrder  []int                     `json:"boot_order"`
+	SSHKeys    []string                  `json:"sshkeys"`
+	Networking map[string]NetworkingInfo `json:"networking"`
+	Attributes map[string]interface{}    `json:"attributes"`
 }
 
 type StorageAttachment struct {
 	Index  int    `json:"index"`
 	Volume string `json:"volume"`
+}
+
+type NetworkingInfo struct {
+	SecurityLists []string `json:"seclists,omitempty"`
+	IPNetwork     string   `json:"ipnetwork,omitempty"`
+	IPAddress     string   `json:"ip,omitempty"`
+	MACAddress    string   `json:"address,omitempty"`
+	Vnic          string   `json:"vnic,omitempty"`
+	VnicSets      []string `json:"vnicsets,omitempty"`
+	Nat           string   `json:"nat,omitempty"`
+	DNS           []string `json:"dns,omitempty"`
+	NameServers   []string `json:"name_servers,omitempty"`
+	SearchDomains []string `json:"search_domains,omitempty"`
 }
 
 // LaunchPlan defines a launch plan, used to launch instances with the supplied InstanceSpec(s)
@@ -85,6 +100,8 @@ func (c *InstancesClient) CreateInstance(input *CreateInstanceInput) (*InstanceI
 	}
 	input.Storage = qualifiedStorageAttachments
 
+	input.Networking = c.qualifyNetworking(input.Networking)
+
 	input.Name = fmt.Sprintf(CMP_QUALIFIED_NAME, c.getUserName(), input.Name)
 
 	plan := LaunchPlanInput{Instances: []CreateInstanceInput{*input}}
@@ -112,9 +129,18 @@ func (c *InstancesClient) CreateInstance(input *CreateInstanceInput) (*InstanceI
 	// Unqualify instance name
 	result.Name = input.Name
 
+	// Unqualify ip network
+	for k, v := range result.Networking {
+		if v.IPNetwork != "" {
+			v.IPNetwork = input.Networking[k].IPNetwork
+		}
+	}
+
 	return result, nil
 }
 
+// Both of these fields are required. If they're not provided, things go wrong in
+// incredibly amazing ways.
 type GetInstanceInput struct {
 	Name string
 	ID   string
@@ -126,6 +152,10 @@ func (g *GetInstanceInput) String() string {
 
 // GetInstance retrieves information about an instance.
 func (c *InstancesClient) GetInstance(input *GetInstanceInput) (*InstanceInfo, error) {
+	if input.ID == "" || input.Name == "" {
+		return nil, fmt.Errorf("Both instance name and ID need to be specified")
+	}
+
 	var responseBody InstanceInfo
 	if err := c.getResource(input.String(), &responseBody); err != nil {
 		return nil, err
@@ -139,6 +169,7 @@ func (c *InstancesClient) GetInstance(input *GetInstanceInput) (*InstanceInfo, e
 	// Otherwise the returned name will be the fully qualified name, and the ID will be blank
 	responseBody.Name = input.Name
 	responseBody.ID = input.ID
+
 	c.unqualify(&responseBody.VCableID)
 
 	// Unqualify SSH Key names
@@ -147,6 +178,8 @@ func (c *InstancesClient) GetInstance(input *GetInstanceInput) (*InstanceInfo, e
 		sshKeyNames = append(sshKeyNames, c.getUnqualifiedName(sshKeyRef))
 	}
 	responseBody.SSHKeys = sshKeyNames
+
+	responseBody.Networking = c.unqualifyNetworking(responseBody.Networking)
 
 	return &responseBody, nil
 }
@@ -202,4 +235,49 @@ func (c *InstancesClient) WaitForInstanceDeleted(input *DeleteInstanceInput, tim
 		}
 		return false, nil
 	})
+}
+
+func (c *InstancesClient) qualifyNetworking(info map[string]NetworkingInfo) map[string]NetworkingInfo {
+	qualifiedNetworks := map[string]NetworkingInfo{}
+	for k, v := range info {
+		qfd := v
+		if v.IPNetwork != "" {
+			qfd.IPNetwork = c.getQualifiedName(v.IPNetwork)
+		}
+		if v.Vnic != "" {
+			qfd.Vnic = c.getQualifiedName(v.Vnic)
+		}
+		if v.SecurityLists != nil {
+			secLists := []string{}
+			for _, v := range v.SecurityLists {
+				secLists = append(secLists, c.getQualifiedName(v))
+			}
+			qfd.SecurityLists = secLists
+		}
+		qualifiedNetworks[k] = qfd
+	}
+	return qualifiedNetworks
+}
+
+func (c *InstancesClient) unqualifyNetworking(info map[string]NetworkingInfo) map[string]NetworkingInfo {
+	// Unqualify ip network
+	unqualifiedNetworks := map[string]NetworkingInfo{}
+	for k, v := range info {
+		unq := v
+		if v.IPNetwork != "" {
+			unq.IPNetwork = c.getUnqualifiedName(v.IPNetwork)
+		}
+		if v.Vnic != "" {
+			unq.Vnic = c.getUnqualifiedName(v.Vnic)
+		}
+		if v.SecurityLists != nil {
+			secLists := []string{}
+			for _, v := range v.SecurityLists {
+				secLists = append(secLists, c.getUnqualifiedName(v))
+			}
+			v.SecurityLists = secLists
+		}
+		unqualifiedNetworks[k] = unq
+	}
+	return unqualifiedNetworks
 }
