@@ -111,8 +111,8 @@ func (c *StorageVolumeClient) success(result *StorageVolumeInfo) (*StorageVolume
 
 // GetStorageVolume gets Storage Volume information for the specified storage volume.
 func (c *StorageVolumeClient) GetStorageVolume(input *GetStorageVolumeInput) (*StorageVolumeInfo, error) {
-	var appInfo StorageVolumeInfo
-	if err := c.getResource(input.Name, &appInfo); err != nil {
+	var storageVolume StorageVolumeInfo
+	if err := c.getResource(input.Name, &storageVolume); err != nil {
 		if WasNotFoundError(err) {
 			return nil, nil
 		}
@@ -120,7 +120,7 @@ func (c *StorageVolumeClient) GetStorageVolume(input *GetStorageVolumeInput) (*S
 		return nil, err
 	}
 
-	return c.success(&appInfo)
+	return c.success(&storageVolume)
 }
 
 // UpdateStorageVolumeInput represents the body of an API request to update a Storage Volume.
