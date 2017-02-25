@@ -12,7 +12,6 @@ func TestAccStorageVolumeLifecycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
 	name := "test-storage-volume-lifecycle"
-	defer tearDownStorageVolumes(name)
 
 	svc, err := getStorageVolumeClient()
 	if err != nil {
@@ -29,6 +28,8 @@ func TestAccStorageVolumeLifecycle(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Create volume failed: %s\n", err)
 	}
+
+	defer tearDownStorageVolumes(name)
 
 	getRequest := &GetStorageVolumeInput{
 		Name: name,
