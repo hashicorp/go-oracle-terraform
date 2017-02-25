@@ -76,17 +76,13 @@ type CreateStorageVolumeInput struct {
 // CreateStorageVolume uses the given CreateStorageVolumeInput to create a new Storage Volume.
 func (c *StorageVolumeClient) CreateStorageVolume(input *CreateStorageVolumeInput) (*StorageVolumeInfo, error) {
 	input.Name = c.getQualifiedName(input.Name)
-	_, err := c.executeRequest("POST", c.ContainerPath, input)
-	if err != nil {
+
+	var storageInfo StorageVolumeInfo
+	if err := c.createResource(&input, &storageInfo); err != nil {
 		return nil, err
 	}
 
-	instanceInfo, err := c.waitForStorageVolumeToBecomeAvailable(input.Name, WaitForVolumeReadyTimeout)
-	if err != nil {
-		return nil, err
-	}
-
-	return instanceInfo, nil
+	return c.waitForStorageVolumeToBecomeAvailable(input.Name, WaitForVolumeReadyTimeout)
 }
 
 // DeleteStorageVolumeInput represents the body of an API request to delete a Storage Volume.
