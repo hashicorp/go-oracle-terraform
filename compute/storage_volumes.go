@@ -2,6 +2,7 @@ package compute
 
 import (
 	"fmt"
+	"strings"
 )
 
 const WaitForVolumeReadyTimeout = 30
@@ -173,7 +174,7 @@ func (c *StorageVolumeClient) waitForStorageVolumeToBecomeAvailable(name string,
 
 			if result != nil {
 				waitResult = result
-				if waitResult.Status == "Online" {
+				if strings.ToLower(waitResult.Status) == "online" {
 					return true, nil
 				}
 			}

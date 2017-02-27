@@ -7,6 +7,8 @@ import (
 	"net/url"
 	"testing"
 
+	"strings"
+
 	"github.com/hashicorp/go-oracle-terraform/helper"
 )
 
@@ -71,7 +73,7 @@ func TestAccStorageVolumeClient_WaitForStorageVolumeToBecomeAvailableSuccessful(
 		t.Fatalf("Wait for storage volume online request failed: %s", err)
 	}
 
-	if info.Status != "Online" {
+	if strings.ToLower(info.Status) != "online" {
 		fmt.Println(info)
 		t.Fatalf("Status of retrieved storage volume info was %s, expected 'Online'", info.Status)
 	}
@@ -95,7 +97,6 @@ func TestAccStorageVolumeClient_WaitForStorageVolumeToBecomeAvailableTimeout(t *
 func serverWhereStorageVolumeBecomesAvailableAfterThreeSeconds(t *testing.T) *httptest.Server {
 	count := 0
 	return newAuthenticatingServer(func(w http.ResponseWriter, r *http.Request) {
-
 		var status string
 		if count < 3 {
 			status = "Initializing"
