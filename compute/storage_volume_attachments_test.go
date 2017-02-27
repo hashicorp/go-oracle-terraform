@@ -13,6 +13,43 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/helper"
 )
 
+func TestAccStorageAttachmentsClient_WaitForStorageDetachmentSuccessful(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
+
+	name := "test"
+	server := serverThatDetachesStorageVolumeAfterThreeSeconds(t, name)
+
+	defer server.Close()
+	sv, err := getStubStorageAttachmentsClient(server)
+	if err != nil {
+		t.Fatalf("error getting stub client: %s", err)
+	}
+
+	err = sv.waitForStorageAttachmentToBeDeleted(name, 10)
+	if err != nil {
+		t.Fatalf("Wait for storage attachment to become detach request failed: %s", err)
+	}
+
+}
+
+func TestAccStorageAttachmentsClient_WaitForStorageDetachmentTimeout(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
+
+	name := "test"
+	server := serverThatDetachesStorageVolumeAfterThreeSeconds(t, name)
+
+	defer server.Close()
+	sv, err := getStubStorageAttachmentsClient(server)
+	if err != nil {
+		t.Fatalf("error getting stub client: %s", err)
+	}
+
+	err = sv.waitForStorageAttachmentToBeDeleted(name, 3)
+	if err == nil {
+		t.Fatal("Expected timeout error")
+	}
+}
+
 func TestAccStorageAttachmentsClient_WaitForStorageAttachmentToBeCreatedOnline(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
@@ -69,6 +106,20 @@ func serverThatAttachesStorageVolumeAfterThreeSeconds(t *testing.T, name string)
 			"{ \"name\": \"/foo/bar/%s\", \"instance_name\": \"/foo/bar/some-instance\", \"storage_volume_name\": \"/foo/bar/example\", \"state\": \"%s\" }", name, status)
 
 		w.Write([]byte(svr))
+	})
+}
+
+func serverThatDetachesStorageVolumeAfterThreeSeconds(t *testing.T, name string) *httptest.Server {
+	count := 0
+	return newAuthenticatingServer(func(w http.ResponseWriter, r *http.Request) {
+		if count < 3 {
+			svr := fmt.Sprintf("{ \"name\": \"/foo/bar/%s\", \"instance_name\": \"/foo/bar/some-instance\", \"storage_volume_name\": \"/foo/bar/example\", \"state\": \"detaching\" }", name)
+			w.Write([]byte(svr))
+		} else {
+			w.WriteHeader(404)
+		}
+		count++
+
 	})
 }
 
