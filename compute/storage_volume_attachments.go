@@ -1,5 +1,7 @@
 package compute
 
+import "strings"
+
 const WaitForVolumeAttachmentDeleteTimeout = 30
 const WaitForVolumeAttachmentReadyTimeout = 30
 
@@ -29,11 +31,6 @@ type StorageAttachmentInfo struct {
 	State             string `json:"state"`
 }
 
-// StorageAttachmentList is a collection of storage attachments attached to a specific instance.
-type StorageAttachmentList struct {
-	Result []StorageAttachmentInfo `json:"result"`
-}
-
 func (c *StorageAttachmentsClient) success(attachmentInfo *StorageAttachmentInfo) (*StorageAttachmentInfo, error) {
 	c.unqualify(&attachmentInfo.Name, &attachmentInfo.InstanceName, &attachmentInfo.StorageVolumeName)
 	return attachmentInfo, nil
@@ -54,12 +51,12 @@ func (c *StorageAttachmentsClient) CreateStorageAttachment(input *CreateStorageA
 		return nil, err
 	}
 
-	err := c.waitForStorageAttachmentToBeCreated(attachmentInfo.Name, WaitForVolumeAttachmentReadyTimeout)
+	info, err := c.waitForStorageAttachmentToBeCreated(attachmentInfo.Name, WaitForVolumeAttachmentReadyTimeout)
 	if err != nil {
 		return nil, err
 	}
 
-	return c.success(&attachmentInfo)
+	return c.success(info)
 }
 
 // DeleteStorageAttachment deletes the storage attachment with the given name.
@@ -82,17 +79,23 @@ func (c *StorageAttachmentsClient) GetStorageAttachment(name string) (*StorageAt
 }
 
 // waitForStorageAttachmentToBeCreated waits for the storage attachment with the given name to be fully attached, or times out.
-func (c *StorageAttachmentsClient) waitForStorageAttachmentToBeCreated(name string, timeoutSeconds int) error {
-	return c.waitFor("storage attachment to be attached", timeoutSeconds, func() (bool, error) {
+func (c *StorageAttachmentsClient) waitForStorageAttachmentToBeCreated(name string, timeoutSeconds int) (*StorageAttachmentInfo, error) {
+	var waitResult *StorageAttachmentInfo
+
+	err := c.waitFor("storage attachment to be attached", timeoutSeconds, func() (bool, error) {
 		info, err := c.GetStorageAttachment(name)
 		if err != nil {
 			return false, err
 		}
-		if info.State == "attached" {
+
+		if strings.ToLower(info.State) == "attached" {
+			waitResult = info
 			return true, nil
 		}
 		return false, nil
 	})
+
+	return waitResult, err
 }
 
 // waitForStorageAttachmentToBeDeleted waits for the storage attachment with the given name to be fully deleted, or times out.
