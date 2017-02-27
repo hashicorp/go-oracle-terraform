@@ -59,8 +59,7 @@ func TestAccStorageAttachmentsLifecycle(t *testing.T) {
 
 	createRequest := &CreateStorageAttachmentInput{
 		Index:             1,
-		InstanceName:      info.Name,
-		InstanceId:        info.ID,
+		InstanceName:      instanceInfo.getInstanceName(),
 		StorageVolumeName: createStorageVolumeInput.Name,
 	}
 	createResult, err := attachmentsClient.CreateStorageAttachment(createRequest)
