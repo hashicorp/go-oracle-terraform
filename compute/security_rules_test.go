@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"reflect"
 	"testing"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
@@ -57,12 +58,12 @@ func TestAccSecurityRuleLifeCycle(t *testing.T) {
 		Protocol: SecurityApplicationProtocol(ICMP),
 		ICMPType: SecurityApplicationICMPType(Echo),
 	}
-	defer deleteSecurityApplication(t, securityApplicationsClient, name)
 
 	createdSecurityApplication, err := securityApplicationsClient.CreateSecurityApplication(&createInput)
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer deleteSecurityApplication(t, securityApplicationsClient, name)
 
 	securityRuleClient, err := getSecurityRulesClient()
 	if err != nil {
@@ -78,13 +79,13 @@ func TestAccSecurityRuleLifeCycle(t *testing.T) {
 		SourceList:      "seciplist:" + createdSecurityIPList.Name,
 		Application:     createdSecurityApplication.Name,
 	}
-	defer deleteSecurityRule(t, securityRuleClient, name)
 
 	createdSecurityRule, err := securityRuleClient.CreateSecurityRule(&createSecurityRuleInput)
 	if err != nil {
 		t.Fatal(err)
 	}
 	log.Printf("Successfully created Security Rule: %+v", createdSecurityRule)
+	defer deleteSecurityRule(t, securityRuleClient, name)
 
 	getSecurityRuleInput := GetSecurityRuleInput{
 		Name: createdSecurityRule.Name,
@@ -93,8 +94,8 @@ func TestAccSecurityRuleLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if createdSecurityRule.Action != getSecurityRuleOutput.Action {
-		t.Fatalf("Created and retrived actions don't match.\n Desired: %s\n Actual: %s", createdSecurityRule.Action, getSecurityRuleOutput.Action)
+	if !reflect.DeepEqual(createdSecurityRule, getSecurityRuleOutput) {
+		t.Fatalf("Created and retrived security rules don't match.\n Desired: %s\n Actual: %s", createdSecurityRule, getSecurityRuleOutput)
 	}
 	log.Printf("Successfully retrieved Security Rule")
 

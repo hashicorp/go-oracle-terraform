@@ -34,7 +34,7 @@ func TestAccInstanceLifecycle(t *testing.T) {
 			},
 		},
 	}
-  
+
 	createdInstance, err := svc.CreateInstance(input)
 	if err != nil {
 		t.Fatal(err)
