@@ -8,17 +8,8 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/opc"
 )
 
-var createdInstance *InstanceInfo
-
-func TestAccInstanceLifecycle(t *testing.T) {
+func TestAccInstanceLifeCycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
-	defer func() {
-		if err := tearDownInstances(); err != nil {
-			log.Printf("[ERR] Error deleting instance: %#v", createdInstance)
-			log.Print("[ERR] Dangling resources may occur!")
-			t.Fatalf("Error: %v", err)
-		}
-	}()
 
 	svc, err := getInstancesClient()
 	if err != nil {
@@ -33,6 +24,9 @@ func TestAccInstanceLifecycle(t *testing.T) {
 		Storage:   nil,
 		BootOrder: nil,
 		SSHKeys:   []string{},
+		Networking: map[string]NetworkingInfo{
+			"eth0": {},
+		},
 		Attributes: map[string]interface{}{
 			"attr1": 12,
 			"attr2": map[string]interface{}{
@@ -40,25 +34,24 @@ func TestAccInstanceLifecycle(t *testing.T) {
 			},
 		},
 	}
-	createdInstance, err = svc.CreateInstance(input)
+
+	createdInstance, err := svc.CreateInstance(input)
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer tearDownInstances(t, svc, createdInstance.Name, createdInstance.ID)
+
 	log.Printf("Instance created: %#v\n", createdInstance)
 }
 
-func tearDownInstances() error {
-	svc, err := getInstancesClient()
-	if err != nil {
-		return err
-	}
-
+func tearDownInstances(t *testing.T, svc *InstancesClient, name, id string) {
 	input := &DeleteInstanceInput{
-		Name: createdInstance.Name,
-		ID:   createdInstance.ID,
+		Name: name,
+		ID:   id,
 	}
-
-	return svc.DeleteInstance(input)
+	if err := svc.DeleteInstance(input); err != nil {
+		t.Fatalf("Error deleting instance, dangling resources may occur: %v", err)
+	}
 }
 
 func getInstancesClient() (*InstancesClient, error) {
