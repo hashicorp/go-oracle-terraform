@@ -40,7 +40,7 @@ func TestAccIPAssociationLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer deleteInstance(t, svc, createdInstance.Name, createdInstance.ID)
+	defer tearDownInstances(t, svc, createdInstance.Name, createdInstance.ID)
 
 	log.Printf("Instance created: %#v", createdInstance)
 

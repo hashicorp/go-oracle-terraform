@@ -18,7 +18,23 @@ func TestAccSecurityAssociationLifeCycle(t *testing.T) {
 		name          string = "test-sec-association"
 	)
 
-	svc, err := getInstancesClient()
+	defer func() {
+		if err := tearDownSecurityLists(); err != nil {
+			log.Printf("Error deleting security list: %#v", createdSecurityList)
+			log.Print("Dangling resources may occur!")
+			t.Fatalf("Error: %v", err)
+		}
+	}()
+	defer func() {
+		if err := tearDownSecurityAssociations(); err != nil {
+			log.Printf("Error deleting security association: %#v", createdSecurityAssociation)
+			log.Print("Dangling resources may occur!")
+			t.Fatalf("Error: %v", err)
+		}
+		log.Printf("Successfully deleted Security Association")
+	}()
+
+  svc, err := getInstancesClient()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -37,7 +53,7 @@ func TestAccSecurityAssociationLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer deleteInstance(t, svc, createdInstance.Name, createdInstance.ID)
+	defer tearDownInstances(t, svc, createdInstance.Name, createdInstance.ID)
 
 	log.Printf("Instance created: %#v", createdInstance)
 

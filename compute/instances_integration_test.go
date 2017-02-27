@@ -24,6 +24,9 @@ func TestAccInstanceLifecycle(t *testing.T) {
 		Storage:   nil,
 		BootOrder: nil,
 		SSHKeys:   []string{},
+		Networking: map[string]NetworkingInfo{
+			"eth0": {},
+		},
 		Attributes: map[string]interface{}{
 			"attr1": 12,
 			"attr2": map[string]interface{}{
@@ -31,25 +34,24 @@ func TestAccInstanceLifecycle(t *testing.T) {
 			},
 		},
 	}
+  
 	createdInstance, err := svc.CreateInstance(input)
 	if err != nil {
 		t.Fatal(err)
 	}
-	log.Printf("Instance created: %#v", createdInstance)
-	defer deleteInstance(t, svc, createdInstance.Name, createdInstance.ID)
+	defer tearDownInstances(t, svc, createdInstance.Name, createdInstance.ID)
+
+	log.Printf("Instance created: %#v\n", createdInstance)
 }
 
-func deleteInstance(t *testing.T, client *InstancesClient, name string, id string) {
-	deleteInput := DeleteInstanceInput{
+func tearDownInstances(t *testing.T, svc *InstancesClient, name, id string) {
+	input := &DeleteInstanceInput{
 		Name: name,
 		ID:   id,
 	}
-	err := client.DeleteInstance(&deleteInput)
-	if err != nil {
-		t.Fatal(err)
+	if err := svc.DeleteInstance(input); err != nil {
+		t.Fatalf("Error deleting instance, dangling resources may occur: %v", err)
 	}
-
-	log.Printf("Successfully deleted Instance")
 }
 
 func getInstancesClient() (*InstancesClient, error) {
