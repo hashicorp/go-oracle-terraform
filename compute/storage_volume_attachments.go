@@ -5,6 +5,7 @@ import (
 	"log"
 )
 
+const WaitForVolumeAttachmentDeleteTimeout = 30
 const WaitForVolumeAttachmentReadyTimeout = 30
 
 // StorageAttachmentsClient is a client for the Storage Attachment functions of the Compute API.
@@ -83,6 +84,15 @@ func (c *StorageAttachmentsClient) CreateStorageAttachment(input *CreateStorageA
 	return c.success(&attachmentInfo)
 }
 
+// DeleteStorageAttachment deletes the storage attachment with the given name.
+func (c *StorageAttachmentsClient) DeleteStorageAttachment(name string) error {
+	if err := c.deleteResource(name); err != nil {
+		return err
+	}
+
+	return c.WaitForStorageAttachmentDeleted(name, WaitForVolumeAttachmentDeleteTimeout)
+}
+
 // GetStorageAttachment retrieves the storage attachment with the given name.
 func (c *StorageAttachmentsClient) GetStorageAttachment(name string) (*StorageAttachmentInfo, error) {
 	var attachmentInfo StorageAttachmentInfo
@@ -159,9 +169,4 @@ func (c *StorageAttachmentsClient) getStorageAttachments(query string, descripti
 		attachments[index] = attachment
 	}
 	return &attachments, nil
-}
-
-// DeleteStorageAttachment deletes the storage attachment with the given name.
-func (c *StorageAttachmentsClient) DeleteStorageAttachment(name string) error {
-	return c.deleteResource(name)
 }

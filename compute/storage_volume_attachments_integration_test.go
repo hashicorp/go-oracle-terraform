@@ -85,15 +85,10 @@ func TestAccStorageAttachmentsLifecycle(t *testing.T) {
 func tearDownStorageAttachments(t *testing.T, instancesClient *InstancesClient, volumesClient *StorageVolumeClient, attachmentsClient *StorageAttachmentsClient,
 	instanceInfo *InstanceInfo, volumeName string, attachmentName *string) {
 
-	// delete the storage attachment only if it exists
 	if *attachmentName != "" {
 		log.Printf("Deleting Storage Attachment %s", *attachmentName)
 		if err := attachmentsClient.DeleteStorageAttachment(*attachmentName); err != nil {
 			t.Fatalf("Error deleting storage attachment, dangling resources may occur: %v", err)
-		}
-
-		if err := attachmentsClient.WaitForStorageAttachmentDeleted(*attachmentName, 30); err != nil {
-			t.Fatalf("Error waiting for the storage attachment to be deleted, dangling resources may occur: %v", err)
 		}
 	}
 
