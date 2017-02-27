@@ -29,7 +29,7 @@ func TestAccStorageVolumeLifecycle(t *testing.T) {
 		t.Fatalf("Create volume failed: %s\n", err)
 	}
 
-	defer tearDownStorageVolumes(name)
+	defer tearDownStorageVolumes(t, svc, name)
 
 	getRequest := &GetStorageVolumeInput{
 		Name: name,
@@ -76,18 +76,12 @@ func TestAccStorageVolumeLifecycle(t *testing.T) {
 	}
 }
 
-func tearDownStorageVolumes(name string) {
-	svc, err := getStorageVolumeClient()
-	if err != nil {
-		panic(err)
-	}
-
+func tearDownStorageVolumes(t *testing.T, svc *StorageVolumeClient, name string) {
 	deleteRequest := &DeleteStorageVolumeInput{
 		Name: name,
 	}
-	err = svc.DeleteStorageVolume(deleteRequest)
-	if err != nil {
-		panic(err)
+	if err := svc.DeleteStorageVolume(deleteRequest); err != nil {
+		t.Fatalf("Error deleting storage volume, dangling resources may occur: %v", err)
 	}
 }
 
