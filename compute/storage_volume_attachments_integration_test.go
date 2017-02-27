@@ -46,13 +46,12 @@ func TestAccStorageAttachmentsLifecycle(t *testing.T) {
 	}
 	instanceInfo = *info
 
-	createStorageVolumeInput := storageVolumesClient.NewStorageVolumeSpec("10G", []string{"/oracle/public/storage/default"}, volumeName)
-	err = storageVolumesClient.CreateStorageVolume(createStorageVolumeInput)
-	if err != nil {
-		panic(err)
+	createStorageVolumeInput := &CreateStorageVolumeInput{
+		Name:       volumeName,
+		Size:       "10G",
+		Properties: []string{"/oracle/public/storage/default"},
 	}
-
-	_, err = storageVolumesClient.WaitForStorageVolumeOnline(volumeName, 30)
+	_, err = storageVolumesClient.CreateStorageVolume(createStorageVolumeInput)
 	if err != nil {
 		panic(err)
 	}
@@ -91,18 +90,18 @@ func tearDownStorageAttachments(t *testing.T, instancesClient *InstancesClient, 
 		}
 	}
 
-	// TODO: refactor this once the Storage Volumes PR has been merged
-	qualifiedVolumeName := volumesClient.getQualifiedName(volumeName)
-	volume, _ := volumesClient.GetStorageVolume(qualifiedVolumeName)
+	getInput := &GetStorageVolumeInput{
+		Name: volumesClient.getQualifiedName(volumeName),
+	}
+	volume, _ := volumesClient.GetStorageVolume(getInput)
 	if volume != nil {
 		log.Printf("Deleting Storage Volume %s", volumeName)
 
-		if err := volumesClient.DeleteStorageVolume(qualifiedVolumeName); err != nil {
-			t.Fatalf("Error deleting storage volume, dangling resources may occur: %v", err)
+		input := &DeleteStorageVolumeInput{
+			Name: getInput.Name,
 		}
-
-		if err := volumesClient.WaitForStorageVolumeDeleted(volumeName, 30); err != nil {
-			t.Fatalf("Error waiting for the storage volume to be deleted, dangling resources may occur: %v", err)
+		if err := volumesClient.DeleteStorageVolume(input); err != nil {
+			t.Fatalf("Error deleting storage volume, dangling resources may occur: %v", err)
 		}
 	}
 
