@@ -31,7 +31,7 @@ func TestAccIPNetworksLifeCycle(t *testing.T) {
 		IPAddressPrefix:   _IPNetworkTestPrefix,
 		Description:       _IPNetworkTestDescription,
 		PublicNaptEnabled: false,
-		Tags:              []string{"testing", "acceptance-test"},
+		Tags:              []string{"testing"},
 	}
 
 	createdNetwork, err := svc.CreateIPNetwork(createInput)
@@ -60,7 +60,7 @@ func TestAccIPNetworksLifeCycle(t *testing.T) {
 		IPAddressPrefix:   _IPNetworkTestPrefixUpdate,
 		Description:       _IPNetworkTestDescription,
 		PublicNaptEnabled: true,
-		Tags:              []string{"testing", "updated"},
+		Tags:              []string{"updated"},
 	}
 
 	updatedNetwork, err := svc.UpdateIPNetwork(updateInput)
