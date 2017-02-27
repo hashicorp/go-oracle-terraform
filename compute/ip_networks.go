@@ -115,7 +115,46 @@ func (c *IPNetworksClient) GetIPNetwork(input *GetIPNetworkInput) (*IPNetworkInf
 	return c.success(&ipInfo)
 }
 
-type UpdateIPNetworkInput CreateIPNetworkInput
+type UpdateIPNetworkInput struct {
+	// The name of the IP Network to update. Object names can only contain alphanumeric,
+	// underscore, dash, and period characters. Names are case-sensitive.
+	// Required
+	Name string `json:"name"`
+
+	// Specify the size of the IP Subnet. It is a range of IPv4 addresses assigned in the virtual
+	// network, in CIDR address prefix format.
+	//	While specifying the IP address prefix take care of the following points:
+	//
+	//* These IP addresses aren't part of the common pool of Oracle-provided IP addresses used by the shared network.
+	//
+	//* There's no conflict with the range of IP addresses used in another IP network, the IP addresses used your on-premises network, or with the range of private IP addresses used in the shared network. If IP networks with overlapping IP subnets are linked to an IP exchange, packets going to and from those IP networks are dropped.
+	//
+	//* The upper limit of the CIDR block size for an IP network is /16.
+	//
+	//Note: The first IP address of any IP network is reserved for the default gateway, the DHCP server, and the DNS server of that IP network.
+	// Required
+	IPAddressPrefix string `json:"ipAddressPrefix"`
+
+	//Specify the IP network exchange to which the IP network belongs.
+	//You can add an IP network to only one IP network exchange, but an IP network exchange
+	//can include multiple IP networks. An IP network exchange enables access between IP networks
+	//that have non-overlapping addresses, so that instances on these networks can exchange packets
+	//with each other without NAT.
+	// Optional
+	IPNetworkExchange string `json:"ipNetworkExchange"`
+
+	// Description of the IPNetwork
+	// Optional
+	Description string `json:"description"`
+
+	// Enable public internet access using NAPT for VNICs without any public IP reservation
+	// Optional
+	PublicNaptEnabled bool `json:"publicNaptEnabledFlag"`
+
+	// String slice of tags to apply to the IP Network object
+	// Optional
+	Tags []string `json:"tags"`
+}
 
 func (c *IPNetworksClient) UpdateIPNetwork(input *UpdateIPNetworkInput) (*IPNetworkInfo, error) {
 	input.Name = c.getQualifiedName(input.Name)
@@ -129,13 +168,13 @@ func (c *IPNetworksClient) UpdateIPNetwork(input *UpdateIPNetworkInput) (*IPNetw
 	return c.success(&ipInfo)
 }
 
-type DeleteIPNetworkInput GetIPNetworkInput
+type DeleteIPNetworkInput struct {
+	// The name of the IP Network to query for. Case-sensitive
+	// Required
+	Name string `json:"name"`
+}
 
 func (c *IPNetworksClient) DeleteIPNetwork(input *DeleteIPNetworkInput) error {
-	/*input.Name = c.getQualifiedName(input.Name)
-	if err := c.deleteResource(input.Name); err != nil {
-		return err
-	}*/
 	return c.deleteResource(input.Name)
 }
 
