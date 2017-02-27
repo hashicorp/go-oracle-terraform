@@ -51,7 +51,7 @@ func (c *StorageAttachmentsClient) CreateStorageAttachment(input *CreateStorageA
 		return nil, err
 	}
 
-	info, err := c.waitForStorageAttachmentToBeCreated(attachmentInfo.Name, WaitForVolumeAttachmentReadyTimeout)
+	info, err := c.waitForStorageAttachmentToFullyAttach(attachmentInfo.Name, WaitForVolumeAttachmentReadyTimeout)
 	if err != nil {
 		return nil, err
 	}
@@ -78,8 +78,8 @@ func (c *StorageAttachmentsClient) GetStorageAttachment(name string) (*StorageAt
 	return c.success(&attachmentInfo)
 }
 
-// waitForStorageAttachmentToBeCreated waits for the storage attachment with the given name to be fully attached, or times out.
-func (c *StorageAttachmentsClient) waitForStorageAttachmentToBeCreated(name string, timeoutSeconds int) (*StorageAttachmentInfo, error) {
+// waitForStorageAttachmentToFullyAttach waits for the storage attachment with the given name to be fully attached, or times out.
+func (c *StorageAttachmentsClient) waitForStorageAttachmentToFullyAttach(name string, timeoutSeconds int) (*StorageAttachmentInfo, error) {
 	var waitResult *StorageAttachmentInfo
 
 	err := c.waitFor("storage attachment to be attached", timeoutSeconds, func() (bool, error) {

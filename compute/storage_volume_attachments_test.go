@@ -50,7 +50,7 @@ func TestAccStorageAttachmentsClient_WaitForStorageDetachmentTimeout(t *testing.
 	}
 }
 
-func TestAccStorageAttachmentsClient_WaitForStorageAttachmentToBeCreatedOnline(t *testing.T) {
+func TestAccStorageAttachmentsClient_WaitForStorageAttachmentToBeFullyAttachedSuccessful(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
 	name := "test"
@@ -62,7 +62,7 @@ func TestAccStorageAttachmentsClient_WaitForStorageAttachmentToBeCreatedOnline(t
 		t.Fatalf("error getting stub client: %s", err)
 	}
 
-	info, err := sv.waitForStorageAttachmentToBeCreated(name, 10)
+	info, err := sv.waitForStorageAttachmentToFullyAttach(name, 10)
 	if err != nil {
 		t.Fatalf("Wait for storage attachment to become available request failed: %s", err)
 	}
@@ -74,7 +74,7 @@ func TestAccStorageAttachmentsClient_WaitForStorageAttachmentToBeCreatedOnline(t
 
 }
 
-func TestAccStorageAttachmentsClient_WaitForStorageAttachmentToBeCreatedTimeout(t *testing.T) {
+func TestAccStorageAttachmentsClient_WaitForStorageAttachmentToBeFullyAttachedTimeout(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
 	name := "test"
@@ -86,7 +86,7 @@ func TestAccStorageAttachmentsClient_WaitForStorageAttachmentToBeCreatedTimeout(
 		t.Fatalf("error getting stub client: %s", err)
 	}
 
-	_, err = sv.waitForStorageAttachmentToBeCreated(name, 3)
+	_, err = sv.waitForStorageAttachmentToFullyAttach(name, 3)
 	if err == nil {
 		t.Fatal("Expected timeout error")
 	}
