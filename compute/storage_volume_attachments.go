@@ -76,7 +76,7 @@ func (c *StorageAttachmentsClient) CreateStorageAttachment(input *CreateStorageA
 		return nil, err
 	}
 
-	err := c.WaitForStorageAttachmentCreated(attachmentInfo.Name, WaitForVolumeAttachmentReadyTimeout)
+	err := c.waitForStorageAttachmentToBeCreated(attachmentInfo.Name, WaitForVolumeAttachmentReadyTimeout)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +90,7 @@ func (c *StorageAttachmentsClient) DeleteStorageAttachment(name string) error {
 		return err
 	}
 
-	return c.WaitForStorageAttachmentDeleted(name, WaitForVolumeAttachmentDeleteTimeout)
+	return c.waitForStorageAttachmentToBeDeleted(name, WaitForVolumeAttachmentDeleteTimeout)
 }
 
 // GetStorageAttachment retrieves the storage attachment with the given name.
@@ -103,8 +103,8 @@ func (c *StorageAttachmentsClient) GetStorageAttachment(name string) (*StorageAt
 	return c.success(&attachmentInfo)
 }
 
-// WaitForStorageAttachmentCreated waits for the storage attachment with the given name to be fully attached, or times out.
-func (c *StorageAttachmentsClient) WaitForStorageAttachmentCreated(name string, timeoutSeconds int) error {
+// waitForStorageAttachmentToBeCreated waits for the storage attachment with the given name to be fully attached, or times out.
+func (c *StorageAttachmentsClient) waitForStorageAttachmentToBeCreated(name string, timeoutSeconds int) error {
 	return c.waitFor("storage attachment to be attached", timeoutSeconds, func() (bool, error) {
 		info, err := c.GetStorageAttachment(name)
 		if err != nil {
@@ -117,8 +117,8 @@ func (c *StorageAttachmentsClient) WaitForStorageAttachmentCreated(name string, 
 	})
 }
 
-// WaitForStorageAttachmentDeleted waits for the storage attachment with the given name to be fully deleted, or times out.
-func (c *StorageAttachmentsClient) WaitForStorageAttachmentDeleted(name string, timeoutSeconds int) error {
+// waitForStorageAttachmentToBeDeleted waits for the storage attachment with the given name to be fully deleted, or times out.
+func (c *StorageAttachmentsClient) waitForStorageAttachmentToBeDeleted(name string, timeoutSeconds int) error {
 	return c.waitFor("storage attachment to be deleted", timeoutSeconds, func() (bool, error) {
 		_, err := c.GetStorageAttachment(name)
 		if err != nil {
