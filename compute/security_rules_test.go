@@ -170,19 +170,15 @@ func TestAccSecurityRulesClient_CreateRule(t *testing.T) {
 		Application:     "/oracle/default-application",
 	}
 	info, err := client.CreateSecurityRule(&createInput)
-
 	if err != nil {
 		t.Fatalf("Create security rule request failed: %s", err)
 	}
-
 	if info.SourceList != "seciplist:es_iplist" {
 		t.Errorf("Expected source list 'seciplist:es_iplist', was %s", info.SourceList)
 	}
-
 	if info.DestinationList != "seclist:allowed_video_servers" {
 		t.Errorf("Expected source list 'seclist:allowed_video_servers', was %s", info.DestinationList)
 	}
-
 	if info.Application != "video_streaming_udp" {
 		t.Errorf("Expected application 'video_streaming_udp', was %s", info.Application)
 	}

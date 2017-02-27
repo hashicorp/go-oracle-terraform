@@ -102,8 +102,7 @@ func deleteSecurityAssociation(t *testing.T, client *SecurityAssociationsClient,
 	deleteInput := DeleteSecurityAssociationInput{
 		Name: name,
 	}
-	err := client.DeleteSecurityAssociation(&deleteInput)
-	if err != nil {
+	if err := client.DeleteSecurityAssociation(&deleteInput); err != nil {
 		t.Fatal(err)
 	}
 

@@ -18,7 +18,7 @@ func TestAccSecurityListLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	log.Printf("Obtained Security List Client")
+	log.Print("Obtained Security List Client")
 
 	name := "test-sec-list"
 
@@ -33,7 +33,6 @@ func TestAccSecurityListLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 	log.Printf("Successfully created Security List: %+v", createdSecurityList)
-
 	defer deleteSecurityList(t, securityListClient, name)
 
 	getSecurityListInput := GetSecurityListInput{
@@ -46,7 +45,7 @@ func TestAccSecurityListLifeCycle(t *testing.T) {
 	if createdSecurityList.Policy != getSecurityListOutput.Policy {
 		t.Fatalf("Created and retrived policies don't match.\n Desired: %s\n Actual: %s", createdSecurityList.Policy, getSecurityListOutput.Policy)
 	}
-	log.Printf("Successfully retrieved Security List")
+	log.Print("Successfully retrieved Security List")
 
 	updateSecurityListInput := UpdateSecurityListInput{
 		Name:               name,
@@ -60,7 +59,7 @@ func TestAccSecurityListLifeCycle(t *testing.T) {
 	if updateSecurityListOutput.OutboundCIDRPolicy != "PERMIT" {
 		t.Fatalf("Outbound policy not successfully updated \nDesired: %s \nActual: %s", updateSecurityListInput.OutboundCIDRPolicy, updateSecurityListOutput.OutboundCIDRPolicy)
 	}
-	log.Printf("Successfully updated Security List")
+	log.Print("Successfully updated Security List")
 }
 
 // Test that the client can create an instance.
