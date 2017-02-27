@@ -20,8 +20,6 @@ func TestAccSecurityApplicationsTCPLifeCycle(t *testing.T) {
 	}
 	log.Printf("Obtained Security Applications Client")
 
-	defer deleteSecurityApplication(t, securityApplicationsClient, name)
-
 	createInput := CreateSecurityApplicationInput{
 		Name:        name,
 		Description: "Terraform Acceptance Test TCP Lifecycle",
@@ -33,6 +31,7 @@ func TestAccSecurityApplicationsTCPLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 	log.Printf("Successfully created Security Application: %+v", createdSecurityApplication)
+	defer deleteSecurityApplication(t, securityApplicationsClient, name)
 
 	retrieveInput := GetSecurityApplicationInput{
 		Name: createInput.Name,

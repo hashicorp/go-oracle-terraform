@@ -1,13 +1,121 @@
 package compute
 
 import (
+	"log"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"reflect"
 	"testing"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
+	"github.com/hashicorp/go-oracle-terraform/opc"
 )
+
+func TestAccSecurityRuleLifeCycle(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
+
+	name := "test-acc-sec-rule"
+
+	securityListClient, err := getSecurityListsClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	createSecurityListInput := CreateSecurityListInput{
+		Name:               name,
+		OutboundCIDRPolicy: "DENY",
+		Policy:             "PERMIT",
+	}
+	createdSecurityList, err := securityListClient.CreateSecurityList(&createSecurityListInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer deleteSecurityList(t, securityListClient, name)
+
+	securityIPListClient, err := getSecurityIPListsClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	createSecurityIPListInput := CreateSecurityIPListInput{
+		Name:         name,
+		SecIPEntries: []string{"127.0.0.1", "127.0.0.2"},
+	}
+	createdSecurityIPList, err := securityIPListClient.CreateSecurityIPList(&createSecurityIPListInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	log.Printf("Successfully created Security IP List: %+v", createdSecurityIPList)
+	defer deleteSecurityIPList(t, securityIPListClient, name)
+
+	securityApplicationsClient, err := getSecurityApplicationsClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	log.Printf("Obtained Security Applications Client")
+
+	createInput := CreateSecurityApplicationInput{
+		Name:     name,
+		Protocol: SecurityApplicationProtocol(ICMP),
+		ICMPType: SecurityApplicationICMPType(Echo),
+	}
+
+	createdSecurityApplication, err := securityApplicationsClient.CreateSecurityApplication(&createInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer deleteSecurityApplication(t, securityApplicationsClient, name)
+
+	securityRuleClient, err := getSecurityRulesClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+	log.Printf("Obtained Security Rule Client")
+
+	createSecurityRuleInput := CreateSecurityRuleInput{
+		Name:            name,
+		Action:          "PERMIT",
+		Disabled:        false,
+		DestinationList: "seclist:" + createdSecurityList.Name,
+		SourceList:      "seciplist:" + createdSecurityIPList.Name,
+		Application:     createdSecurityApplication.Name,
+	}
+
+	createdSecurityRule, err := securityRuleClient.CreateSecurityRule(&createSecurityRuleInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	log.Printf("Successfully created Security Rule: %+v", createdSecurityRule)
+	defer deleteSecurityRule(t, securityRuleClient, name)
+
+	getSecurityRuleInput := GetSecurityRuleInput{
+		Name: createdSecurityRule.Name,
+	}
+	getSecurityRuleOutput, err := securityRuleClient.GetSecurityRule(&getSecurityRuleInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !reflect.DeepEqual(createdSecurityRule, getSecurityRuleOutput) {
+		t.Fatalf("Created and retrived security rules don't match.\n Desired: %s\n Actual: %s", createdSecurityRule, getSecurityRuleOutput)
+	}
+	log.Printf("Successfully retrieved Security Rule")
+
+	updateSecurityRuleInput := UpdateSecurityRuleInput{
+		Name:            name,
+		Action:          "PERMIT",
+		Disabled:        true,
+		DestinationList: "seclist:" + createdSecurityList.Name,
+		SourceList:      "seciplist:" + createdSecurityIPList.Name,
+		Application:     createdSecurityApplication.Name,
+	}
+	updateSecurityRuleOutput, err := securityRuleClient.UpdateSecurityRule(&updateSecurityRuleInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if updateSecurityRuleOutput.Disabled != true {
+		t.Fatal("Security Rule was not updated to disabled")
+	}
+	log.Printf("Successfully updated Security Rule")
+}
 
 // Test that the client can create an instance.
 func TestAccSecurityRulesClient_CreateRule(t *testing.T) {
@@ -22,7 +130,7 @@ func TestAccSecurityRulesClient_CreateRule(t *testing.T) {
 			t.Errorf("Wrong HTTP URL %v, expected %v", r.URL, expectedPath)
 		}
 
-		ruleSpec := &SecurityRuleSpec{}
+		ruleSpec := &CreateSecurityRuleInput{}
 		unmarshalRequestBody(t, r, ruleSpec)
 
 		if ruleSpec.Name != "/Compute-test/test/test-rule1" {
@@ -53,26 +161,24 @@ func TestAccSecurityRulesClient_CreateRule(t *testing.T) {
 		t.Fatalf("error getting stub client: %s", err)
 	}
 
-	info, err := client.CreateSecurityRule(
-		"test-rule1",
-		"seciplist:test-list1",
-		"seclist:test-list2",
-		"/oracle/default-application",
-		"PERMIT",
-		false)
-
+	createInput := CreateSecurityRuleInput{
+		Name:            "test-rule1",
+		Action:          "PERMIT",
+		Disabled:        false,
+		DestinationList: "seclist:test-list2",
+		SourceList:      "seciplist:test-list1",
+		Application:     "/oracle/default-application",
+	}
+	info, err := client.CreateSecurityRule(&createInput)
 	if err != nil {
 		t.Fatalf("Create security rule request failed: %s", err)
 	}
-
 	if info.SourceList != "seciplist:es_iplist" {
 		t.Errorf("Expected source list 'seciplist:es_iplist', was %s", info.SourceList)
 	}
-
 	if info.DestinationList != "seclist:allowed_video_servers" {
 		t.Errorf("Expected source list 'seclist:allowed_video_servers', was %s", info.DestinationList)
 	}
-
 	if info.Application != "video_streaming_udp" {
 		t.Errorf("Expected application 'video_streaming_udp', was %s", info.Application)
 	}
@@ -92,6 +198,15 @@ func getStubSecurityRulesClient(server *httptest.Server) (*SecurityRulesClient, 
 	return client.SecurityRules(), nil
 }
 
+func getSecurityRulesClient() (*SecurityRulesClient, error) {
+	client, err := getTestClient(&opc.Config{})
+	if err != nil {
+		return &SecurityRulesClient{}, err
+	}
+
+	return client.SecurityRules(), nil
+}
+
 var exampleCreateSecurityRuleResponse = `
 {
   "dst_list": "seclist:/Compute-acme/jack.jones@example.com/allowed_video_servers",
@@ -103,3 +218,15 @@ var exampleCreateSecurityRuleResponse = `
   "action": "PERMIT"
 }
 `
+
+func deleteSecurityRule(t *testing.T, client *SecurityRulesClient, name string) {
+	deleteInput := DeleteSecurityRuleInput{
+		Name: name,
+	}
+	err := client.DeleteSecurityRule(&deleteInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	log.Printf("Successfully deleted Security Rule")
+}

@@ -11,39 +11,32 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/opc"
 )
 
-var createdSecurityList *SecurityListInfo
-
 func TestAccSecurityListLifeCycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
-
-	defer func() {
-		if err := tearDownSecurityLists(); err != nil {
-			log.Printf("Error deleting security list: %#v", createdSecurityList)
-			log.Print("Dangling resources may occur!")
-			t.Fatalf("Error: %v", err)
-		}
-		log.Printf("Successfully deleted Security List")
-	}()
 
 	securityListClient, err := getSecurityListsClient()
 	if err != nil {
 		t.Fatal(err)
 	}
-	log.Printf("Obtained Security List Client")
+	log.Print("Obtained Security List Client")
+
+	name := "test-sec-list"
 
 	createSecurityListInput := CreateSecurityListInput{
-		Name:               "test-sec-list",
+		Name:               name,
 		OutboundCIDRPolicy: "DENY",
 		Policy:             "PERMIT",
 	}
-	createdSecurityList, err = securityListClient.CreateSecurityList(&createSecurityListInput)
+
+	createdSecurityList, err := securityListClient.CreateSecurityList(&createSecurityListInput)
 	if err != nil {
 		t.Fatal(err)
 	}
 	log.Printf("Successfully created Security List: %+v", createdSecurityList)
+	defer deleteSecurityList(t, securityListClient, name)
 
 	getSecurityListInput := GetSecurityListInput{
-		Name: createdSecurityList.Name,
+		Name: name,
 	}
 	getSecurityListOutput, err := securityListClient.GetSecurityList(&getSecurityListInput)
 	if err != nil {
@@ -52,10 +45,10 @@ func TestAccSecurityListLifeCycle(t *testing.T) {
 	if createdSecurityList.Policy != getSecurityListOutput.Policy {
 		t.Fatalf("Created and retrived policies don't match.\n Desired: %s\n Actual: %s", createdSecurityList.Policy, getSecurityListOutput.Policy)
 	}
-	log.Printf("Successfully retrieved Security List")
+	log.Print("Successfully retrieved Security List")
 
 	updateSecurityListInput := UpdateSecurityListInput{
-		Name:               createdSecurityList.Name,
+		Name:               name,
 		OutboundCIDRPolicy: "PERMIT",
 		Policy:             "DENY",
 	}
@@ -66,7 +59,7 @@ func TestAccSecurityListLifeCycle(t *testing.T) {
 	if updateSecurityListOutput.OutboundCIDRPolicy != "PERMIT" {
 		t.Fatalf("Outbound policy not successfully updated \nDesired: %s \nActual: %s", updateSecurityListInput.OutboundCIDRPolicy, updateSecurityListOutput.OutboundCIDRPolicy)
 	}
-	log.Printf("Successfully updated Security List")
+	log.Print("Successfully updated Security List")
 }
 
 // Test that the client can create an instance.
@@ -155,15 +148,13 @@ var exampleCreateSecurityListResponse = `
 }
 `
 
-func tearDownSecurityLists() error {
-	slc, err := getSecurityListsClient()
-	if err != nil {
-		return err
+func deleteSecurityList(t *testing.T, client *SecurityListsClient, name string) {
+	deleteInput := DeleteSecurityListInput{
+		Name: name,
+	}
+	if err := client.DeleteSecurityList(&deleteInput); err != nil {
+		t.Fatal(err)
 	}
 
-	input := &DeleteSecurityListInput{
-		Name: createdSecurityList.Name,
-	}
-
-	return slc.DeleteSecurityList(input)
+	log.Print("Successfully deleted Security List")
 }

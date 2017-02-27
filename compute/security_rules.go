@@ -22,25 +22,93 @@ func (c *Client) SecurityRules() *SecurityRulesClient {
 		}}
 }
 
-// SecurityRuleSpec defines a security rule to be created.
-type SecurityRuleSpec struct {
-	Name            string `json:"name"`
-	SourceList      string `json:"src_list"`
-	DestinationList string `json:"dst_list"`
-	Application     string `json:"application"`
-	Action          string `json:"action"`
-	Disabled        bool   `json:"disabled"`
-}
-
 // SecurityRuleInfo describes an existing security rule.
 type SecurityRuleInfo struct {
+	Action          string `json:"action"`
+	Application     string `json:"application"`
+	Description     string `json:"description"`
+	Disabled        bool   `json:"disabled"`
+	DestinationList string `json:"dst_list"`
 	Name            string `json:"name"`
 	SourceList      string `json:"src_list"`
-	DestinationList string `json:"dst_list"`
-	Application     string `json:"application"`
-	Action          string `json:"action"`
-	Disabled        bool   `json:"disabled"`
 	URI             string `json:"uri"`
+}
+
+// CreateSecurityRuleInput defines a security rule to be created.
+type CreateSecurityRuleInput struct {
+	Action          string `json:"action"`
+	Application     string `json:"application"`
+	Description     string `json:"description"`
+	Disabled        bool   `json:"disabled"`
+	DestinationList string `json:"dst_list"`
+	Name            string `json:"name"`
+	SourceList      string `json:"src_list"`
+}
+
+// CreateSecurityRule creates a new security rule.
+func (c *SecurityRulesClient) CreateSecurityRule(createInput *CreateSecurityRuleInput) (*SecurityRuleInfo, error) {
+	createInput.Name = c.getQualifiedName(createInput.Name)
+	createInput.SourceList = c.getQualifiedListName(createInput.SourceList)
+	createInput.DestinationList = c.getQualifiedListName(createInput.DestinationList)
+	createInput.Application = c.getQualifiedName(createInput.Application)
+
+	var ruleInfo SecurityRuleInfo
+	if err := c.createResource(createInput, &ruleInfo); err != nil {
+		return nil, err
+	}
+
+	return c.success(&ruleInfo)
+}
+
+// GetSecurityRuleInput describes the Security Rule to get
+type GetSecurityRuleInput struct {
+	Name string `json:"name"`
+}
+
+// GetSecurityRule retrieves the security rule with the given name.
+func (c *SecurityRulesClient) GetSecurityRule(getInput *GetSecurityRuleInput) (*SecurityRuleInfo, error) {
+	var ruleInfo SecurityRuleInfo
+	if err := c.getResource(getInput.Name, &ruleInfo); err != nil {
+		return nil, err
+	}
+
+	return c.success(&ruleInfo)
+}
+
+// UpdateSecurityRuleInput describes a secruity rule to update
+type UpdateSecurityRuleInput struct {
+	Action          string `json:"action"`
+	Application     string `json:"application"`
+	Description     string `json:"description"`
+	Disabled        bool   `json:"disabled"`
+	DestinationList string `json:"dst_list"`
+	Name            string `json:"name"`
+	SourceList      string `json:"src_list"`
+}
+
+// UpdateSecurityRule modifies the properties of the security rule with the given name.
+func (c *SecurityRulesClient) UpdateSecurityRule(updateInput *UpdateSecurityRuleInput) (*SecurityRuleInfo, error) {
+	updateInput.Name = c.getQualifiedName(updateInput.Name)
+	updateInput.SourceList = c.getQualifiedListName(updateInput.SourceList)
+	updateInput.DestinationList = c.getQualifiedListName(updateInput.DestinationList)
+	updateInput.Application = c.getQualifiedName(updateInput.Application)
+
+	var ruleInfo SecurityRuleInfo
+	if err := c.updateResource(updateInput.Name, updateInput, &ruleInfo); err != nil {
+		return nil, err
+	}
+
+	return c.success(&ruleInfo)
+}
+
+// DeleteSecurityRuleInput describes the security rule to delete
+type DeleteSecurityRuleInput struct {
+	Name string `json:"name"`
+}
+
+// DeleteSecurityRule deletes the security rule with the given name.
+func (c *SecurityRulesClient) DeleteSecurityRule(deleteInput *DeleteSecurityRuleInput) error {
+	return c.deleteResource(deleteInput.Name)
 }
 
 func (c *SecurityRulesClient) getQualifiedListName(name string) string {
@@ -63,61 +131,4 @@ func (c *SecurityRulesClient) success(ruleInfo *SecurityRuleInfo) (*SecurityRule
 	ruleInfo.DestinationList = c.unqualifyListName(ruleInfo.DestinationList)
 	ruleInfo.Application = c.getUnqualifiedName(ruleInfo.Application)
 	return ruleInfo, nil
-}
-
-// CreateSecurityRule creates a new security rule.
-func (c *SecurityRulesClient) CreateSecurityRule(
-	name, sourceList, destinationList, application, action string,
-	disabled bool) (*SecurityRuleInfo, error) {
-	spec := SecurityRuleSpec{
-		Name:            c.getQualifiedName(name),
-		SourceList:      c.getQualifiedListName(sourceList),
-		DestinationList: c.getQualifiedListName(destinationList),
-		Application:     c.getQualifiedName(application),
-		Action:          action,
-		Disabled:        disabled,
-	}
-
-	var ruleInfo SecurityRuleInfo
-	if err := c.createResource(&spec, &ruleInfo); err != nil {
-		return nil, err
-	}
-
-	return c.success(&ruleInfo)
-}
-
-// GetSecurityRule retrieves the security rule with the given name.
-func (c *SecurityRulesClient) GetSecurityRule(name string) (*SecurityRuleInfo, error) {
-	var ruleInfo SecurityRuleInfo
-	if err := c.getResource(name, &ruleInfo); err != nil {
-		return nil, err
-	}
-
-	return c.success(&ruleInfo)
-}
-
-// UpdateSecurityRule modifies the properties of the security rule with the given name.
-func (c *SecurityRulesClient) UpdateSecurityRule(
-	name, sourceList, destinationList, application, action string,
-	disabled bool) (*SecurityRuleInfo, error) {
-	spec := SecurityRuleSpec{
-		Name:            c.getQualifiedName(name),
-		SourceList:      sourceList,
-		DestinationList: destinationList,
-		Application:     application,
-		Action:          action,
-		Disabled:        disabled,
-	}
-
-	var ruleInfo SecurityRuleInfo
-	if err := c.updateResource(name, &spec, &ruleInfo); err != nil {
-		return nil, err
-	}
-
-	return c.success(&ruleInfo)
-}
-
-// DeleteSecurityRule deletes the security rule with the given name.
-func (c *SecurityRulesClient) DeleteSecurityRule(name string) error {
-	return c.deleteResource(name)
 }

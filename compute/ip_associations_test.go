@@ -42,7 +42,7 @@ func TestAccIPAssociationLifeCycle(t *testing.T) {
 	}
 	defer tearDownInstances(t, svc, createdInstance.Name, createdInstance.ID)
 
-	log.Printf("Instance created: %#v\n", createdInstance)
+	log.Printf("Instance created: %#v", createdInstance)
 
 	vcable := createdInstance.VCableID
 
@@ -61,7 +61,7 @@ func TestAccIPAssociationLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	log.Printf("Created IP Association: %+v\n", createdIPAssociation)
+	log.Printf("Created IP Association: %+v", createdIPAssociation)
 
 	getIPInput := &GetIPAssociationInput{
 		Name: createdIPAssociation.Name,
