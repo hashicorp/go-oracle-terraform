@@ -152,10 +152,9 @@ func deleteSecurityList(t *testing.T, client *SecurityListsClient, name string) 
 	deleteInput := DeleteSecurityListInput{
 		Name: name,
 	}
-	err := client.DeleteSecurityList(&deleteInput)
-	if err != nil {
+	if err := client.DeleteSecurityList(&deleteInput); err != nil {
 		t.Fatal(err)
 	}
 
-	log.Printf("Successfully deleted Security List")
+	log.Print("Successfully deleted Security List")
 }
