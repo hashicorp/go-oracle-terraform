@@ -22,7 +22,7 @@ func TestAccStorageAttachmentsLifecycle(t *testing.T) {
 		panic(err)
 	}
 
-	defer tearDownStorageAttachments(instancesClient, storageVolumesClient, attachmentsClient, &instanceInfo, volumeName, &attachmentName)
+	defer tearDownStorageAttachments(t, instancesClient, storageVolumesClient, attachmentsClient, &instanceInfo, volumeName, &attachmentName)
 
 	createInstanceInput := &CreateInstanceInput{
 		Name:      instanceName,
@@ -82,33 +82,33 @@ func TestAccStorageAttachmentsLifecycle(t *testing.T) {
 	log.Printf("Attachment created: %#v\n", getResult)
 }
 
-func tearDownStorageAttachments(instancesClient *InstancesClient, volumesClient *StorageVolumeClient, attachmentsClient *StorageAttachmentsClient,
+func tearDownStorageAttachments(t *testing.T, instancesClient *InstancesClient, volumesClient *StorageVolumeClient, attachmentsClient *StorageAttachmentsClient,
 	instanceInfo *InstanceInfo, volumeName string, attachmentName *string) {
 
 	// delete the storage attachment only if it exists
 	if *attachmentName != "" {
 		log.Printf("Deleting Storage Attachment %s", *attachmentName)
-		err := attachmentsClient.DeleteStorageAttachment(*attachmentName)
-		if err != nil {
-			panic(err)
+		if err := attachmentsClient.DeleteStorageAttachment(*attachmentName); err != nil {
+			t.Fatalf("Error deleting storage attachment, dangling resources may occur: %v", err)
 		}
 
-		err = attachmentsClient.WaitForStorageAttachmentDeleted(*attachmentName, 30)
-		if err != nil {
-			panic(err)
+		if err := attachmentsClient.WaitForStorageAttachmentDeleted(*attachmentName, 30); err != nil {
+			t.Fatalf("Error waiting for the storage attachment to be deleted, dangling resources may occur: %v", err)
 		}
 	}
 
+	// TODO: refactor this once the Storage Volumes PR has been merged
 	qualifiedVolumeName := volumesClient.getQualifiedName(volumeName)
-	volume, err := volumesClient.GetStorageVolume(qualifiedVolumeName)
+	volume, _ := volumesClient.GetStorageVolume(qualifiedVolumeName)
 	if volume != nil {
 		log.Printf("Deleting Storage Volume %s", volumeName)
 
-		_ = volumesClient.DeleteStorageVolume(qualifiedVolumeName)
+		if err := volumesClient.DeleteStorageVolume(qualifiedVolumeName); err != nil {
+			t.Fatalf("Error deleting storage volume, dangling resources may occur: %v", err)
+		}
 
-		err = volumesClient.WaitForStorageVolumeDeleted(volumeName, 30)
-		if err != nil {
-			panic(err)
+		if err := volumesClient.WaitForStorageVolumeDeleted(volumeName, 30); err != nil {
+			t.Fatalf("Error waiting for the storage volume to be deleted, dangling resources may occur: %v", err)
 		}
 	}
 
@@ -118,24 +118,13 @@ func tearDownStorageAttachments(instancesClient *InstancesClient, volumesClient 
 			Name: instanceInfo.Name,
 			ID:   instanceInfo.ID,
 		}
-		err = instancesClient.DeleteInstance(deleteInstanceInput)
-		if err != nil {
-			panic(err)
+		if err := instancesClient.DeleteInstance(deleteInstanceInput); err != nil {
+			t.Fatalf("Error deleting instance, dangling resources may occur: %v", err)
 		}
 	}
 }
 
-func getStorageAttachmentsClient() (*StorageAttachmentsClient, error) {
-	client, err := getTestClient(&opc.Config{})
-	if err != nil {
-		return &StorageAttachmentsClient{}, err
-	}
-
-	return client.StorageAttachments(), nil
-}
-
 func buildStorageAttachmentsClients() (*InstancesClient, *StorageVolumeClient, *StorageAttachmentsClient, error) {
-
 	instancesClient, err := getInstancesClient()
 	if err != nil {
 		return instancesClient, nil, nil, err
@@ -152,4 +141,13 @@ func buildStorageAttachmentsClients() (*InstancesClient, *StorageVolumeClient, *
 	}
 
 	return instancesClient, storageVolumesClient, storageAttachmentsClient, nil
+}
+
+func getStorageAttachmentsClient() (*StorageAttachmentsClient, error) {
+	client, err := getTestClient(&opc.Config{})
+	if err != nil {
+		return &StorageAttachmentsClient{}, err
+	}
+
+	return client.StorageAttachments(), nil
 }
