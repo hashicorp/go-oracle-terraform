@@ -5,6 +5,9 @@ import (
 	"reflect"
 	"testing"
 
+	"fmt"
+	"math/rand"
+
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
 )
@@ -12,8 +15,9 @@ import (
 func TestAccStorageAttachmentsLifecycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
-	instanceName := "test-acc-stor-att-instance"
-	volumeName := "test-acc-stor-att-volume"
+	rInt := rand.Int()
+	instanceName := fmt.Sprintf("test-acc-stor-att-instance-%d", rInt)
+	volumeName := fmt.Sprintf("test-acc-stor-att-volume-%d", rInt)
 	var attachmentName string
 	var instanceInfo InstanceInfo
 
