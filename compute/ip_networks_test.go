@@ -1,21 +1,23 @@
 package compute
 
 import (
-	"testing"
-
-	"reflect"
-
+	"fmt"
 	"log"
+	"math/rand"
+	"reflect"
+	"testing"
+	"time"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
 )
 
 const (
-	_IPNetworkTestName         = "test-acc-ip-network"
-	_IPNetworkTestPrefix       = "10.0.10.0/24"
-	_IPNetworkTestPrefixUpdate = "10.0.12.0/24"
-	_IPNetworkTestDescription  = "testing ip network"
+	_IPNetworkTestName        = "test-acc-ip-network"
+	_IPNetworkTestPrefix      = "10.0.10.0/24"
+	_IPNetworkTestPrefixTwo   = "10.0.12.0/24"
+	_IPNetworkTestPrefixThree = "10.0.14.0/24"
+	_IPNetworkTestDescription = "testing ip network"
 )
 
 func TestAccIPNetworksLifeCycle(t *testing.T) {
@@ -39,7 +41,7 @@ func TestAccIPNetworksLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 	log.Print("IP Network succcessfully created")
-	defer destroyIPNetwork(t, svc, _IPNetworkTestName)
+	defer destroyIPNetwork(t, _IPNetworkTestName)
 
 	getInput := &GetIPNetworkInput{
 		Name: _IPNetworkTestName,
@@ -57,7 +59,7 @@ func TestAccIPNetworksLifeCycle(t *testing.T) {
 	// Update prefix, NAPT, and tags
 	updateInput := &UpdateIPNetworkInput{
 		Name:              _IPNetworkTestName,
-		IPAddressPrefix:   _IPNetworkTestPrefixUpdate,
+		IPAddressPrefix:   _IPNetworkTestPrefixTwo,
 		Description:       _IPNetworkTestDescription,
 		PublicNaptEnabled: true,
 		Tags:              []string{"updated"},
@@ -81,7 +83,12 @@ func TestAccIPNetworksLifeCycle(t *testing.T) {
 
 }
 
-func destroyIPNetwork(t *testing.T, svc *IPNetworksClient, name string) {
+func destroyIPNetwork(t *testing.T, name string) {
+	svc, err := getIPNetworksClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	input := &DeleteIPNetworkInput{
 		Name: name,
 	}
@@ -97,4 +104,24 @@ func getIPNetworksClient() (*IPNetworksClient, error) {
 	}
 
 	return client.IPNetworks(), nil
+}
+
+// Creates a generic IP Network with a supplied network prefix (to prevent collisions)
+// and returns the resulting IP Network Info
+func createTestIPNetwork(prefix string) (*IPNetworkInfo, error) {
+	svc, err := getIPNetworksClient()
+	if err != nil {
+		return nil, err
+	}
+	// Create a random name for the IP network
+	rand.Seed(time.Now().UTC().UnixNano())
+	rName := fmt.Sprintf("test-%d", rand.New(rand.NewSource(time.Now().UnixNano())).Int())
+
+	input := &CreateIPNetworkInput{
+		Name:              rName,
+		Description:       _IPNetworkTestDescription,
+		IPAddressPrefix:   prefix,
+		PublicNaptEnabled: false,
+	}
+	return svc.CreateIPNetwork(input)
 }

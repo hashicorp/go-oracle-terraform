@@ -8,8 +8,21 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/opc"
 )
 
+const (
+	_VirtNicInstanceTestName  = "test-acc-virt-nic"
+	_VirtNicInstanceTestLabel = "test"
+	_VirtNicInstanceTestShape = "oc3"
+	_VirtNicInstanceTestImage = "/oracle/public/Oracle_Solaris_11.3"
+)
+
 func TestAccVirtNICLifeCycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
+
+	ipNetwork, err := createTestIPNetwork(_IPNetworkTestPrefix)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer destroyIPNetwork(t, ipNetwork.Name)
 
 	instanceSvc, err := getInstancesClient()
 	if err != nil {
@@ -19,18 +32,15 @@ func TestAccVirtNICLifeCycle(t *testing.T) {
 	// In order to get details on a Virtual NIC we need to create the following resources
 	// - IP Network
 	// - Instance
-	//
-	// Until we can create an IP Network resource, we are going to use one that was manually created
-	// TODO: Remove hardcoded IP Network when the IP Network resource is added
 
 	instanceInput := &CreateInstanceInput{
-		Name:      "test-acc-virt-nic-lifecycle",
-		Label:     "test",
-		Shape:     "oc3",
-		ImageList: "/oracle/public/Oracle_Solaris_11.3",
+		Name:      _VirtNicInstanceTestName,
+		Label:     _VirtNicInstanceTestLabel,
+		Shape:     _VirtNicInstanceTestShape,
+		ImageList: _VirtNicInstanceTestImage,
 		Networking: map[string]NetworkingInfo{
 			"eth0": {
-				IPNetwork: "testing-1",
+				IPNetwork: ipNetwork.Name,
 				Vnic:      "eth0",
 			},
 		},

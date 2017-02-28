@@ -2,9 +2,8 @@ package compute
 
 import (
 	"log"
-	"testing"
-
 	"reflect"
+	"testing"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
@@ -86,24 +85,42 @@ func TestAccVirtNICSetAddNICS(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	// Create the three IP Networks needed
+	ipNetworkOne, err := createTestIPNetwork(_IPNetworkTestPrefix)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer destroyIPNetwork(t, ipNetworkOne.Name)
+
+	ipNetworkTwo, err := createTestIPNetwork(_IPNetworkTestPrefixTwo)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer destroyIPNetwork(t, ipNetworkTwo.Name)
+
+	ipNetworkThree, err := createTestIPNetwork(_IPNetworkTestPrefixThree)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer destroyIPNetwork(t, ipNetworkThree.Name)
+
 	// Create an instance with multiple vNICs
-	// TODO: Remove hardcoded IP Network when the IP Network resource is added
 	instanceInput := &CreateInstanceInput{
-		Name:      "test-acc-virt-nic-lifecycle",
-		Label:     "test",
-		Shape:     "oc3",
-		ImageList: "/oracle/public/Oracle_Solaris_11.3",
+		Name:      _VirtNicInstanceTestName,
+		Label:     _VirtNicInstanceTestLabel,
+		Shape:     _VirtNicInstanceTestShape,
+		ImageList: _VirtNicInstanceTestImage,
 		Networking: map[string]NetworkingInfo{
 			"eth0": {
-				IPNetwork: "testing-1",
+				IPNetwork: ipNetworkOne.Name,
 				Vnic:      "eth0",
 			},
 			"eth1": {
-				IPNetwork: "testing-2",
+				IPNetwork: ipNetworkTwo.Name,
 				Vnic:      "eth1",
 			},
 			"eth2": {
-				IPNetwork: "testing-3",
+				IPNetwork: ipNetworkThree.Name,
 				Vnic:      "eth2",
 			},
 		},
@@ -123,7 +140,7 @@ func TestAccVirtNICSetAddNICS(t *testing.T) {
 	input := &CreateVirtualNICSetInput{
 		Name:            "test-acc-nic-set-nics",
 		Description:     "testing nic sets",
-		Tags:            []string{"tag1", "tag2"},
+		Tags:            []string{"test-tag"},
 		VirtualNICNames: []string{vNIC1, vNIC2},
 	}
 
@@ -148,19 +165,8 @@ func TestAccVirtNICSetAddNICS(t *testing.T) {
 	}
 
 	// Verify that the vNICs in the returned set are populated
-	for _, v := range returnedSet.VirtualNICs {
-		if v.Name != "eth0" && v.Name != "eth1" {
-			t.Fatalf("Expected vNIC to be either 'eth0' or 'eth1'. Got: %s", v.Name)
-		}
-		if v.MACAddress == "" {
-			t.Fatalf("Empty MAC address found for vNIC: %s", v.Name)
-		}
-		if v.TransitFlag {
-			t.Fatalf("Expected transit flag to be false, got %b for %s", v.TransitFlag, v.Name)
-		}
-		if v.Uri == "" {
-			t.Fatalf("Empty URI returned for vNIC %s", v.Name)
-		}
+	if !reflect.DeepEqual(createdSet, returnedSet) {
+		t.Fatalf("Mismatch Found!\nExpected: %+v\nReceived: %+v", createdSet, returnedSet)
 	}
 
 	// Update the set with the third vNIC
@@ -171,7 +177,7 @@ func TestAccVirtNICSetAddNICS(t *testing.T) {
 		VirtualNICNames: []string{vNIC1, vNIC2, vNIC3},
 	}
 
-	_, err = svc.UpdateVirtualNICSet(updateInput)
+	updatedSet, err := svc.UpdateVirtualNICSet(updateInput)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -183,19 +189,8 @@ func TestAccVirtNICSetAddNICS(t *testing.T) {
 	}
 
 	// Verify that the vNICs in the returned set are populated
-	for _, v := range returnedSet.VirtualNICs {
-		if v.Name != "eth0" && v.Name != "eth1" && v.Name != "eth2" {
-			t.Fatalf("Expected vNIC to be either 'eth0', 'eth1', or 'eth2'. Got: %s", v.Name)
-		}
-		if v.MACAddress == "" {
-			t.Fatalf("Empty MAC address found for vNIC: %s", v.Name)
-		}
-		if v.TransitFlag {
-			t.Fatalf("Expected transit flag to be false, got %b for %s", v.TransitFlag, v.Name)
-		}
-		if v.Uri == "" {
-			t.Fatalf("Empty URI returned for vNIC %s", v.Name)
-		}
+	if !reflect.DeepEqual(updatedSet, returnedSet) {
+		t.Fatalf("Mismatch Found!\nExpected: %+v\nReceived: %+v", createdSet, returnedSet)
 	}
 
 	log.Printf("Virtual NIC Set successfully created and updated")
