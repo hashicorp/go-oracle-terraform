@@ -169,6 +169,20 @@ func (c *Client) unqualify(names ...*string) {
 	}
 }
 
+func (c *Client) getQualifiedListName(name string) string {
+	nameParts := strings.Split(name, ":")
+	listType := nameParts[0]
+	listName := nameParts[1]
+	return fmt.Sprintf("%s:%s", listType, c.getQualifiedName(listName))
+}
+
+func (c *Client) unqualifyListName(qualifiedName string) string {
+	nameParts := strings.Split(qualifiedName, ":")
+	listType := nameParts[0]
+	listName := nameParts[1]
+	return fmt.Sprintf("%s:%s", listType, c.getUnqualifiedName(listName))
+}
+
 // Retry function
 func (c *Client) waitFor(description string, timeoutSeconds int, test func() (bool, error)) error {
 	tick := time.Tick(1 * time.Second)

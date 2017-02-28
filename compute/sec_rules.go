@@ -1,10 +1,5 @@
 package compute
 
-import (
-	"fmt"
-	"strings"
-)
-
 // SecRulesClient is a client for the Sec Rules functions of the Compute API.
 type SecRulesClient struct {
 	ResourceClient
@@ -187,20 +182,6 @@ type DeleteSecRuleInput struct {
 // DeleteSecRule deletes the sec rule with the given name.
 func (c *SecRulesClient) DeleteSecRule(deleteInput *DeleteSecRuleInput) error {
 	return c.deleteResource(deleteInput.Name)
-}
-
-func (c *SecRulesClient) getQualifiedListName(name string) string {
-	nameParts := strings.Split(name, ":")
-	listType := nameParts[0]
-	listName := nameParts[1]
-	return fmt.Sprintf("%s:%s", listType, c.getQualifiedName(listName))
-}
-
-func (c *SecRulesClient) unqualifyListName(qualifiedName string) string {
-	nameParts := strings.Split(qualifiedName, ":")
-	listType := nameParts[0]
-	listName := nameParts[1]
-	return fmt.Sprintf("%s:%s", listType, c.getUnqualifiedName(listName))
 }
 
 func (c *SecRulesClient) success(ruleInfo *SecRuleInfo) (*SecRuleInfo, error) {
