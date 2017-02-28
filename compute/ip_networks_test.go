@@ -93,6 +93,7 @@ func TestAccIPNetworksWithExchangesLifeCycle(t *testing.T) {
 	createExchangeInput := &CreateIPNetworkExchangeInput{
 		Name:        _IPNetworkExchangeTestName,
 		Description: _IPNetworkExchangeTestDescription,
+		Tags:        []string{"testing"},
 	}
 
 	createdNetworkExchange, err := sec.CreateIPNetworkExchange(createExchangeInput)
@@ -112,6 +113,7 @@ func TestAccIPNetworksWithExchangesLifeCycle(t *testing.T) {
 		IPAddressPrefix:   _IPNetworkTestPrefix,
 		Description:       _IPNetworkTestDescription,
 		IPNetworkExchange: createdNetworkExchange.Name,
+		Tags:              []string{"testing"},
 	}
 
 	createdNetwork, err := svc.CreateIPNetwork(createNetworkInput)
