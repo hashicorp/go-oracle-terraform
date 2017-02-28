@@ -5,15 +5,15 @@ import (
 	"strings"
 )
 
-// SecurityRulesClient is a client for the Security Rules functions of the Compute API.
-type SecurityRulesClient struct {
+// SecRulesClient is a client for the Sec Rules functions of the Compute API.
+type SecRulesClient struct {
 	ResourceClient
 }
 
-// SecurityRules obtains a SecurityRulesClient which can be used to access to the
-// Security Rules functions of the Compute API
-func (c *Client) SecurityRules() *SecurityRulesClient {
-	return &SecurityRulesClient{
+// SecRules obtains a SecRulesClient which can be used to access to the
+// Sec Rules functions of the Compute API
+func (c *Client) SecRules() *SecRulesClient {
+	return &SecRulesClient{
 		ResourceClient: ResourceClient{
 			Client:              c,
 			ResourceDescription: "security ip list",
@@ -22,37 +22,78 @@ func (c *Client) SecurityRules() *SecurityRulesClient {
 		}}
 }
 
-// SecurityRuleInfo describes an existing security rule.
-type SecurityRuleInfo struct {
-	Action          string `json:"action"`
-	Application     string `json:"application"`
-	Description     string `json:"description"`
-	Disabled        bool   `json:"disabled"`
+// SecRuleInfo describes an existing sec rule.
+type SecRuleInfo struct {
+	// Set this parameter to PERMIT.
+	Action string `json:"action"`
+	// The name of the security application
+	Application string `json:"application"`
+	// A description of the sec rule
+	Description string `json:"description"`
+	// Indicates whether the security rule is enabled
+	Disabled bool `json:"disabled"`
+	// The name of the destination security list or security IP list.
 	DestinationList string `json:"dst_list"`
-	Name            string `json:"name"`
-	SourceList      string `json:"src_list"`
-	URI             string `json:"uri"`
+	// The name of the sec rule
+	Name string `json:"name"`
+	// The name of the source security list or security IP list.
+	SourceList string `json:"src_list"`
+	// Uniform Resource Identifier for the sec rule
+	URI string `json:"uri"`
 }
 
-// CreateSecurityRuleInput defines a security rule to be created.
-type CreateSecurityRuleInput struct {
-	Action          string `json:"action"`
-	Application     string `json:"application"`
-	Description     string `json:"description"`
-	Disabled        bool   `json:"disabled"`
+// CreateSecRuleInput defines a sec rule to be created.
+type CreateSecRuleInput struct {
+	// Set this parameter to PERMIT.
+	// Required
+	Action string `json:"action"`
+
+	// The name of the security application for user-defined or predefined security applications.
+	// Required
+	Application string `json:"application"`
+
+	// Description of the IP Network
+	// Optional
+	Description string `json:"description"`
+
+	// Indicates whether the sec rule is enabled (set to false) or disabled (true).
+	// The default setting is false.
+	// Optional
+	Disabled bool `json:"disabled"`
+
+	// The name of the destination security list or security IP list.
+	//
+	// You must use the prefix seclist: or seciplist: to identify the list type.
+	//
+	// You can specify a security IP list as the destination in a secrule,
+	// provided src_list is a security list that has DENY as its outbound policy.
+	//
+	// You cannot specify any of the security IP lists in the /oracle/public container
+	// as a destination in a secrule.
+	// Required
 	DestinationList string `json:"dst_list"`
-	Name            string `json:"name"`
-	SourceList      string `json:"src_list"`
+
+	// The name of the Sec Rule to create. Object names can only contain alphanumeric,
+	// underscore, dash, and period characters. Names are case-sensitive.
+	// Required
+	Name string `json:"name"`
+
+	// The name of the source security list or security IP list.
+	//
+	// You must use the prefix seclist: or seciplist: to identify the list type.
+	//
+	// Required
+	SourceList string `json:"src_list"`
 }
 
-// CreateSecurityRule creates a new security rule.
-func (c *SecurityRulesClient) CreateSecurityRule(createInput *CreateSecurityRuleInput) (*SecurityRuleInfo, error) {
+// CreateSecRule creates a new sec rule.
+func (c *SecRulesClient) CreateSecRule(createInput *CreateSecRuleInput) (*SecRuleInfo, error) {
 	createInput.Name = c.getQualifiedName(createInput.Name)
 	createInput.SourceList = c.getQualifiedListName(createInput.SourceList)
 	createInput.DestinationList = c.getQualifiedListName(createInput.DestinationList)
 	createInput.Application = c.getQualifiedName(createInput.Application)
 
-	var ruleInfo SecurityRuleInfo
+	var ruleInfo SecRuleInfo
 	if err := c.createResource(createInput, &ruleInfo); err != nil {
 		return nil, err
 	}
@@ -60,14 +101,16 @@ func (c *SecurityRulesClient) CreateSecurityRule(createInput *CreateSecurityRule
 	return c.success(&ruleInfo)
 }
 
-// GetSecurityRuleInput describes the Security Rule to get
-type GetSecurityRuleInput struct {
+// GetSecRuleInput describes the Sec Rule to get
+type GetSecRuleInput struct {
+	// The name of the Sec Rule to query for
+	// Required
 	Name string `json:"name"`
 }
 
-// GetSecurityRule retrieves the security rule with the given name.
-func (c *SecurityRulesClient) GetSecurityRule(getInput *GetSecurityRuleInput) (*SecurityRuleInfo, error) {
-	var ruleInfo SecurityRuleInfo
+// GetSecRule retrieves the sec rule with the given name.
+func (c *SecRulesClient) GetSecRule(getInput *GetSecRuleInput) (*SecRuleInfo, error) {
+	var ruleInfo SecRuleInfo
 	if err := c.getResource(getInput.Name, &ruleInfo); err != nil {
 		return nil, err
 	}
@@ -75,25 +118,58 @@ func (c *SecurityRulesClient) GetSecurityRule(getInput *GetSecurityRuleInput) (*
 	return c.success(&ruleInfo)
 }
 
-// UpdateSecurityRuleInput describes a secruity rule to update
-type UpdateSecurityRuleInput struct {
-	Action          string `json:"action"`
-	Application     string `json:"application"`
-	Description     string `json:"description"`
-	Disabled        bool   `json:"disabled"`
+// UpdateSecRuleInput describes a secruity rule to update
+type UpdateSecRuleInput struct {
+	// Set this parameter to PERMIT.
+	// Required
+	Action string `json:"action"`
+
+	// The name of the security application for user-defined or predefined security applications.
+	// Required
+	Application string `json:"application"`
+
+	// Description of the IP Network
+	// Optional
+	Description string `json:"description"`
+
+	// Indicates whether the sec rule is enabled (set to false) or disabled (true).
+	// The default setting is false.
+	// Optional
+	Disabled bool `json:"disabled"`
+
+	// The name of the destination security list or security IP list.
+	//
+	// You must use the prefix seclist: or seciplist: to identify the list type.
+	//
+	// You can specify a security IP list as the destination in a secrule,
+	// provided src_list is a security list that has DENY as its outbound policy.
+	//
+	// You cannot specify any of the security IP lists in the /oracle/public container
+	// as a destination in a secrule.
+	// Required
 	DestinationList string `json:"dst_list"`
-	Name            string `json:"name"`
-	SourceList      string `json:"src_list"`
+
+	// The name of the Sec Rule to create. Object names can only contain alphanumeric,
+	// underscore, dash, and period characters. Names are case-sensitive.
+	// Required
+	Name string `json:"name"`
+
+	// The name of the source security list or security IP list.
+	//
+	// You must use the prefix seclist: or seciplist: to identify the list type.
+	//
+	// Required
+	SourceList string `json:"src_list"`
 }
 
-// UpdateSecurityRule modifies the properties of the security rule with the given name.
-func (c *SecurityRulesClient) UpdateSecurityRule(updateInput *UpdateSecurityRuleInput) (*SecurityRuleInfo, error) {
+// UpdateSecRule modifies the properties of the sec rule with the given name.
+func (c *SecRulesClient) UpdateSecRule(updateInput *UpdateSecRuleInput) (*SecRuleInfo, error) {
 	updateInput.Name = c.getQualifiedName(updateInput.Name)
 	updateInput.SourceList = c.getQualifiedListName(updateInput.SourceList)
 	updateInput.DestinationList = c.getQualifiedListName(updateInput.DestinationList)
 	updateInput.Application = c.getQualifiedName(updateInput.Application)
 
-	var ruleInfo SecurityRuleInfo
+	var ruleInfo SecRuleInfo
 	if err := c.updateResource(updateInput.Name, updateInput, &ruleInfo); err != nil {
 		return nil, err
 	}
@@ -101,31 +177,33 @@ func (c *SecurityRulesClient) UpdateSecurityRule(updateInput *UpdateSecurityRule
 	return c.success(&ruleInfo)
 }
 
-// DeleteSecurityRuleInput describes the security rule to delete
-type DeleteSecurityRuleInput struct {
+// DeleteSecRuleInput describes the sec rule to delete
+type DeleteSecRuleInput struct {
+	// The name of the Sec Rule to delete.
+	// Required
 	Name string `json:"name"`
 }
 
-// DeleteSecurityRule deletes the security rule with the given name.
-func (c *SecurityRulesClient) DeleteSecurityRule(deleteInput *DeleteSecurityRuleInput) error {
+// DeleteSecRule deletes the sec rule with the given name.
+func (c *SecRulesClient) DeleteSecRule(deleteInput *DeleteSecRuleInput) error {
 	return c.deleteResource(deleteInput.Name)
 }
 
-func (c *SecurityRulesClient) getQualifiedListName(name string) string {
+func (c *SecRulesClient) getQualifiedListName(name string) string {
 	nameParts := strings.Split(name, ":")
 	listType := nameParts[0]
 	listName := nameParts[1]
 	return fmt.Sprintf("%s:%s", listType, c.getQualifiedName(listName))
 }
 
-func (c *SecurityRulesClient) unqualifyListName(qualifiedName string) string {
+func (c *SecRulesClient) unqualifyListName(qualifiedName string) string {
 	nameParts := strings.Split(qualifiedName, ":")
 	listType := nameParts[0]
 	listName := nameParts[1]
 	return fmt.Sprintf("%s:%s", listType, c.getUnqualifiedName(listName))
 }
 
-func (c *SecurityRulesClient) success(ruleInfo *SecurityRuleInfo) (*SecurityRuleInfo, error) {
+func (c *SecRulesClient) success(ruleInfo *SecRuleInfo) (*SecRuleInfo, error) {
 	ruleInfo.Name = c.getUnqualifiedName(ruleInfo.Name)
 	ruleInfo.SourceList = c.unqualifyListName(ruleInfo.SourceList)
 	ruleInfo.DestinationList = c.unqualifyListName(ruleInfo.DestinationList)

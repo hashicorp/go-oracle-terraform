@@ -12,7 +12,7 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/opc"
 )
 
-func TestAccSecurityRuleLifeCycle(t *testing.T) {
+func TestAccSecRuleLifeCycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
 	name := "test-acc-sec-rule"
@@ -65,13 +65,13 @@ func TestAccSecurityRuleLifeCycle(t *testing.T) {
 	}
 	defer deleteSecurityApplication(t, securityApplicationsClient, name)
 
-	securityRuleClient, err := getSecurityRulesClient()
+	secRuleClient, err := getSecRulesClient()
 	if err != nil {
 		t.Fatal(err)
 	}
-	log.Printf("Obtained Security Rule Client")
+	log.Printf("Obtained Sec Rule Client")
 
-	createSecurityRuleInput := CreateSecurityRuleInput{
+	createSecRuleInput := CreateSecRuleInput{
 		Name:            name,
 		Action:          "PERMIT",
 		Disabled:        false,
@@ -80,26 +80,26 @@ func TestAccSecurityRuleLifeCycle(t *testing.T) {
 		Application:     createdSecurityApplication.Name,
 	}
 
-	createdSecurityRule, err := securityRuleClient.CreateSecurityRule(&createSecurityRuleInput)
+	createdSecRule, err := secRuleClient.CreateSecRule(&createSecRuleInput)
 	if err != nil {
 		t.Fatal(err)
 	}
-	log.Printf("Successfully created Security Rule: %+v", createdSecurityRule)
-	defer deleteSecurityRule(t, securityRuleClient, name)
+	log.Printf("Successfully created Sec Rule: %+v", createdSecRule)
+	defer deleteSecRule(t, secRuleClient, name)
 
-	getSecurityRuleInput := GetSecurityRuleInput{
-		Name: createdSecurityRule.Name,
+	getSecRuleInput := GetSecRuleInput{
+		Name: createdSecRule.Name,
 	}
-	getSecurityRuleOutput, err := securityRuleClient.GetSecurityRule(&getSecurityRuleInput)
+	getSecRuleOutput, err := secRuleClient.GetSecRule(&getSecRuleInput)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !reflect.DeepEqual(createdSecurityRule, getSecurityRuleOutput) {
-		t.Fatalf("Created and retrived security rules don't match.\n Desired: %s\n Actual: %s", createdSecurityRule, getSecurityRuleOutput)
+	if !reflect.DeepEqual(createdSecRule, getSecRuleOutput) {
+		t.Fatalf("Created and retrived sec rules don't match.\n Desired: %s\n Actual: %s", createdSecRule, getSecRuleOutput)
 	}
-	log.Printf("Successfully retrieved Security Rule")
+	log.Printf("Successfully retrieved Sec Rule")
 
-	updateSecurityRuleInput := UpdateSecurityRuleInput{
+	updateSecRuleInput := UpdateSecRuleInput{
 		Name:            name,
 		Action:          "PERMIT",
 		Disabled:        true,
@@ -107,18 +107,18 @@ func TestAccSecurityRuleLifeCycle(t *testing.T) {
 		SourceList:      "seciplist:" + createdSecurityIPList.Name,
 		Application:     createdSecurityApplication.Name,
 	}
-	updateSecurityRuleOutput, err := securityRuleClient.UpdateSecurityRule(&updateSecurityRuleInput)
+	updateSecRuleOutput, err := secRuleClient.UpdateSecRule(&updateSecRuleInput)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if updateSecurityRuleOutput.Disabled != true {
-		t.Fatal("Security Rule was not updated to disabled")
+	if updateSecRuleOutput.Disabled != true {
+		t.Fatal("Sec Rule was not updated to disabled")
 	}
-	log.Printf("Successfully updated Security Rule")
+	log.Printf("Successfully updated Sec Rule")
 }
 
 // Test that the client can create an instance.
-func TestAccSecurityRulesClient_CreateRule(t *testing.T) {
+func TestAccSecRulesClient_CreateRule(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 	server := newAuthenticatingServer(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "POST" {
@@ -130,7 +130,7 @@ func TestAccSecurityRulesClient_CreateRule(t *testing.T) {
 			t.Errorf("Wrong HTTP URL %v, expected %v", r.URL, expectedPath)
 		}
 
-		ruleSpec := &CreateSecurityRuleInput{}
+		ruleSpec := &CreateSecRuleInput{}
 		unmarshalRequestBody(t, r, ruleSpec)
 
 		if ruleSpec.Name != "/Compute-test/test/test-rule1" {
@@ -151,17 +151,17 @@ func TestAccSecurityRulesClient_CreateRule(t *testing.T) {
 			t.Errorf("Expected application '/oracle/default-application', was %s", ruleSpec.Application)
 		}
 
-		w.Write([]byte(exampleCreateSecurityRuleResponse))
+		w.Write([]byte(exampleCreateSecRuleResponse))
 		w.WriteHeader(201)
 	})
 
 	defer server.Close()
-	client, err := getStubSecurityRulesClient(server)
+	client, err := getStubSecRulesClient(server)
 	if err != nil {
 		t.Fatalf("error getting stub client: %s", err)
 	}
 
-	createInput := CreateSecurityRuleInput{
+	createInput := CreateSecRuleInput{
 		Name:            "test-rule1",
 		Action:          "PERMIT",
 		Disabled:        false,
@@ -169,7 +169,7 @@ func TestAccSecurityRulesClient_CreateRule(t *testing.T) {
 		SourceList:      "seciplist:test-list1",
 		Application:     "/oracle/default-application",
 	}
-	info, err := client.CreateSecurityRule(&createInput)
+	info, err := client.CreateSecRule(&createInput)
 	if err != nil {
 		t.Fatalf("Create security rule request failed: %s", err)
 	}
@@ -184,7 +184,7 @@ func TestAccSecurityRulesClient_CreateRule(t *testing.T) {
 	}
 }
 
-func getStubSecurityRulesClient(server *httptest.Server) (*SecurityRulesClient, error) {
+func getStubSecRulesClient(server *httptest.Server) (*SecRulesClient, error) {
 	endpoint, err := url.Parse(server.URL)
 	if err != nil {
 		return nil, err
@@ -195,19 +195,19 @@ func getStubSecurityRulesClient(server *httptest.Server) (*SecurityRulesClient, 
 		return nil, err
 	}
 
-	return client.SecurityRules(), nil
+	return client.SecRules(), nil
 }
 
-func getSecurityRulesClient() (*SecurityRulesClient, error) {
+func getSecRulesClient() (*SecRulesClient, error) {
 	client, err := getTestClient(&opc.Config{})
 	if err != nil {
-		return &SecurityRulesClient{}, err
+		return &SecRulesClient{}, err
 	}
 
-	return client.SecurityRules(), nil
+	return client.SecRules(), nil
 }
 
-var exampleCreateSecurityRuleResponse = `
+var exampleCreateSecRuleResponse = `
 {
   "dst_list": "seclist:/Compute-acme/jack.jones@example.com/allowed_video_servers",
   "name": "/Compute-acme/jack.jones@example.com/es_to_videoservers_stream",
@@ -219,14 +219,14 @@ var exampleCreateSecurityRuleResponse = `
 }
 `
 
-func deleteSecurityRule(t *testing.T, client *SecurityRulesClient, name string) {
-	deleteInput := DeleteSecurityRuleInput{
+func deleteSecRule(t *testing.T, client *SecRulesClient, name string) {
+	deleteInput := DeleteSecRuleInput{
 		Name: name,
 	}
-	err := client.DeleteSecurityRule(&deleteInput)
+	err := client.DeleteSecRule(&deleteInput)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	log.Printf("Successfully deleted Security Rule")
+	log.Printf("Successfully deleted Sec Rule")
 }
