@@ -56,19 +56,29 @@ func (c *StorageAttachmentsClient) CreateStorageAttachment(input *CreateStorageA
 	return c.waitForStorageAttachmentToFullyAttach(attachmentInfo.Name, WaitForVolumeAttachmentReadyTimeout)
 }
 
+// DeleteStorageAttachmentInput represents the body of an API request to delete a Storage Attachment.
+type DeleteStorageAttachmentInput struct {
+	Name string `json:"name"`
+}
+
 // DeleteStorageAttachment deletes the storage attachment with the given name.
-func (c *StorageAttachmentsClient) DeleteStorageAttachment(name string) error {
-	if err := c.deleteResource(name); err != nil {
+func (c *StorageAttachmentsClient) DeleteStorageAttachment(input *DeleteStorageAttachmentInput) error {
+	if err := c.deleteResource(input.Name); err != nil {
 		return err
 	}
 
-	return c.waitForStorageAttachmentToBeDeleted(name, WaitForVolumeAttachmentDeleteTimeout)
+	return c.waitForStorageAttachmentToBeDeleted(input.Name, WaitForVolumeAttachmentDeleteTimeout)
+}
+
+// GetStorageAttachmentInput represents the body of an API request to obtain a Storage Attachment.
+type GetStorageAttachmentInput struct {
+	Name string `json:"name"`
 }
 
 // GetStorageAttachment retrieves the storage attachment with the given name.
-func (c *StorageAttachmentsClient) GetStorageAttachment(name string) (*StorageAttachmentInfo, error) {
+func (c *StorageAttachmentsClient) GetStorageAttachment(input *GetStorageAttachmentInput) (*StorageAttachmentInfo, error) {
 	var attachmentInfo *StorageAttachmentInfo
-	if err := c.getResource(name, &attachmentInfo); err != nil {
+	if err := c.getResource(input.Name, &attachmentInfo); err != nil {
 		return nil, err
 	}
 
@@ -80,7 +90,10 @@ func (c *StorageAttachmentsClient) waitForStorageAttachmentToFullyAttach(name st
 	var waitResult *StorageAttachmentInfo
 
 	err := c.waitFor("storage attachment to be attached", timeoutSeconds, func() (bool, error) {
-		info, err := c.GetStorageAttachment(name)
+		input := &GetStorageAttachmentInput{
+			Name: name,
+		}
+		info, err := c.GetStorageAttachment(input)
 		if err != nil {
 			return false, err
 		}
@@ -101,7 +114,10 @@ func (c *StorageAttachmentsClient) waitForStorageAttachmentToFullyAttach(name st
 // waitForStorageAttachmentToBeDeleted waits for the storage attachment with the given name to be fully deleted, or times out.
 func (c *StorageAttachmentsClient) waitForStorageAttachmentToBeDeleted(name string, timeoutSeconds int) error {
 	return c.waitFor("storage attachment to be deleted", timeoutSeconds, func() (bool, error) {
-		_, err := c.GetStorageAttachment(name)
+		input := &GetStorageAttachmentInput{
+			Name: name,
+		}
+		_, err := c.GetStorageAttachment(input)
 		if err != nil {
 			if WasNotFoundError(err) {
 				return true, nil

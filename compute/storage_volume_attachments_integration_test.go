@@ -70,7 +70,10 @@ func TestAccStorageAttachmentsLifecycle(t *testing.T) {
 
 	defer tearDownStorageAttachments(t, attachmentsClient, createResult.Name)
 
-	getResult, err := attachmentsClient.GetStorageAttachment(createResult.Name)
+	getRequest := &GetStorageAttachmentInput{
+		Name: createResult.Name,
+	}
+	getResult, err := attachmentsClient.GetStorageAttachment(getRequest)
 	if err != nil {
 		panic(err)
 	}
@@ -84,7 +87,11 @@ func TestAccStorageAttachmentsLifecycle(t *testing.T) {
 
 func tearDownStorageAttachments(t *testing.T, attachmentsClient *StorageAttachmentsClient, name string) {
 	log.Printf("Deleting Storage Attachment %s", name)
-	if err := attachmentsClient.DeleteStorageAttachment(name); err != nil {
+
+	deleteRequest := &DeleteStorageAttachmentInput{
+		Name: name,
+	}
+	if err := attachmentsClient.DeleteStorageAttachment(deleteRequest); err != nil {
 		t.Fatalf("Error deleting storage attachment, dangling resources may occur: %v", err)
 	}
 }
