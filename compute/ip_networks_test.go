@@ -123,7 +123,7 @@ func TestAccIPNetworksWithExchangesLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 	log.Print("IP Network succcessfully created")
-	defer destroyIPNetwork(t, svc, _IPNetworkTestName)
+	defer destroyIPNetwork(t, _IPNetworkTestName)
 
 	getInput := &GetIPNetworkInput{
 		Name: _IPNetworkTestName,
@@ -139,7 +139,11 @@ func TestAccIPNetworksWithExchangesLifeCycle(t *testing.T) {
 	}
 }
 
-func destroyIPNetwork(t *testing.T, svc *IPNetworksClient, name string) {
+func destroyIPNetwork(t *testing.T, name string) {
+	svc, err := getIPNetworksClient()
+	if err != nil {
+		t.Fatal(err)
+	}
 	input := &DeleteIPNetworkInput{
 		Name: name,
 	}
