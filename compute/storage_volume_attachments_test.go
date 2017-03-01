@@ -8,8 +8,6 @@ import (
 
 	"net/url"
 
-	"strings"
-
 	"github.com/hashicorp/go-oracle-terraform/helper"
 )
 
@@ -67,7 +65,7 @@ func TestAccStorageAttachmentsClient_WaitForStorageAttachmentToBeFullyAttachedSu
 		t.Fatalf("Wait for storage attachment to become available request failed: %s", err)
 	}
 
-	if strings.ToLower(info.State) != "attached" {
+	if info.State != Attached {
 		fmt.Println(info)
 		t.Fatalf("Status of retrieved storage volume attachment was %s, expected 'attached'", info.State)
 	}
@@ -97,9 +95,9 @@ func serverThatAttachesStorageVolumeAfterThreeSeconds(t *testing.T, name string)
 	return newAuthenticatingServer(func(w http.ResponseWriter, r *http.Request) {
 		var status string
 		if count < 3 {
-			status = "Attaching"
+			status = "attaching"
 		} else {
-			status = "Attached"
+			status = "attached"
 		}
 		count++
 		svr := fmt.Sprintf(
