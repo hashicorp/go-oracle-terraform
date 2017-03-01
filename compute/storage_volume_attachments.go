@@ -50,7 +50,7 @@ type StorageAttachmentInfo struct {
 }
 
 func (c *StorageAttachmentsClient) success(attachmentInfo *StorageAttachmentInfo) (*StorageAttachmentInfo, error) {
-	c.unqualify(&attachmentInfo.Name)
+	c.unqualify(&attachmentInfo.Name, &attachmentInfo.InstanceName, &attachmentInfo.StorageVolumeName)
 	return attachmentInfo, nil
 }
 
