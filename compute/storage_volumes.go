@@ -62,14 +62,8 @@ type StorageVolumeInfo struct {
 	// The storage-pool property: /oracle/public/storage/latency or /oracle/public/storage/default.
 	Properties []string `json:"properties,omitempty"`
 
-	// Not used
-	Quota string `json:"quota,omitempty"`
-
 	// Boolean field indicating whether this volume can be attached as readonly. If set to False the volume will be attached as read-write.
 	ReadOnly bool `json:"readonly,omitempty"`
-
-	// Not used
-	Shared bool `json:"shared,omitempty"`
 
 	// The size of this storage volume.
 	Size string `json:"size"`
@@ -83,7 +77,7 @@ type StorageVolumeInfo struct {
 	// Id of the parent snapshot from which the storage volume is restored or cloned.
 	SnapshotID string `json:"snapshot_id,omitempty"`
 
-	// TODO: this should become a Constant
+	// TODO: this should become a Constant, if/when we have the values
 	// The current state of the storage volume.
 	Status string `json:"status,omitempty"`
 
@@ -101,9 +95,6 @@ type StorageVolumeInfo struct {
 
 	// Uniform Resource Identifier
 	URI string `json:"uri,omitempty"`
-
-	// Not used
-	WriteCache bool `json:"writecache,omitempty"`
 }
 
 func (c *StorageVolumeClient) getStorageVolumePath(name string) string {
