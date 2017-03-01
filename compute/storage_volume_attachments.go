@@ -1,6 +1,8 @@
 package compute
 
-import "strings"
+import (
+	"strings"
+)
 
 const WaitForVolumeAttachmentDeleteTimeout = 30
 const WaitForVolumeAttachmentReadyTimeout = 30
@@ -32,7 +34,7 @@ type StorageAttachmentInfo struct {
 }
 
 func (c *StorageAttachmentsClient) success(attachmentInfo *StorageAttachmentInfo) (*StorageAttachmentInfo, error) {
-	c.unqualify(&attachmentInfo.Name, &attachmentInfo.InstanceName, &attachmentInfo.StorageVolumeName)
+	c.unqualify(&attachmentInfo.Name)
 	return attachmentInfo, nil
 }
 
@@ -46,7 +48,7 @@ type CreateStorageAttachmentInput struct {
 func (c *StorageAttachmentsClient) CreateStorageAttachment(input *CreateStorageAttachmentInput) (*StorageAttachmentInfo, error) {
 	input.InstanceName = c.getQualifiedName(input.InstanceName)
 
-	var attachmentInfo StorageAttachmentInfo
+	var attachmentInfo *StorageAttachmentInfo
 	if err := c.createResource(&input, &attachmentInfo); err != nil {
 		return nil, err
 	}
@@ -56,7 +58,7 @@ func (c *StorageAttachmentsClient) CreateStorageAttachment(input *CreateStorageA
 		return nil, err
 	}
 
-	return c.success(info)
+	return info, nil
 }
 
 // DeleteStorageAttachment deletes the storage attachment with the given name.
@@ -70,12 +72,12 @@ func (c *StorageAttachmentsClient) DeleteStorageAttachment(name string) error {
 
 // GetStorageAttachment retrieves the storage attachment with the given name.
 func (c *StorageAttachmentsClient) GetStorageAttachment(name string) (*StorageAttachmentInfo, error) {
-	var attachmentInfo StorageAttachmentInfo
+	var attachmentInfo *StorageAttachmentInfo
 	if err := c.getResource(name, &attachmentInfo); err != nil {
 		return nil, err
 	}
 
-	return c.success(&attachmentInfo)
+	return c.success(attachmentInfo)
 }
 
 // waitForStorageAttachmentToFullyAttach waits for the storage attachment with the given name to be fully attached, or times out.
@@ -88,10 +90,13 @@ func (c *StorageAttachmentsClient) waitForStorageAttachmentToFullyAttach(name st
 			return false, err
 		}
 
-		if strings.ToLower(info.State) == "attached" {
-			waitResult = info
-			return true, nil
+		if info != nil {
+			if strings.ToLower(info.State) == "attached" {
+				waitResult = info
+				return true, nil
+			}
 		}
+
 		return false, nil
 	})
 
