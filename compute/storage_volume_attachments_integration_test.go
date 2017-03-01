@@ -18,15 +18,11 @@ func TestAccStorageAttachmentsLifecycle(t *testing.T) {
 	rInt := rand.Int()
 	instanceName := fmt.Sprintf("test-acc-stor-att-instance-%d", rInt)
 	volumeName := fmt.Sprintf("test-acc-stor-att-volume-%d", rInt)
-	var attachmentName string
-	var instanceInfo InstanceInfo
 
 	instancesClient, storageVolumesClient, attachmentsClient, err := buildStorageAttachmentsClients()
 	if err != nil {
 		panic(err)
 	}
-
-	defer tearDownStorageAttachments(t, instancesClient, storageVolumesClient, attachmentsClient, &instanceInfo, volumeName, &attachmentName)
 
 	createInstanceInput := &CreateInstanceInput{
 		Name:      instanceName,
@@ -48,7 +44,7 @@ func TestAccStorageAttachmentsLifecycle(t *testing.T) {
 	if err != nil {
 		panic(err)
 	}
-	instanceInfo = *info
+	defer tearDownInstances(t, instancesClient, info.Name, info.ID)
 
 	createStorageVolumeInput := &CreateStorageVolumeInput{
 		Name:       volumeName,
@@ -60,9 +56,11 @@ func TestAccStorageAttachmentsLifecycle(t *testing.T) {
 		panic(err)
 	}
 
+	defer tearDownStorageVolumes(t, storageVolumesClient, volumeName)
+
 	createRequest := &CreateStorageAttachmentInput{
 		Index:             1,
-		InstanceName:      instanceInfo.getInstanceName(),
+		InstanceName:      info.getInstanceName(),
 		StorageVolumeName: createStorageVolumeInput.Name,
 	}
 	createResult, err := attachmentsClient.CreateStorageAttachment(createRequest)
@@ -70,9 +68,9 @@ func TestAccStorageAttachmentsLifecycle(t *testing.T) {
 		panic(err)
 	}
 
-	attachmentName = createResult.Name
+	defer tearDownStorageAttachments(t, attachmentsClient, createResult.Name)
 
-	getResult, err := attachmentsClient.GetStorageAttachment(attachmentName)
+	getResult, err := attachmentsClient.GetStorageAttachment(createResult.Name)
 	if err != nil {
 		panic(err)
 	}
@@ -84,40 +82,10 @@ func TestAccStorageAttachmentsLifecycle(t *testing.T) {
 	log.Printf("Attachment created: %#v\n", getResult)
 }
 
-func tearDownStorageAttachments(t *testing.T, instancesClient *InstancesClient, volumesClient *StorageVolumeClient, attachmentsClient *StorageAttachmentsClient,
-	instanceInfo *InstanceInfo, volumeName string, attachmentName *string) {
-
-	if *attachmentName != "" {
-		log.Printf("Deleting Storage Attachment %s", *attachmentName)
-		if err := attachmentsClient.DeleteStorageAttachment(*attachmentName); err != nil {
-			t.Fatalf("Error deleting storage attachment, dangling resources may occur: %v", err)
-		}
-	}
-
-	getInput := &GetStorageVolumeInput{
-		Name: volumesClient.getQualifiedName(volumeName),
-	}
-	volume, _ := volumesClient.GetStorageVolume(getInput)
-	if volume != nil {
-		log.Printf("Deleting Storage Volume %s", volumeName)
-
-		input := &DeleteStorageVolumeInput{
-			Name: getInput.Name,
-		}
-		if err := volumesClient.DeleteStorageVolume(input); err != nil {
-			t.Fatalf("Error deleting storage volume, dangling resources may occur: %v", err)
-		}
-	}
-
-	if instanceInfo != nil {
-		log.Printf("Deleting Instance %s", instanceInfo.Name)
-		deleteInstanceInput := &DeleteInstanceInput{
-			Name: instanceInfo.Name,
-			ID:   instanceInfo.ID,
-		}
-		if err := instancesClient.DeleteInstance(deleteInstanceInput); err != nil {
-			t.Fatalf("Error deleting instance, dangling resources may occur: %v", err)
-		}
+func tearDownStorageAttachments(t *testing.T, attachmentsClient *StorageAttachmentsClient, name string) {
+	log.Printf("Deleting Storage Attachment %s", name)
+	if err := attachmentsClient.DeleteStorageAttachment(name); err != nil {
+		t.Fatalf("Error deleting storage attachment, dangling resources may occur: %v", err)
 	}
 }
 
