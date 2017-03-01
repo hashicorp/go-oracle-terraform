@@ -21,7 +21,7 @@ func TestAccStorageAttachmentsLifecycle(t *testing.T) {
 
 	instancesClient, storageVolumesClient, attachmentsClient, err := buildStorageAttachmentsClients()
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 
 	createInstanceInput := &CreateInstanceInput{
@@ -42,7 +42,7 @@ func TestAccStorageAttachmentsLifecycle(t *testing.T) {
 
 	info, err := instancesClient.CreateInstance(createInstanceInput)
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 	defer tearDownInstances(t, instancesClient, info.Name, info.ID)
 
@@ -53,7 +53,7 @@ func TestAccStorageAttachmentsLifecycle(t *testing.T) {
 	}
 	_, err = storageVolumesClient.CreateStorageVolume(createStorageVolumeInput)
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 
 	defer tearDownStorageVolumes(t, storageVolumesClient, volumeName)
@@ -65,7 +65,7 @@ func TestAccStorageAttachmentsLifecycle(t *testing.T) {
 	}
 	createResult, err := attachmentsClient.CreateStorageAttachment(createRequest)
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 
 	defer tearDownStorageAttachments(t, attachmentsClient, createResult.Name)
@@ -75,7 +75,7 @@ func TestAccStorageAttachmentsLifecycle(t *testing.T) {
 	}
 	getResult, err := attachmentsClient.GetStorageAttachment(getRequest)
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
 
 	if !reflect.DeepEqual(createResult.Index, getResult.Index) {
