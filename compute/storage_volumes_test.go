@@ -5,9 +5,8 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"testing"
-
 	"strings"
+	"testing"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 )

@@ -4,9 +4,8 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"testing"
-
 	"net/url"
+	"testing"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 )

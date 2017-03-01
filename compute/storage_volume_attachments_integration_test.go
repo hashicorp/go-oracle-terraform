@@ -1,12 +1,11 @@
 package compute
 
 import (
+	"fmt"
 	"log"
+	"math/rand"
 	"reflect"
 	"testing"
-
-	"fmt"
-	"math/rand"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"

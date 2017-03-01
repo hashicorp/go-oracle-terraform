@@ -1,11 +1,10 @@
 package compute
 
 import (
+	"fmt"
 	"math/rand"
 	"strconv"
 	"testing"
-
-	"fmt"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
