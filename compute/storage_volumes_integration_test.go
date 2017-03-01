@@ -1,8 +1,11 @@
 package compute
 
 import (
+	"math/rand"
 	"strconv"
 	"testing"
+
+	"fmt"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
@@ -11,7 +14,8 @@ import (
 func TestAccStorageVolumeLifecycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
-	name := "test-storage-volume-lifecycle"
+	rInt := rand.Int()
+	name := fmt.Sprintf("test-acc-storage-volume-lifecycle-%d", rInt)
 
 	svc, err := getStorageVolumeClient()
 	if err != nil {
