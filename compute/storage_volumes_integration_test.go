@@ -1,6 +1,8 @@
 package compute
 
 import (
+	"fmt"
+	"math/rand"
 	"strconv"
 	"testing"
 
@@ -11,7 +13,8 @@ import (
 func TestAccStorageVolumeLifecycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
-	name := "test-storage-volume-lifecycle"
+	rInt := rand.Int()
+	name := fmt.Sprintf("test-acc-storage-volume-lifecycle-%d", rInt)
 
 	svc, err := getStorageVolumeClient()
 	if err != nil {

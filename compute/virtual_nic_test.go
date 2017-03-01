@@ -18,11 +18,15 @@ const (
 func TestAccVirtNICLifeCycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
-	ipNetwork, err := createTestIPNetwork(_IPNetworkTestPrefix)
+	sic, err := getIPNetworksClient()
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer destroyIPNetwork(t, ipNetwork.Name)
+	ipNetwork, err := createTestIPNetwork(sic, _IPNetworkTestPrefix)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer destroyIPNetwork(t, sic, ipNetwork.Name)
 
 	instanceSvc, err := getInstancesClient()
 	if err != nil {
