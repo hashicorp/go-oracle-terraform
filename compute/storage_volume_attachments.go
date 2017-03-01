@@ -53,12 +53,7 @@ func (c *StorageAttachmentsClient) CreateStorageAttachment(input *CreateStorageA
 		return nil, err
 	}
 
-	info, err := c.waitForStorageAttachmentToFullyAttach(attachmentInfo.Name, WaitForVolumeAttachmentReadyTimeout)
-	if err != nil {
-		return nil, err
-	}
-
-	return info, nil
+	return c.waitForStorageAttachmentToFullyAttach(attachmentInfo.Name, WaitForVolumeAttachmentReadyTimeout)
 }
 
 // DeleteStorageAttachment deletes the storage attachment with the given name.
