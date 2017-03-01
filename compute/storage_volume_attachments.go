@@ -27,7 +27,7 @@ const (
 	Attached    StorageAttachmentState = "attached"
 	Detaching   StorageAttachmentState = "detaching"
 	Unavailable StorageAttachmentState = "unavailable"
-	Unknowmn    StorageAttachmentState = "unknown"
+	Unknown     StorageAttachmentState = "unknown"
 )
 
 // StorageAttachmentInfo describes an existing storage attachment.
