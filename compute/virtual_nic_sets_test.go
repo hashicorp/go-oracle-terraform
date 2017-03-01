@@ -85,24 +85,28 @@ func TestAccVirtNICSetAddNICS(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	sic, err := getIPNetworksClient()
+	if err != nil {
+		t.Fatal(err)
+	}
 	// Create the three IP Networks needed
-	ipNetworkOne, err := createTestIPNetwork(_IPNetworkTestPrefix)
+	ipNetworkOne, err := createTestIPNetwork(sic, _IPNetworkTestPrefix)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer destroyIPNetwork(t, ipNetworkOne.Name)
+	defer destroyIPNetwork(t, sic, ipNetworkOne.Name)
 
-	ipNetworkTwo, err := createTestIPNetwork(_IPNetworkTestPrefixTwo)
+	ipNetworkTwo, err := createTestIPNetwork(sic, _IPNetworkTestPrefixTwo)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer destroyIPNetwork(t, ipNetworkTwo.Name)
+	defer destroyIPNetwork(t, sic, ipNetworkTwo.Name)
 
-	ipNetworkThree, err := createTestIPNetwork(_IPNetworkTestPrefixThree)
+	ipNetworkThree, err := createTestIPNetwork(sic, _IPNetworkTestPrefixThree)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer destroyIPNetwork(t, ipNetworkThree.Name)
+	defer destroyIPNetwork(t, sic, ipNetworkThree.Name)
 
 	// Create an instance with multiple vNICs
 	instanceInput := &CreateInstanceInput{

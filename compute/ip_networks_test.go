@@ -41,7 +41,7 @@ func TestAccIPNetworksLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 	log.Print("IP Network succcessfully created")
-	defer destroyIPNetwork(t, _IPNetworkTestName)
+	defer destroyIPNetwork(t, svc, _IPNetworkTestName)
 
 	getInput := &GetIPNetworkInput{
 		Name: _IPNetworkTestName,
@@ -123,7 +123,7 @@ func TestAccIPNetworksWithExchangesLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 	log.Print("IP Network succcessfully created")
-	defer destroyIPNetwork(t, _IPNetworkTestName)
+	defer destroyIPNetwork(t, svc, _IPNetworkTestName)
 
 	getInput := &GetIPNetworkInput{
 		Name: _IPNetworkTestName,
@@ -139,11 +139,7 @@ func TestAccIPNetworksWithExchangesLifeCycle(t *testing.T) {
 	}
 }
 
-func destroyIPNetwork(t *testing.T, name string) {
-	svc, err := getIPNetworksClient()
-	if err != nil {
-		t.Fatal(err)
-	}
+func destroyIPNetwork(t *testing.T, svc *IPNetworksClient, name string) {
 	input := &DeleteIPNetworkInput{
 		Name: name,
 	}
@@ -163,11 +159,7 @@ func getIPNetworksClient() (*IPNetworksClient, error) {
 
 // Creates a generic IP Network with a supplied network prefix (to prevent collisions)
 // and returns the resulting IP Network Info
-func createTestIPNetwork(prefix string) (*IPNetworkInfo, error) {
-	svc, err := getIPNetworksClient()
-	if err != nil {
-		return nil, err
-	}
+func createTestIPNetwork(svc *IPNetworksClient, prefix string) (*IPNetworkInfo, error) {
 	// Create a random name for the IP network
 	rand.Seed(time.Now().UTC().UnixNano())
 	rName := fmt.Sprintf("test-%d", rand.New(rand.NewSource(time.Now().UnixNano())).Int())
