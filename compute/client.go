@@ -159,6 +159,10 @@ func (c *Client) getUnqualifiedName(name string) string {
 	if strings.HasPrefix(name, "/oracle") {
 		return name
 	}
+	if !strings.Contains(name, "/") {
+		return name
+	}
+
 	nameParts := strings.Split(name, "/")
 	return strings.Join(nameParts[3:], "/")
 }
