@@ -20,24 +20,24 @@ func (c *Client) SecurityIPLists() *SecurityIPListsClient {
 // SecurityIPListInfo describes an existing security IP list.
 type SecurityIPListInfo struct {
 	// A description of the security IP list.
-	Description  string   `json:"description"`
+	Description string `json:"description"`
 	// The three-part name of the object (/Compute-identity_domain/user/object).
-	Name         string   `json:"name"`
+	Name string `json:"name"`
 	// A comma-separated list of the subnets (in CIDR format) or IPv4 addresses for which you want to create this security IP list.
 	SecIPEntries []string `json:"secipentries"`
 	// Uniform Resource Identifier
-	URI          string   `json:"uri"`
+	URI string `json:"uri"`
 }
 
 // CreateSecurityIPListInput defines a security IP list to be created.
 type CreateSecurityIPListInput struct {
 	// A description of the security IP list.
 	// Optional
-	Description  string   `json:"description"`
+	Description string `json:"description"`
 	// The three-part name of the object (/Compute-identity_domain/user/object).
 	// Object names can contain only alphanumeric characters, hyphens, underscores, and periods. Object names are case-sensitive.
 	// Required
-	Name         string   `json:"name"`
+	Name string `json:"name"`
 	// A comma-separated list of the subnets (in CIDR format) or IPv4 addresses for which you want to create this security IP list.
 	// Required
 	SecIPEntries []string `json:"secipentries"`
@@ -75,10 +75,10 @@ func (c *SecurityIPListsClient) GetSecurityIPList(getInput *GetSecurityIPListInp
 type UpdateSecurityIPListInput struct {
 	// A description of the security IP list.
 	// Optional
-	Description  string   `json:"description"`
+	Description string `json:"description"`
 	// The three-part name of the object (/Compute-identity_domain/user/object).
 	// Required
-	Name         string   `json:"name"`
+	Name string `json:"name"`
 	// A comma-separated list of the subnets (in CIDR format) or IPv4 addresses for which you want to create this security IP list.
 	// Required
 	SecIPEntries []string `json:"secipentries"`

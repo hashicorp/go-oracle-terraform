@@ -20,21 +20,21 @@ func (c *Client) IPReservations() *IPReservationsClient {
 // IPReservationInput describes an existing IP reservation.
 type IPReservation struct {
 	// Shows the default account for your identity domain.
-	Account    string   `json:"account"`
+	Account string `json:"account"`
 	// Public IP address.
-	IP         string   `json:"ip"`
+	IP string `json:"ip"`
 	// The three-part name of the IP Reservation (/Compute-identity_domain/user/object).
-	Name       string   `json:"name"`
+	Name string `json:"name"`
 	// Pool of public IP addresses
-	ParentPool string   `json:"parentpool"`
+	ParentPool string `json:"parentpool"`
 	// Is the IP Reservation Persistent (i.e. static) or not (i.e. Dynamic)?
-	Permanent  bool     `json:"permanent"`
+	Permanent bool `json:"permanent"`
 	// A comma-separated list of strings which helps you to identify IP reservation.
-	Tags       []string `json:"tags"`
+	Tags []string `json:"tags"`
 	// Uniform Resource Identifier
-	Uri        string   `json:"uri"`
+	Uri string `json:"uri"`
 	// Is the IP reservation associated with an instance?
-	Used       bool     `json:"used"`
+	Used bool `json:"used"`
 }
 
 // CreateIPReservationInput defines an IP reservation to be created.
@@ -44,16 +44,16 @@ type CreateIPReservationInput struct {
 	// Object names can contain only alphanumeric characters, hyphens, underscores, and periods.
 	// Object names are case-sensitive.
 	// Optional
-	Name       string   `json:"name"`
+	Name string `json:"name"`
 	// Pool of public IP addresses. This must be set to `/oracle/public/ippool`
 	// Required
-	ParentPool string   `json:"parentpool"`
+	ParentPool string `json:"parentpool"`
 	// Is the IP Reservation Persistent (i.e. static) or not (i.e. Dynamic)?
 	// Required
-	Permanent  bool     `json:"permanent"`
+	Permanent bool `json:"permanent"`
 	// A comma-separated list of strings which helps you to identify IP reservations.
 	// Optional
-	Tags       []string `json:"tags"`
+	Tags []string `json:"tags"`
 }
 
 // CreateIPReservation creates a new IP reservation with the given parentpool, tags and permanent flag.
@@ -90,16 +90,16 @@ type UpdateIPReservationInput struct {
 	// Object names can contain only alphanumeric characters, hyphens, underscores, and periods.
 	// Object names are case-sensitive.
 	// Required
-	Name       string   `json:"name"`
+	Name string `json:"name"`
 	// Pool of public IP addresses. This must be set to `/oracle/public/ippool`
 	// Required
-	ParentPool string   `json:"parentpool"`
+	ParentPool string `json:"parentpool"`
 	// Is the IP Reservation Persistent (i.e. static) or not (i.e. Dynamic)?
 	// Required
-	Permanent  bool     `json:"permanent"`
+	Permanent bool `json:"permanent"`
 	// A comma-separated list of strings which helps you to identify IP reservations.
 	// Optional
-	Tags       []string `json:"tags"`
+	Tags []string `json:"tags"`
 }
 
 // UpdateIPReservation updates the IP reservation.

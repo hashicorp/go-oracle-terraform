@@ -20,13 +20,13 @@ func (c *Client) SSHKeys() *SSHKeysClient {
 // SSHKeyInfo describes an existing SSH key.
 type SSHKey struct {
 	// Indicates whether the key is enabled (true) or disabled.
-	Enabled bool   `json:"enabled"`
+	Enabled bool `json:"enabled"`
 	// The SSH public key value.
-	Key     string `json:"key"`
+	Key string `json:"key"`
 	// The three-part name of the SSH Key (/Compute-identity_domain/user/object).
-	Name    string `json:"name"`
+	Name string `json:"name"`
 	// Unique Resource Identifier
-	URI     string `json:"uri"`
+	URI string `json:"uri"`
 }
 
 // CreateSSHKeyInput defines an SSH key to be created.
@@ -34,14 +34,14 @@ type CreateSSHKeyInput struct {
 	// The three-part name of the SSH Key (/Compute-identity_domain/user/object).
 	// Object names can contain only alphanumeric characters, hyphens, underscores, and periods. Object names are case-sensitive.
 	// Required
-	Name    string `json:"name"`
+	Name string `json:"name"`
 	// The SSH public key value.
 	// Required
-	Key     string `json:"key"`
+	Key string `json:"key"`
 	// Indicates whether the key must be enabled (default) or disabled. Note that disabled keys cannot be associated with instances.
 	// To explicitly enable the key, specify true. To disable the key, specify false.
 	// Optional
-	Enabled bool   `json:"enabled"`
+	Enabled bool `json:"enabled"`
 }
 
 // CreateSSHKey creates a new SSH key with the given name, key and enabled flag.
@@ -74,15 +74,15 @@ func (c *SSHKeysClient) GetSSHKey(getInput *GetSSHKeyInput) (*SSHKey, error) {
 // UpdateSSHKeyInput defines an SSH key to be updated
 type UpdateSSHKeyInput struct {
 	// The three-part name of the object (/Compute-identity_domain/user/object).
-	Name    string `json:"name"`
+	Name string `json:"name"`
 	// The SSH public key value.
 	// Required
-	Key     string `json:"key"`
+	Key string `json:"key"`
 	// Indicates whether the key must be enabled (default) or disabled. Note that disabled keys cannot be associated with instances.
 	// To explicitly enable the key, specify true. To disable the key, specify false.
 	// Optional
 	// TODO/NOTE: isn't this required?
-	Enabled bool   `json:"enabled"`
+	Enabled bool `json:"enabled"`
 }
 
 // UpdateSSHKey updates the key and enabled flag of the SSH key with the given name.

@@ -20,13 +20,13 @@ func (c *Client) SecurityAssociations() *SecurityAssociationsClient {
 // SecurityAssociationInfo describes an existing security association.
 type SecurityAssociationInfo struct {
 	// The three-part name of the Security Association (/Compute-identity_domain/user/object).
-	Name    string `json:"name"`
+	Name string `json:"name"`
 	// The name of the Security List that you want to associate with the instance.
 	SecList string `json:"seclist"`
 	// vCable of the instance that you want to associate with the security list.
-	VCable  string `json:"vcable"`
+	VCable string `json:"vcable"`
 	// Uniform Resource Identifier
-	URI     string `json:"uri"`
+	URI string `json:"uri"`
 }
 
 // CreateSecurityAssociationInput defines a security association to be created.
@@ -35,13 +35,13 @@ type CreateSecurityAssociationInput struct {
 	// If you don't specify a name for this object, then the name is generated automatically.
 	// Object names can contain only alphanumeric characters, hyphens, underscores, and periods. Object names are case-sensitive.
 	// Required
-	Name    string `json:"name"`
+	Name string `json:"name"`
 	// The name of the Security list that you want to associate with the instance.
 	// Required
 	SecList string `json:"seclist"`
 	// The name of the vCable of the instance that you want to associate with the security list.
 	// Required
-	VCable  string `json:"vcable"`
+	VCable string `json:"vcable"`
 }
 
 // CreateSecurityAssociation creates a security association between the given VCable and security list.
