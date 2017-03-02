@@ -25,6 +25,7 @@ func (c *Client) ACLs() *ACLsClient {
 
 // ACLInfo describes an existing ACL.
 type ACLInfo struct {
+	// Description of the ACL
 	Description string `json:"description"`
 	// Indicates whether the ACL is enabled
 	Enabled bool `json:"enabledFlag"`
@@ -36,7 +37,7 @@ type ACLInfo struct {
 
 // CreateACLInput defines a ACL to be created.
 type CreateACLInput struct {
-	// Description of the IP Network
+	// Description of the ACL
 	// Optional
 	Description string `json:"description"`
 
@@ -86,7 +87,7 @@ func (c *ACLsClient) GetACL(getInput *GetACLInput) (*ACLInfo, error) {
 
 // UpdateACLInput describes a secruity rule to update
 type UpdateACLInput struct {
-	// Description of the IP Network
+	// Description of the ACL
 	// Optional
 	Description string `json:"description"`
 
