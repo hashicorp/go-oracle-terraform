@@ -19,12 +19,19 @@ func (c *Client) SecurityApplications() *SecurityApplicationsClient {
 
 // SecurityApplicationInfo describes an existing security application.
 type SecurityApplicationInfo struct {
-	Name        string                      `json:"name"`
-	Protocol    SecurityApplicationProtocol `json:"protocol"`
-	DPort       string                      `json:"dport"`
-	ICMPType    SecurityApplicationICMPType `json:"icmptype"`
-	ICMPCode    SecurityApplicationICMPCode `json:"icmpcode"`
+	// A description of the security application.
 	Description string                      `json:"description"`
+	// The TCP or UDP destination port number. This can be a port range, such as 5900-5999 for TCP.
+	DPort       string                      `json:"dport"`
+	// The ICMP code.
+	ICMPCode    SecurityApplicationICMPCode `json:"icmpcode"`
+	// The ICMP type.
+	ICMPType    SecurityApplicationICMPType `json:"icmptype"`
+	// The three-part name of the Security Application (/Compute-identity_domain/user/object).
+	Name        string                      `json:"name"`
+	// The protocol to use.
+	Protocol    SecurityApplicationProtocol `json:"protocol"`
+	// The Uniform Resource Identifier
 	URI         string                      `json:"uri"`
 }
 
@@ -76,12 +83,30 @@ func (c *SecurityApplicationsClient) success(result *SecurityApplicationInfo) (*
 
 // CreateSecurityApplicationInput describes the Security Application to create
 type CreateSecurityApplicationInput struct {
-	Name        string                      `json:"name"`
-	Protocol    SecurityApplicationProtocol `json:"protocol"`
-	DPort       string                      `json:"dport"`
-	ICMPCode    SecurityApplicationICMPCode `json:"icmpcode,omitempty"`
-	ICMPType    SecurityApplicationICMPType `json:"icmptype,omitempty"`
+	// A description of the security application.
+	// Optional
 	Description string                      `json:"description"`
+	// The TCP or UDP destination port number.
+	// You can also specify a port range, such as 5900-5999 for TCP.
+	// This parameter isn't relevant to the icmp protocol.
+	// Required if the Protocol is TCP or UDP
+	DPort       string                      `json:"dport"`
+	// The ICMP code. This parameter is relevant only if you specify ICMP as the protocol.
+	// If you specify icmp as the protocol and don't specify icmptype or icmpcode, then all ICMP packets are matched.
+	// Optional
+	ICMPCode    SecurityApplicationICMPCode `json:"icmpcode,omitempty"`
+	// This parameter is relevant only if you specify ICMP as the protocol.
+	// If you specify icmp as the protocol and don't specify icmptype or icmpcode, then all ICMP packets are matched.
+	// Optional
+	ICMPType    SecurityApplicationICMPType `json:"icmptype,omitempty"`
+	// The three-part name of the Security Application (/Compute-identity_domain/user/object).
+	// Object names can contain only alphanumeric characters, hyphens, underscores, and periods. Object names are case-sensitive.
+	// Required
+	Name        string                      `json:"name"`
+	// The protocol to use.
+	// Required
+	Protocol    SecurityApplicationProtocol `json:"protocol"`
+
 }
 
 // CreateSecurityApplication creates a new security application.
@@ -98,6 +123,8 @@ func (c *SecurityApplicationsClient) CreateSecurityApplication(input *CreateSecu
 
 // GetSecurityApplicationInput describes the Security Application to obtain
 type GetSecurityApplicationInput struct {
+	// The three-part name of the Security Application (/Compute-identity_domain/user/object).
+	// Required
 	Name string `json:"name"`
 }
 
@@ -113,6 +140,8 @@ func (c *SecurityApplicationsClient) GetSecurityApplication(input *GetSecurityAp
 
 // DeleteSecurityApplicationInput  describes the Security Application to delete
 type DeleteSecurityApplicationInput struct {
+	// The three-part name of the Security Application (/Compute-identity_domain/user/object).
+	// Required
 	Name string `json:"name"`
 }
 
