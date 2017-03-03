@@ -86,14 +86,16 @@ func TestAccACLsClient_CreateRule(t *testing.T) {
 		ruleSpec := &CreateACLInput{}
 		unmarshalRequestBody(t, r, ruleSpec)
 
-		if ruleSpec.Name != "/Compute-test/test/test-rule1" {
-			t.Errorf("Expected name '/Compute-test/test/test-rule1', was %s", ruleSpec.Name)
+		expectedName := "/Compute-test/test/test-acc-acl"
+		if ruleSpec.Name != expectedName {
+			t.Errorf("Expected name '%s', was %s", expectedName, ruleSpec.Name)
 		}
 		if ruleSpec.Enabled != false {
 			t.Errorf("Expected enabled to be 'false', was %s", ruleSpec.Enabled)
 		}
-		w.Write([]byte(exampleCreateACLResponse))
+
 		w.WriteHeader(201)
+		w.Write([]byte(exampleCreateACLResponse))
 	})
 
 	defer server.Close()
@@ -120,7 +122,7 @@ func TestAccACLsClient_CreateRule(t *testing.T) {
 var exampleCreateACLResponse = `
 {
   "name": "/Compute-acme/jack.jones@example.com/es_to_videoservers_stream",
-  "enabled": false,
+  "enabled": false
 }
 `
 
