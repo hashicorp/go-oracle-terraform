@@ -173,6 +173,20 @@ func (c *Client) unqualify(names ...*string) {
 	}
 }
 
+func (c *Client) getQualifiedList(list []string) []string {
+	for i, name := range list {
+		list[i] = c.getQualifiedName(name)
+	}
+	return list
+}
+
+func (c *Client) getUnqualifiedList(list []string) []string {
+	for i, name := range list {
+		list[i] = c.getUnqualifiedName(name)
+	}
+	return list
+}
+
 func (c *Client) getQualifiedListName(name string) string {
 	nameParts := strings.Split(name, ":")
 	listType := nameParts[0]
