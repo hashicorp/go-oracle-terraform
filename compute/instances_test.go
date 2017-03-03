@@ -274,7 +274,7 @@ var exampleRetrieveResponse = `
 "/Compute-acme/jack.jones@example.com/prod-ng"
 ],
 "vethernet": "/oracle/public/default",
-"nat": "ipreservation:/Compute-acme/jack.jones@example.com/prod-vm1"
+"nat": ["ipreservation:/Compute-acme/jack.jones@example.com/prod-vm1"]
 }
 },
 "hostname": "d06886.acme...",
