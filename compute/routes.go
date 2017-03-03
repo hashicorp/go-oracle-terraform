@@ -39,7 +39,7 @@ type RouteInfo struct {
 }
 
 type CreateRouteInput struct {
-	//	Specify 0,1, or 2 as the route's administrative distance.
+	// Specify 0,1, or 2 as the route's administrative distance.
 	// If you do not specify a value, the default value is 0.
 	// The same prefix can be used in multiple routes. In this case, packets are routed over all the matching
 	// routes with the lowest administrative distance.
@@ -96,7 +96,7 @@ func (c *RoutesClient) GetRoute(input *GetRouteInput) (*RouteInfo, error) {
 }
 
 type UpdateRouteInput struct {
-	//	Specify 0,1, or 2 as the route's administrative distance.
+	// Specify 0,1, or 2 as the route's administrative distance.
 	// If you do not specify a value, the default value is 0.
 	// The same prefix can be used in multiple routes. In this case, packets are routed over all the matching
 	// routes with the lowest administrative distance.
