@@ -15,7 +15,7 @@ func TestAccIPAssociationLifeCycle(t *testing.T) {
 		instanceImage string = "/oracle/public/oel_6.7_apaas_16.4.5_1610211300"
 	)
 
-	svc, err := getInstancesClient()
+	iClient, ipaClient, err := getIPAssociationsTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -36,27 +36,22 @@ func TestAccIPAssociationLifeCycle(t *testing.T) {
 		},
 	}
 
-	createdInstance, err := svc.CreateInstance(input)
+	createdInstance, err := iClient.CreateInstance(input)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer tearDownInstances(t, svc, createdInstance.Name, createdInstance.ID)
+	defer tearDownInstances(t, iClient, createdInstance.Name, createdInstance.ID)
 
 	log.Printf("Instance created: %#v", createdInstance)
 
 	vcable := createdInstance.VCableID
-
-	ipac, err := getIPAssociationsClient()
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	createInput := &CreateIPAssociationInput{
 		VCable:     vcable,
 		ParentPool: parentPool,
 	}
 
-	createdIPAssociation, err := ipac.CreateIPAssociation(createInput)
+	createdIPAssociation, err := ipaClient.CreateIPAssociation(createInput)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -66,7 +61,7 @@ func TestAccIPAssociationLifeCycle(t *testing.T) {
 	getIPInput := &GetIPAssociationInput{
 		Name: createdIPAssociation.Name,
 	}
-	ipAssociationInfo, err := ipac.GetIPAssociation(getIPInput)
+	ipAssociationInfo, err := ipaClient.GetIPAssociation(getIPInput)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -78,7 +73,7 @@ func TestAccIPAssociationLifeCycle(t *testing.T) {
 	deleteIPInput := &DeleteIPAssociationInput{
 		Name: ipAssociationInfo.Name,
 	}
-	err = ipac.DeleteIPAssociation(deleteIPInput)
+	err = ipaClient.DeleteIPAssociation(deleteIPInput)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -87,11 +82,11 @@ func TestAccIPAssociationLifeCycle(t *testing.T) {
 	// Instance deletion should be covered by the deferred cleanup function
 }
 
-func getIPAssociationsClient() (*IPAssociationsClient, error) {
+func getIPAssociationsTestClients() (*InstancesClient, *IPAssociationsClient, error) {
 	client, err := getTestClient(&opc.Config{})
 	if err != nil {
-		return &IPAssociationsClient{}, err
+		return nil, nil, err
 	}
 
-	return client.IPAssociations(), nil
+	return client.Instances(), client.IPAssociations(), nil
 }

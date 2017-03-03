@@ -18,20 +18,16 @@ const (
 func TestAccVirtNICLifeCycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
-	sic, err := getIPNetworksClient()
+	iClient, nClient, vnClient, err := getVirtNICsTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
-	ipNetwork, err := createTestIPNetwork(sic, _IPNetworkTestPrefix)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer destroyIPNetwork(t, sic, ipNetwork.Name)
 
-	instanceSvc, err := getInstancesClient()
+	ipNetwork, err := createTestIPNetwork(nClient, _IPNetworkTestPrefix)
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer destroyIPNetwork(t, nClient, ipNetwork.Name)
 
 	// In order to get details on a Virtual NIC we need to create the following resources
 	// - IP Network
@@ -50,16 +46,11 @@ func TestAccVirtNICLifeCycle(t *testing.T) {
 		},
 	}
 
-	createdInstance, err := instanceSvc.CreateInstance(instanceInput)
+	createdInstance, err := iClient.CreateInstance(instanceInput)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer tearDownInstances(t, instanceSvc, createdInstance.Name, createdInstance.ID)
-
-	svc, err := getVirtNICsClient()
-	if err != nil {
-		t.Fatal(err)
-	}
+	defer tearDownInstances(t, iClient, createdInstance.Name, createdInstance.ID)
 
 	// Use the static "eth0" interface, as we statically created that above
 	createdVNIC := createdInstance.Networking["eth0"].Vnic
@@ -67,7 +58,7 @@ func TestAccVirtNICLifeCycle(t *testing.T) {
 		Name: createdVNIC,
 	}
 
-	vNIC, err := svc.GetVirtualNIC(getInput)
+	vNIC, err := vnClient.GetVirtualNIC(getInput)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -78,10 +69,10 @@ func TestAccVirtNICLifeCycle(t *testing.T) {
 	}
 }
 
-func getVirtNICsClient() (*VirtNICsClient, error) {
+func getVirtNICsTestClients() (*InstancesClient, *IPNetworksClient, *VirtNICsClient, error) {
 	client, err := getTestClient(&opc.Config{})
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, err
 	}
-	return client.VirtNICs(), nil
+	return client.Instances(), client.IPNetworks(), client.VirtNICs(), nil
 }

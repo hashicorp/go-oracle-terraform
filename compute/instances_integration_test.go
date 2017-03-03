@@ -11,10 +11,16 @@ import (
 func TestAccInstanceLifeCycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
-	svc, err := getInstancesClient()
+	iClient, nClient, err := getInstancesTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	ipNetwork, err := createTestIPNetwork(nClient, _IPNetworkTestPrefix)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer destroyIPNetwork(t, nClient, ipNetwork.Name)
 
 	input := &CreateInstanceInput{
 		Name:      "test-acc",
@@ -25,7 +31,14 @@ func TestAccInstanceLifeCycle(t *testing.T) {
 		BootOrder: nil,
 		SSHKeys:   []string{},
 		Networking: map[string]NetworkingInfo{
-			"eth0": {},
+			"eth0": {
+				IPNetwork: ipNetwork.Name,
+				Nat:       []string{"jake-testing"},
+			},
+			"eth1": {
+				Model: "e1000",
+				Nat:   []string{"ippool:/oracle/public/ippool"},
+			},
 		},
 		Attributes: map[string]interface{}{
 			"attr1": 12,
@@ -35,11 +48,11 @@ func TestAccInstanceLifeCycle(t *testing.T) {
 		},
 	}
 
-	createdInstance, err := svc.CreateInstance(input)
+	createdInstance, err := iClient.CreateInstance(input)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer tearDownInstances(t, svc, createdInstance.Name, createdInstance.ID)
+	defer tearDownInstances(t, iClient, createdInstance.Name, createdInstance.ID)
 
 	log.Printf("Instance created: %#v\n", createdInstance)
 }
@@ -54,11 +67,11 @@ func tearDownInstances(t *testing.T, svc *InstancesClient, name, id string) {
 	}
 }
 
-func getInstancesClient() (*InstancesClient, error) {
+func getInstancesTestClients() (*InstancesClient, *IPNetworksClient, error) {
 	client, err := getTestClient(&opc.Config{})
 	if err != nil {
-		return &InstancesClient{}, err
+		return nil, nil, err
 	}
 
-	return client.Instances(), nil
+	return client.Instances(), client.IPNetworks(), nil
 }

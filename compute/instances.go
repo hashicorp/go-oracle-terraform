@@ -1,6 +1,9 @@
 package compute
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 const WaitForInstanceReadyTimeout = 300
 const WaitForInstanceDeleteTimeout = 600
@@ -60,17 +63,21 @@ type StorageAttachment struct {
 	Volume string `json:"volume"`
 }
 
+const ReservationPrefix = "ipreservation"
+const ReservationIPPrefix = "network/v1/ipreservation"
+
 type NetworkingInfo struct {
-	SecurityLists []string `json:"seclists,omitempty"`
-	IPNetwork     string   `json:"ipnetwork,omitempty"`
+	DNS           []string `json:"dns,omitempty"`
 	IPAddress     string   `json:"ip,omitempty"`
+	IPNetwork     string   `json:"ipnetwork,omitempty"`
 	MACAddress    string   `json:"address,omitempty"`
+	Model         string   `json:"model,omitempty"`
+	NameServers   []string `json:"name_servers,omitempty"`
+	Nat           []string `json:"nat,omitempty"`
+	SearchDomains []string `json:"search_domains,omitempty"`
+	SecLists      []string `json:"seclists,omitempty"`
 	Vnic          string   `json:"vnic,omitempty"`
 	VnicSets      []string `json:"vnicsets,omitempty"`
-	Nat           string   `json:"nat,omitempty"`
-	DNS           []string `json:"dns,omitempty"`
-	NameServers   []string `json:"name_servers,omitempty"`
-	SearchDomains []string `json:"search_domains,omitempty"`
 }
 
 // LaunchPlan defines a launch plan, used to launch instances with the supplied InstanceSpec(s)
@@ -241,19 +248,30 @@ func (c *InstancesClient) qualifyNetworking(info map[string]NetworkingInfo) map[
 	qualifiedNetworks := map[string]NetworkingInfo{}
 	for k, v := range info {
 		qfd := v
+		sharedNetwork := false
 		if v.IPNetwork != "" {
+			// Network interface is for an IP Network
 			qfd.IPNetwork = c.getQualifiedName(v.IPNetwork)
+			sharedNetwork = true
 		}
 		if v.Vnic != "" {
 			qfd.Vnic = c.getQualifiedName(v.Vnic)
 		}
-		if v.SecurityLists != nil {
+		if v.Nat != nil {
+			qfd.Nat = c.qualifyNat(v.Nat, sharedNetwork)
+		}
+		if v.VnicSets != nil {
+			qfd.VnicSets = c.qualifyVnicSet(v.VnicSets)
+		}
+		if v.SecLists != nil {
+			// Network interface is for the shared network
 			secLists := []string{}
-			for _, v := range v.SecurityLists {
+			for _, v := range v.SecLists {
 				secLists = append(secLists, c.getQualifiedName(v))
 			}
-			qfd.SecurityLists = secLists
+			qfd.SecLists = secLists
 		}
+
 		qualifiedNetworks[k] = qfd
 	}
 	return qualifiedNetworks
@@ -270,14 +288,51 @@ func (c *InstancesClient) unqualifyNetworking(info map[string]NetworkingInfo) ma
 		if v.Vnic != "" {
 			unq.Vnic = c.getUnqualifiedName(v.Vnic)
 		}
-		if v.SecurityLists != nil {
+		if v.Nat != nil {
+			unq.Nat = c.unqualifyNat(v.Nat)
+		}
+		if v.VnicSets != nil {
+			unq.VnicSets = c.unqualifyVnicSet(v.VnicSets)
+		}
+		if v.SecLists != nil {
 			secLists := []string{}
-			for _, v := range v.SecurityLists {
+			for _, v := range v.SecLists {
 				secLists = append(secLists, c.getUnqualifiedName(v))
 			}
-			v.SecurityLists = secLists
+			v.SecLists = secLists
 		}
 		unqualifiedNetworks[k] = unq
 	}
 	return unqualifiedNetworks
+}
+
+func (c *InstancesClient) qualifyNat(nat []string, shared bool) []string {
+	qualifiedNats := []string{}
+	for _, v := range nat {
+		if strings.HasPrefix(v, "ippool:/oracle") {
+			qualifiedNats = append(qualifiedNats, v)
+			continue
+		}
+		prefix := ReservationPrefix
+		if shared {
+			prefix = ReservationIPPrefix
+		}
+		qualifiedNats = append(qualifiedNats, fmt.Sprintf("%s:%s", prefix, c.getQualifiedName(v)))
+	}
+	return qualifiedNats
+}
+
+func (c *InstancesClient) unqualifyNat(nat []string) []string {
+	return nat
+	unQualifiedNats := []string{}
+	for _, v := range nat {
+		if strings.HasPrefix(v, "ippool:/oracle") {
+			unQualifiedNats = append(unQualifiedNats, v)
+			continue
+		}
+		n := strings.Split(v, ":")
+		u := n[1]
+		unQualifiedNats = append(unQualifiedNats, c.getUnqualifiedName(u))
+	}
+	return unQualifiedNats
 }

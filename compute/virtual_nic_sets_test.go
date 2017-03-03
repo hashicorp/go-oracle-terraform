@@ -12,7 +12,7 @@ import (
 func TestAccVirtNICSetsLifeCycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
-	svc, err := getVirtNICSetsClient()
+	_, svc, _, err := getVirtNICSetsTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -75,38 +75,29 @@ func TestAccVirtNICSetAddNICS(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
 	// Fist, create necessary clients
-	instanceSvc, err := getInstancesClient()
+	iClient, vnClient, nClient, err := getVirtNICSetsTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	svc, err := getVirtNICSetsClient()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	sic, err := getIPNetworksClient()
-	if err != nil {
-		t.Fatal(err)
-	}
 	// Create the three IP Networks needed
-	ipNetworkOne, err := createTestIPNetwork(sic, _IPNetworkTestPrefix)
+	ipNetworkOne, err := createTestIPNetwork(nClient, _IPNetworkTestPrefix)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer destroyIPNetwork(t, sic, ipNetworkOne.Name)
+	defer destroyIPNetwork(t, nClient, ipNetworkOne.Name)
 
-	ipNetworkTwo, err := createTestIPNetwork(sic, _IPNetworkTestPrefixTwo)
+	ipNetworkTwo, err := createTestIPNetwork(nClient, _IPNetworkTestPrefixTwo)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer destroyIPNetwork(t, sic, ipNetworkTwo.Name)
+	defer destroyIPNetwork(t, nClient, ipNetworkTwo.Name)
 
-	ipNetworkThree, err := createTestIPNetwork(sic, _IPNetworkTestPrefixThree)
+	ipNetworkThree, err := createTestIPNetwork(nClient, _IPNetworkTestPrefixThree)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer destroyIPNetwork(t, sic, ipNetworkThree.Name)
+	defer destroyIPNetwork(t, nClient, ipNetworkThree.Name)
 
 	// Create an instance with multiple vNICs
 	instanceInput := &CreateInstanceInput{
@@ -130,11 +121,11 @@ func TestAccVirtNICSetAddNICS(t *testing.T) {
 		},
 	}
 
-	createdInstance, err := instanceSvc.CreateInstance(instanceInput)
+	createdInstance, err := iClient.CreateInstance(instanceInput)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer tearDownInstances(t, instanceSvc, createdInstance.Name, createdInstance.ID)
+	defer tearDownInstances(t, iClient, createdInstance.Name, createdInstance.ID)
 
 	vNIC1 := createdInstance.Networking["eth0"].Vnic
 	vNIC2 := createdInstance.Networking["eth1"].Vnic
@@ -148,18 +139,18 @@ func TestAccVirtNICSetAddNICS(t *testing.T) {
 		VirtualNICNames: []string{vNIC1, vNIC2},
 	}
 
-	createdSet, err := svc.CreateVirtualNICSet(input)
+	createdSet, err := vnClient.CreateVirtualNICSet(input)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer deleteVirtualNICSet(t, svc, createdSet.Name)
+	defer deleteVirtualNICSet(t, vnClient, createdSet.Name)
 
 	// Get the created set and compare
 	getInput := &GetVirtualNICSetInput{
 		Name: createdSet.Name,
 	}
 
-	returnedSet, err := svc.GetVirtualNICSet(getInput)
+	returnedSet, err := vnClient.GetVirtualNICSet(getInput)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -181,13 +172,13 @@ func TestAccVirtNICSetAddNICS(t *testing.T) {
 		VirtualNICNames: []string{vNIC1, vNIC2, vNIC3},
 	}
 
-	updatedSet, err := svc.UpdateVirtualNICSet(updateInput)
+	updatedSet, err := vnClient.UpdateVirtualNICSet(updateInput)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// Get the updated set and compare
-	returnedSet, err = svc.GetVirtualNICSet(getInput)
+	returnedSet, err = vnClient.GetVirtualNICSet(getInput)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -200,12 +191,12 @@ func TestAccVirtNICSetAddNICS(t *testing.T) {
 	log.Printf("Virtual NIC Set successfully created and updated")
 }
 
-func getVirtNICSetsClient() (*VirtNICSetsClient, error) {
+func getVirtNICSetsTestClients() (*InstancesClient, *VirtNICSetsClient, *IPNetworksClient, error) {
 	client, err := getTestClient(&opc.Config{})
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, err
 	}
-	return client.VirtNICSets(), nil
+	return client.Instances(), client.VirtNICSets(), client.IPNetworks(), nil
 }
 
 func deleteVirtualNICSet(t *testing.T, svc *VirtNICSetsClient, name string) {
