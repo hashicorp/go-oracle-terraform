@@ -93,8 +93,9 @@ func TestAccACLsClient_CreateRule(t *testing.T) {
 		if ruleSpec.Enabled != false {
 			t.Errorf("Expected enabled to be 'false', was %s", ruleSpec.Enabled)
 		}
-		w.Write([]byte(exampleCreateACLResponse))
+
 		w.WriteHeader(201)
+		w.Write([]byte(exampleCreateACLResponse))
 	})
 
 	defer server.Close()
@@ -121,7 +122,7 @@ func TestAccACLsClient_CreateRule(t *testing.T) {
 var exampleCreateACLResponse = `
 {
   "name": "/Compute-acme/jack.jones@example.com/es_to_videoservers_stream",
-  "enabled": false,
+  "enabled": false
 }
 `
 
