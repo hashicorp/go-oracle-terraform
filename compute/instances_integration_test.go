@@ -22,6 +22,8 @@ func TestAccInstanceLifeCycle(t *testing.T) {
 	}
 	defer destroyIPNetwork(t, nClient, ipNetwork.Name)
 
+	// TODO (@jake): Remove static IPReservation once resource is available for modification
+	// TODO (@jake): Make constants for static strings
 	input := &CreateInstanceInput{
 		Name:      "test-acc",
 		Label:     "test",
@@ -33,7 +35,7 @@ func TestAccInstanceLifeCycle(t *testing.T) {
 		Networking: map[string]NetworkingInfo{
 			"eth0": {
 				IPNetwork: ipNetwork.Name,
-				Nat:       []string{"jake-testing"},
+				Nat:       []string{"testing-acc"},
 			},
 			"eth1": {
 				Model: "e1000",

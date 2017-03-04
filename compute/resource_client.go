@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/mitchellh/mapstructure"
 )
 
 // ResourceClient is an AuthenticatedClient with some additional information about the resources to be addressed.
@@ -56,9 +58,23 @@ func (c *ResourceClient) unmarshalResponseBody(resp *http.Response, iface interf
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(resp.Body)
 	c.debugLogString(fmt.Sprintf("HTTP Resp (%d): %s", resp.StatusCode, buf.String()))
-	err := json.Unmarshal(buf.Bytes(), iface)
+	// JSON decode response into interface
+	var tmp interface{}
+	dcd := json.NewDecoder(buf)
+	dcd.Decode(&tmp)
+
+	// Use mapstructure to weakly decode into the resulting interface
+	msdcd, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+		WeaklyTypedInput: true,
+		Result:           iface,
+		TagName:          "json",
+	})
 	if err != nil {
-		return fmt.Errorf("Error unmarshalling response body: %s", err)
+		return err
+	}
+
+	if err := msdcd.Decode(tmp); err != nil {
+		return err
 	}
 	return nil
 }
