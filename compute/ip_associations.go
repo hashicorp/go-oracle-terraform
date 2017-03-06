@@ -24,16 +24,37 @@ func (c *Client) IPAssociations() *IPAssociationsClient {
 
 // IPAssociationInfo describes an existing IP association.
 type IPAssociationInfo struct {
-	Name        string `json:"name"`
-	VCable      string `json:"vcable"`
-	ParentPool  string `json:"parentpool"`
-	URI         string `json:"uri"`
+	// TODO: it'd probably make sense to expose the `ip` field here too?
+
+	// The three-part name of the object (/Compute-identity_domain/user/object).
+	Name string `json:"name"`
+
+	// The three-part name of the IP reservation object in the format (/Compute-identity_domain/user/object).
+	// An IP reservation is a public IP address which is attached to an Oracle Compute Cloud Service instance that requires access to or from the Internet.
 	Reservation string `json:"reservation"`
+
+	// The type of IP Address to associate with this instance
+	// for a Dynamic IP address specify `ippool:/oracle/public/ippool`.
+	// for a Static IP address specify the three part name of the existing IP reservation
+	ParentPool string `json:"parentpool"`
+
+	// Uniform Resource Identifier for the IP Association
+	URI string `json:"uri"`
+
+	// The three-part name of a vcable ID of an instance that is associated with the IP reservation.
+	VCable string `json:"vcable"`
 }
 
 type CreateIPAssociationInput struct {
-	VCable     string `json:"vcable"`
+	// The type of IP Address to associate with this instance
+	// for a Dynamic IP address specify `ippool:/oracle/public/ippool`.
+	// for a Static IP address specify the three part name of the existing IP reservation
+	// Required
 	ParentPool string `json:"parentpool"`
+
+	// The three-part name of the vcable ID of the instance that you want to associate with an IP address. The three-part name is in the format: /Compute-identity_domain/user/object.
+	// Required
+	VCable string `json:"vcable"`
 }
 
 // CreateIPAssociation creates a new IP association with the supplied vcable and parentpool.
@@ -49,6 +70,8 @@ func (c *IPAssociationsClient) CreateIPAssociation(input *CreateIPAssociationInp
 }
 
 type GetIPAssociationInput struct {
+	// The three-part name of the IP Association
+	// Required.
 	Name string `json:"name"`
 }
 
@@ -63,6 +86,8 @@ func (c *IPAssociationsClient) GetIPAssociation(input *GetIPAssociationInput) (*
 }
 
 type DeleteIPAssociationInput struct {
+	// The three-part name of the IP Association
+	// Required.
 	Name string `json:"name"`
 }
 

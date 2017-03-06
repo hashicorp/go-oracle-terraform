@@ -19,22 +19,41 @@ func (c *Client) IPReservations() *IPReservationsClient {
 
 // IPReservationInput describes an existing IP reservation.
 type IPReservation struct {
-	Account    string   `json:"account"`
-	IP         string   `json:"ip"`
-	Name       string   `json:"name"`
-	ParentPool string   `json:"parentpool"`
-	Permanent  bool     `json:"permanent"`
-	Tags       []string `json:"tags"`
-	Uri        string   `json:"uri"`
-	Used       bool     `json:"used"`
+	// Shows the default account for your identity domain.
+	Account string `json:"account"`
+	// Public IP address.
+	IP string `json:"ip"`
+	// The three-part name of the IP Reservation (/Compute-identity_domain/user/object).
+	Name string `json:"name"`
+	// Pool of public IP addresses
+	ParentPool string `json:"parentpool"`
+	// Is the IP Reservation Persistent (i.e. static) or not (i.e. Dynamic)?
+	Permanent bool `json:"permanent"`
+	// A comma-separated list of strings which helps you to identify IP reservation.
+	Tags []string `json:"tags"`
+	// Uniform Resource Identifier
+	Uri string `json:"uri"`
+	// Is the IP reservation associated with an instance?
+	Used bool `json:"used"`
 }
 
 // CreateIPReservationInput defines an IP reservation to be created.
 type CreateIPReservationInput struct {
-	Name       string   `json:"name"`
-	ParentPool string   `json:"parentpool"`
-	Permanent  bool     `json:"permanent"`
-	Tags       []string `json:"tags"`
+	// The three-part name of the object (/Compute-identity_domain/user/object).
+	// If you don't specify a name for this object, then the name is generated automatically.
+	// Object names can contain only alphanumeric characters, hyphens, underscores, and periods.
+	// Object names are case-sensitive.
+	// Optional
+	Name string `json:"name"`
+	// Pool of public IP addresses. This must be set to `/oracle/public/ippool`
+	// Required
+	ParentPool string `json:"parentpool"`
+	// Is the IP Reservation Persistent (i.e. static) or not (i.e. Dynamic)?
+	// Required
+	Permanent bool `json:"permanent"`
+	// A comma-separated list of strings which helps you to identify IP reservations.
+	// Optional
+	Tags []string `json:"tags"`
 }
 
 // CreateIPReservation creates a new IP reservation with the given parentpool, tags and permanent flag.
@@ -49,6 +68,8 @@ func (c *IPReservationsClient) CreateIPReservation(createInput *CreateIPReservat
 
 // GetIPReservationInput defines an IP Reservation to get
 type GetIPReservationInput struct {
+	// The three-part name of the IP Reservation (/Compute-identity_domain/user/object).
+	// Required
 	Name string
 }
 
@@ -64,10 +85,21 @@ func (c *IPReservationsClient) GetIPReservation(getInput *GetIPReservationInput)
 
 // UpdateIPReservationInput defines an IP Reservation to be updated
 type UpdateIPReservationInput struct {
-	Name       string   `json:"name"`
-	ParentPool string   `json:"parentpool"`
-	Permanent  bool     `json:"permanent"`
-	Tags       []string `json:"tags"`
+	// The three-part name of the object (/Compute-identity_domain/user/object).
+	// If you don't specify a name for this object, then the name is generated automatically.
+	// Object names can contain only alphanumeric characters, hyphens, underscores, and periods.
+	// Object names are case-sensitive.
+	// Required
+	Name string `json:"name"`
+	// Pool of public IP addresses. This must be set to `/oracle/public/ippool`
+	// Required
+	ParentPool string `json:"parentpool"`
+	// Is the IP Reservation Persistent (i.e. static) or not (i.e. Dynamic)?
+	// Required
+	Permanent bool `json:"permanent"`
+	// A comma-separated list of strings which helps you to identify IP reservations.
+	// Optional
+	Tags []string `json:"tags"`
 }
 
 // UpdateIPReservation updates the IP reservation.
@@ -82,6 +114,8 @@ func (c *IPReservationsClient) UpdateIPReservation(updateInput *UpdateIPReservat
 
 // DeleteIPReservationInput defines an IP Reservation to delete
 type DeleteIPReservationInput struct {
+	// The three-part name of the IP Reservation (/Compute-identity_domain/user/object).
+	// Required
 	Name string
 }
 

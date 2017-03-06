@@ -17,11 +17,17 @@ func (c *Client) VirtNICSets() *VirtNICSetsClient {
 
 // Describes an existing virtual nic set
 type VirtualNICSet struct {
+	// List of ACLs applied to the VNICs in the set.
 	AppliedACLs []string `json:"appliedAcls"`
-	Description string   `json:"description"`
-	Name        string   `json:"name"`
-	Tags        []string `json:"tags"`
-	Uri         string   `json:"uri"`
+	// Description of the VNIC Set.
+	Description string `json:"description"`
+	// Name of the VNIC set.
+	Name string `json:"name"`
+	// The three-part name (/Compute-identity_domain/user/object) of the virtual NIC set.
+	Tags []string `json:"tags"`
+	// Uniform Resource Identifier
+	Uri string `json:"uri"`
+	// List of VNICs associated with this VNIC set.
 	VirtualNICs []VirtualNIC
 	// VirtualNICNames should not be used in any fashion except internally
 	// The API returns a slice of names, and we use those names to
@@ -30,10 +36,21 @@ type VirtualNICSet struct {
 }
 
 type CreateVirtualNICSetInput struct {
-	Name            string   `json:"name"`
-	AppliedACLs     []string `json:"appliedAcls"`
-	Description     string   `json:"description"`
-	Tags            []string `json:"tags"`
+	// List of ACLs applied to the VNICs in the set.
+	// Optional
+	AppliedACLs []string `json:"appliedAcls"`
+	// Description of the object.
+	// Optional
+	Description string `json:"description"`
+	// The three-part name (/Compute-identity_domain/user/object) of the virtual NIC set.
+	// Object names can contain only alphanumeric, underscore (_), dash (-), and period (.) characters. Object names are case-sensitive.
+	// Required
+	Name string `json:"name"`
+	// Tags associated with this VNIC set.
+	// Optional
+	Tags []string `json:"tags"`
+	// List of VNICs associated with this VNIC set.
+	// Optional
 	VirtualNICNames []string `json:"vnics"`
 }
 
@@ -64,6 +81,8 @@ func (c *VirtNICSetsClient) CreateVirtualNICSet(input *CreateVirtualNICSetInput)
 }
 
 type GetVirtualNICSetInput struct {
+	// The three-part name (/Compute-identity_domain/user/object) of the virtual NIC set.
+	// Required
 	Name string `json:"name"`
 }
 
@@ -84,10 +103,21 @@ func (c *VirtNICSetsClient) GetVirtualNICSet(input *GetVirtualNICSetInput) (*Vir
 }
 
 type UpdateVirtualNICSetInput struct {
-	Name            string   `json:"name"`
-	AppliedACLs     []string `json:"appliedAcls"`
-	Description     string   `json:"description"`
-	Tags            []string `json:"tags"`
+	// List of ACLs applied to the VNICs in the set.
+	// Optional
+	AppliedACLs []string `json:"appliedAcls"`
+	// Description of the object.
+	// Optional
+	Description string `json:"description"`
+	// The three-part name (/Compute-identity_domain/user/object) of the virtual NIC set.
+	// Object names can contain only alphanumeric, underscore (_), dash (-), and period (.) characters. Object names are case-sensitive.
+	// Required
+	Name string `json:"name"`
+	// Tags associated with this VNIC set.
+	// Optional
+	Tags []string `json:"tags"`
+	// List of VNICs associated with this VNIC set.
+	// Optional
 	VirtualNICNames []string `json:"vnics"`
 }
 
@@ -117,6 +147,8 @@ func (c *VirtNICSetsClient) UpdateVirtualNICSet(input *UpdateVirtualNICSetInput)
 }
 
 type DeleteVirtualNICSetInput struct {
+	// The three-part name (/Compute-identity_domain/user/object) of the virtual NIC set.
+	// Required
 	Name string `json:"name"`
 }
 

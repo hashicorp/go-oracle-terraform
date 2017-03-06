@@ -19,20 +19,37 @@ func (c *Client) SecurityLists() *SecurityListsClient {
 
 // SecurityListInfo describes an existing security list.
 type SecurityListInfo struct {
-	Account            string `json:"account"`
-	Description        string `json:description`
-	Name               string `json:"name"`
+	// Shows the default account for your identity domain.
+	Account string `json:"account"`
+	// A description of the security list.
+	Description string `json:description`
+	// The three-part name of the security list (/Compute-identity_domain/user/object).
+	Name string `json:"name"`
+	// The policy for outbound traffic from the security list.
+	// TODO: this should become a Constant: deny/reject/permit
 	OutboundCIDRPolicy string `json:"outbound_cidr_policy"`
-	Policy             string `json:"policy"`
-	URI                string `json:"uri"`
+	// The policy for inbound traffic to the security list
+	// TODO: This should become a Constant: deny/reject/permit
+	Policy string `json:"policy"`
+	// Uniform Resource Identifier
+	URI string `json:"uri"`
 }
 
 // CreateSecurityListInput defines a security list to be created.
 type CreateSecurityListInput struct {
-	Description        string `json:description`
-	Name               string `json:"name"`
+	// A description of the security list.
+	// Optional
+	Description string `json:"description"`
+	// The three-part name of the Security List (/Compute-identity_domain/user/object).
+	// Object names can contain only alphanumeric characters, hyphens, underscores, and periods. Object names are case-sensitive.
+	// Required
+	Name string `json:"name"`
+	// The policy for outbound traffic from the security list.
+	// Optional (defaults to `permit`)
 	OutboundCIDRPolicy string `json:"outbound_cidr_policy"`
-	Policy             string `json:"policy"`
+	// The policy for inbound traffic to the security list.
+	// Optional (defaults to `deny`)
+	Policy string `json:"policy"`
 }
 
 // CreateSecurityList creates a new security list with the given name, policy and outbound CIDR policy.
@@ -48,6 +65,8 @@ func (c *SecurityListsClient) CreateSecurityList(createInput *CreateSecurityList
 
 // GetSecurityListInput describes the security list you want to get
 type GetSecurityListInput struct {
+	// The three-part name of the Security List (/Compute-identity_domain/user/object).
+	// Required
 	Name string `json:name`
 }
 
@@ -63,10 +82,18 @@ func (c *SecurityListsClient) GetSecurityList(getInput *GetSecurityListInput) (*
 
 // UpdateSecurityListInput defines what to update in a security list
 type UpdateSecurityListInput struct {
-	Description        string `json:description`
-	Name               string `json:"name"`
+	// A description of the security list.
+	// Optional
+	Description string `json:description`
+	// The three-part name of the Security List (/Compute-identity_domain/user/object).
+	// Required
+	Name string `json:"name"`
+	// The policy for outbound traffic from the security list.
+	// Optional (defaults to `permit`)
 	OutboundCIDRPolicy string `json:"outbound_cidr_policy"`
-	Policy             string `json:"policy"`
+	// The policy for inbound traffic to the security list.
+	// Optional (defaults to `deny`)
+	Policy string `json:"policy"`
 }
 
 // UpdateSecurityList updates the policy and outbound CIDR pol
@@ -82,6 +109,8 @@ func (c *SecurityListsClient) UpdateSecurityList(updateInput *UpdateSecurityList
 
 // DeleteSecurityListInput describes the security list to destroy
 type DeleteSecurityListInput struct {
+	// The three-part name of the Security List (/Compute-identity_domain/user/object).
+	// Required
 	Name string `json:name`
 }
 

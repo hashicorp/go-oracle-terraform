@@ -19,15 +19,27 @@ func (c *Client) SecurityIPLists() *SecurityIPListsClient {
 
 // SecurityIPListInfo describes an existing security IP list.
 type SecurityIPListInfo struct {
-	Name         string   `json:"name"`
+	// A description of the security IP list.
+	Description string `json:"description"`
+	// The three-part name of the object (/Compute-identity_domain/user/object).
+	Name string `json:"name"`
+	// A comma-separated list of the subnets (in CIDR format) or IPv4 addresses for which you want to create this security IP list.
 	SecIPEntries []string `json:"secipentries"`
-	URI          string   `json:"uri"`
+	// Uniform Resource Identifier
+	URI string `json:"uri"`
 }
 
 // CreateSecurityIPListInput defines a security IP list to be created.
 type CreateSecurityIPListInput struct {
-	Description  string   `json:"description"`
-	Name         string   `json:"name"`
+	// A description of the security IP list.
+	// Optional
+	Description string `json:"description"`
+	// The three-part name of the object (/Compute-identity_domain/user/object).
+	// Object names can contain only alphanumeric characters, hyphens, underscores, and periods. Object names are case-sensitive.
+	// Required
+	Name string `json:"name"`
+	// A comma-separated list of the subnets (in CIDR format) or IPv4 addresses for which you want to create this security IP list.
+	// Required
 	SecIPEntries []string `json:"secipentries"`
 }
 
@@ -44,6 +56,8 @@ func (c *SecurityIPListsClient) CreateSecurityIPList(createInput *CreateSecurity
 
 // GetSecurityIPListInput describes the Security IP List to obtain
 type GetSecurityIPListInput struct {
+	// The three-part name of the object (/Compute-identity_domain/user/object).
+	// Required
 	Name string `json:"name"`
 }
 
@@ -59,8 +73,14 @@ func (c *SecurityIPListsClient) GetSecurityIPList(getInput *GetSecurityIPListInp
 
 // UpdateSecurityIPListInput describes the security ip list to update
 type UpdateSecurityIPListInput struct {
-	Description  string   `json:"description"`
-	Name         string   `json:"name"`
+	// A description of the security IP list.
+	// Optional
+	Description string `json:"description"`
+	// The three-part name of the object (/Compute-identity_domain/user/object).
+	// Required
+	Name string `json:"name"`
+	// A comma-separated list of the subnets (in CIDR format) or IPv4 addresses for which you want to create this security IP list.
+	// Required
 	SecIPEntries []string `json:"secipentries"`
 }
 
@@ -77,6 +97,8 @@ func (c *SecurityIPListsClient) UpdateSecurityIPList(updateInput *UpdateSecurity
 
 // DeleteSecurityIPListInput describes the security ip list to delete.
 type DeleteSecurityIPListInput struct {
+	// The three-part name of the object (/Compute-identity_domain/user/object).
+	// Required
 	Name string `json:"name"`
 }
 
