@@ -27,7 +27,7 @@ const (
 	Attached    StorageAttachmentState = "attached"
 	Detaching   StorageAttachmentState = "detaching"
 	Unavailable StorageAttachmentState = "unavailable"
-	Unknowmn    StorageAttachmentState = "unknown"
+	Unknown     StorageAttachmentState = "unknown"
 )
 
 // StorageAttachmentInfo describes an existing storage attachment.
@@ -83,6 +83,8 @@ func (c *StorageAttachmentsClient) CreateStorageAttachment(input *CreateStorageA
 
 // DeleteStorageAttachmentInput represents the body of an API request to delete a Storage Attachment.
 type DeleteStorageAttachmentInput struct {
+	// The three-part name of the Storage Attachment (/Compute-identity_domain/user/object).
+	// Required
 	Name string `json:"name"`
 }
 
@@ -97,6 +99,8 @@ func (c *StorageAttachmentsClient) DeleteStorageAttachment(input *DeleteStorageA
 
 // GetStorageAttachmentInput represents the body of an API request to obtain a Storage Attachment.
 type GetStorageAttachmentInput struct {
+	// The three-part name of the Storage Attachment (/Compute-identity_domain/user/object).
+	// Required
 	Name string `json:"name"`
 }
 

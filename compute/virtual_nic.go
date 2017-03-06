@@ -16,16 +16,24 @@ func (c *Client) VirtNICs() *VirtNICsClient {
 }
 
 type VirtualNIC struct {
-	Description string   `json:"description"`
-	MACAddress  string   `json:"macAddress"`
-	Name        string   `json:"name"`
-	Tags        []string `json:"tags"`
-	TransitFlag bool     `json:"transitFlag"`
-	Uri         string   `json:"uri"`
+	// Description of the object.
+	Description string `json:"description"`
+	// MAC address of this VNIC.
+	MACAddress string `json:"macAddress"`
+	// The three-part name (/Compute-identity_domain/user/object) of the Virtual NIC.
+	Name string `json:"name"`
+	// Tags associated with the object.
+	Tags []string `json:"tags"`
+	// True if the VNIC is of type "transit".
+	TransitFlag bool `json:"transitFlag"`
+	// Uniform Resource Identifier
+	Uri string `json:"uri"`
 }
 
 // Can only GET a virtual NIC, not update, create, or delete
 type GetVirtualNICInput struct {
+	// The three-part name (/Compute-identity_domain/user/object) of the Virtual NIC.
+	// Required
 	Name string `json:"name"`
 }
 
