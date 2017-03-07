@@ -16,6 +16,11 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/opc"
 )
 
+const (
+	_ClientTestUser   = "test-user"
+	_ClientTestDomain = "test-domain"
+)
+
 func newAuthenticatingServer(handler func(w http.ResponseWriter, r *http.Request)) *httptest.Server {
 	return httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if os.Getenv("ORACLE_LOG") != "" {
@@ -68,6 +73,28 @@ func getTestClient(c *opc.Config) (*Client, error) {
 	}
 
 	return NewComputeClient(c)
+}
+
+func getBlankTestClient() (*Client, *httptest.Server, error) {
+	server := newAuthenticatingServer(func(w http.ResponseWriter, r *http.Request) {
+	})
+
+	endpoint, err := url.Parse(server.URL)
+	if err != nil {
+		server.Close()
+		return nil, nil, err
+	}
+
+	client, err := getTestClient(&opc.Config{
+		IdentityDomain: opc.String(_ClientTestDomain),
+		Username:       opc.String(_ClientTestUser),
+		APIEndpoint:    endpoint,
+	})
+	if err != nil {
+		server.Close()
+		return nil, nil, err
+	}
+	return client, server, nil
 }
 
 // Returns a stub client with default values, and a custom API Endpoint

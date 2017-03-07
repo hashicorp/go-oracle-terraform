@@ -18,7 +18,7 @@ const (
 func TestAccSecurityRulesLifeCycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
-	svc, err := getSecurityRulesClient()
+	rClient, _, _, err := getSecurityRulesTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -30,17 +30,17 @@ func TestAccSecurityRulesLifeCycle(t *testing.T) {
 		Tags:          []string{"testing"},
 	}
 
-	createdRule, err := svc.CreateSecurityRule(createInput)
+	createdRule, err := rClient.CreateSecurityRule(createInput)
 	if err != nil {
 		t.Fatal(err)
 	}
 	log.Print("Security Rule succcessfully created")
-	defer destroySecurityRule(t, svc, _SecurityRuleTestName)
+	defer destroySecurityRule(t, rClient, _SecurityRuleTestName)
 
 	getInput := &GetSecurityRuleInput{
 		Name: _SecurityRuleTestName,
 	}
-	receivedRule, err := svc.GetSecurityRule(getInput)
+	receivedRule, err := rClient.GetSecurityRule(getInput)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -58,13 +58,13 @@ func TestAccSecurityRulesLifeCycle(t *testing.T) {
 		Tags:          []string{"updated"},
 	}
 
-	updatedRule, err := svc.UpdateSecurityRule(updateInput)
+	updatedRule, err := rClient.UpdateSecurityRule(updateInput)
 	if err != nil {
 		t.Fatal(err)
 	}
 	log.Print("Security Rule successfully updated")
 
-	receivedRule, err = svc.GetSecurityRule(getInput)
+	receivedRule, err = rClient.GetSecurityRule(getInput)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -78,7 +78,7 @@ func TestAccSecurityRulesLifeCycle(t *testing.T) {
 func TestAccSecurityRulesWithOptionsLifeCycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
-	ssc, err := getVirtNICSetsClient()
+	rClient, ipsClient, vnsClient, err := getSecurityRulesTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -88,22 +88,22 @@ func TestAccSecurityRulesWithOptionsLifeCycle(t *testing.T) {
 		Description: _SecurityRuleTestDescription,
 	}
 
-	dstSet, err := ssc.CreateVirtualNICSet(dstInput)
+	dstSet, err := vnsClient.CreateVirtualNICSet(dstInput)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer deleteVirtualNICSet(t, ssc, dstSet.Name)
+	defer deleteVirtualNICSet(t, vnsClient, dstSet.Name)
 	log.Printf("Created NIC Set: %#v", dstSet)
 
 	srcInput := &CreateVirtualNICSetInput{
 		Name:        _SecurityRuleTestName + "src_set",
 		Description: _SecurityRuleTestDescription,
 	}
-	srcSet, err := ssc.CreateVirtualNICSet(srcInput)
+	srcSet, err := vnsClient.CreateVirtualNICSet(srcInput)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer deleteVirtualNICSet(t, ssc, srcSet.Name)
+	defer deleteVirtualNICSet(t, vnsClient, srcSet.Name)
 	log.Printf("Created NIC Set: %#v", srcSet)
 
 	spc, err := getSecurityProtocolsClient()
@@ -127,16 +127,6 @@ func TestAccSecurityRulesWithOptionsLifeCycle(t *testing.T) {
 	log.Print("Security Protocol succcessfully created")
 	defer destroySecurityProtocol(t, spc, _SecurityProtocolTestName)
 
-	svc, err := getSecurityRulesClient()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	sic, err := getIPAddressPrefixSetsClient()
-	if err != nil {
-		t.Fatal(err)
-	}
-
 	dstIPAddressPrefixSetInput := &CreateIPAddressPrefixSetInput{
 		Name:              _IPAddressPrefixSetTestName + "-dst",
 		Description:       _IPAddressPrefixSetTestDescription,
@@ -144,12 +134,12 @@ func TestAccSecurityRulesWithOptionsLifeCycle(t *testing.T) {
 		Tags:              []string{"testing"},
 	}
 
-	dstIPAddressPrefixSet, err := sic.CreateIPAddressPrefixSet(dstIPAddressPrefixSetInput)
+	dstIPAddressPrefixSet, err := ipsClient.CreateIPAddressPrefixSet(dstIPAddressPrefixSetInput)
 	if err != nil {
 		t.Fatal(err)
 	}
 	log.Print("Dst IP Address Prefix Set succcessfully created")
-	defer destroyIPAddressPrefixSet(t, sic, dstIPAddressPrefixSet.Name)
+	defer destroyIPAddressPrefixSet(t, ipsClient, dstIPAddressPrefixSet.Name)
 
 	srcIPAddressPrefixSetInput := &CreateIPAddressPrefixSetInput{
 		Name:              _IPAddressPrefixSetTestName + "-src",
@@ -158,12 +148,12 @@ func TestAccSecurityRulesWithOptionsLifeCycle(t *testing.T) {
 		Tags:              []string{"testing"},
 	}
 
-	srcIPAddressPrefixSet, err := sic.CreateIPAddressPrefixSet(srcIPAddressPrefixSetInput)
+	srcIPAddressPrefixSet, err := ipsClient.CreateIPAddressPrefixSet(srcIPAddressPrefixSetInput)
 	if err != nil {
 		t.Fatal(err)
 	}
 	log.Print("Src IP Address Prefix Set succcessfully created")
-	defer destroyIPAddressPrefixSet(t, sic, srcIPAddressPrefixSet.Name)
+	defer destroyIPAddressPrefixSet(t, ipsClient, srcIPAddressPrefixSet.Name)
 
 	createInput := &CreateSecurityRuleInput{
 		Name:                   _SecurityRuleTestName,
@@ -177,12 +167,12 @@ func TestAccSecurityRulesWithOptionsLifeCycle(t *testing.T) {
 		Tags:                   []string{"testing"},
 	}
 
-	createdRule, err := svc.CreateSecurityRule(createInput)
+	createdRule, err := rClient.CreateSecurityRule(createInput)
 	if err != nil {
 		t.Fatal(err)
 	}
 	log.Print("Security Rule succcessfully created")
-	defer destroySecurityRule(t, svc, _SecurityRuleTestName)
+	defer destroySecurityRule(t, rClient, _SecurityRuleTestName)
 
 	if dstSet.Name != createdRule.DstVnicSet {
 		t.Fatalf("Mismatch found after create.\nExpected: %+v\nReceived: %+v", dstSet.Name, createdRule.DstVnicSet)
@@ -201,11 +191,11 @@ func destroySecurityRule(t *testing.T, svc *SecurityRuleClient, name string) {
 	}
 }
 
-func getSecurityRulesClient() (*SecurityRuleClient, error) {
+func getSecurityRulesTestClients() (*SecurityRuleClient, *IPAddressPrefixSetsClient, *VirtNICSetsClient, error) {
 	client, err := getTestClient(&opc.Config{})
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, err
 	}
 
-	return client.SecurityRules(), nil
+	return client.SecurityRules(), client.IPAddressPrefixSets(), client.VirtNICSets(), nil
 }

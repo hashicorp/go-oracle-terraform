@@ -18,7 +18,7 @@ func TestAccSecurityAssociationLifeCycle(t *testing.T) {
 		name          string = "test-sec-association"
 	)
 
-	svc, err := getInstancesClient()
+	iClient, slClient, saClient, err := getSecurityAssociationsTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -33,18 +33,13 @@ func TestAccSecurityAssociationLifeCycle(t *testing.T) {
 		SSHKeys:   []string{},
 	}
 
-	createdInstance, err := svc.CreateInstance(input)
+	createdInstance, err := iClient.CreateInstance(input)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer tearDownInstances(t, svc, createdInstance.Name, createdInstance.ID)
+	defer tearDownInstances(t, iClient, createdInstance.Name, createdInstance.ID)
 
 	log.Printf("Instance created: %#v", createdInstance)
-
-	securityListClient, err := getSecurityListsClient()
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	createSecurityListInput := CreateSecurityListInput{
 		Name:               name,
@@ -52,34 +47,28 @@ func TestAccSecurityAssociationLifeCycle(t *testing.T) {
 		Policy:             "PERMIT",
 	}
 
-	createdSecurityList, err := securityListClient.CreateSecurityList(&createSecurityListInput)
+	createdSecurityList, err := slClient.CreateSecurityList(&createSecurityListInput)
 	if err != nil {
 		t.Fatal(err)
 	}
 	log.Printf("Successfully created Security List: %+v", createdSecurityList)
-	defer deleteSecurityList(t, securityListClient, createdSecurityList.Name)
-
-	securityAssociationClient, err := getSecurityAssociationsClient()
-	if err != nil {
-		t.Fatal(err)
-	}
-	log.Printf("Obtained Security Association Client")
+	defer deleteSecurityList(t, slClient, createdSecurityList.Name)
 
 	createSecurityAssociationInput := CreateSecurityAssociationInput{
 		SecList: createdSecurityList.Name,
 		VCable:  createdInstance.VCableID,
 	}
-	createdSecurityAssociation, err = securityAssociationClient.CreateSecurityAssociation(&createSecurityAssociationInput)
+	createdSecurityAssociation, err = saClient.CreateSecurityAssociation(&createSecurityAssociationInput)
 	if err != nil {
 		t.Fatal(err)
 	}
 	log.Printf("Successfully created Security Association: %+v", createdSecurityAssociation)
-	defer deleteSecurityAssociation(t, securityAssociationClient, createdSecurityAssociation.Name)
+	defer deleteSecurityAssociation(t, saClient, createdSecurityAssociation.Name)
 
 	getSecurityAssociationInput := GetSecurityAssociationInput{
 		Name: createdSecurityAssociation.Name,
 	}
-	getSecurityAssociationOutput, err := securityAssociationClient.GetSecurityAssociation(&getSecurityAssociationInput)
+	getSecurityAssociationOutput, err := saClient.GetSecurityAssociation(&getSecurityAssociationInput)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -89,13 +78,13 @@ func TestAccSecurityAssociationLifeCycle(t *testing.T) {
 	log.Printf("Successfully retrieved Security Association")
 }
 
-func getSecurityAssociationsClient() (*SecurityAssociationsClient, error) {
+func getSecurityAssociationsTestClients() (*InstancesClient, *SecurityListsClient, *SecurityAssociationsClient, error) {
 	client, err := getTestClient(&opc.Config{})
 	if err != nil {
-		return &SecurityAssociationsClient{}, err
+		return nil, nil, nil, err
 	}
 
-	return client.SecurityAssociations(), nil
+	return client.Instances(), client.SecurityLists(), client.SecurityAssociations(), nil
 }
 
 func deleteSecurityAssociation(t *testing.T, client *SecurityAssociationsClient, name string) {

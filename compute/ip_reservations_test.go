@@ -26,6 +26,8 @@ func TestAccIPReservationLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer destroyIPReservation(t, iprc, ipReservation.Name)
+
 	log.Printf("Successfully created IP Reservation: %+v", ipReservation)
 
 	getIPReservationInput := GetIPReservationInput{
@@ -40,15 +42,6 @@ func TestAccIPReservationLifeCycle(t *testing.T) {
 	if ipReservation.IP != ipReservationOutput.IP {
 		t.Fatalf("Created and retrived IP addresses don't match %s %s", ipReservation.IP, ipReservationOutput.IP)
 	}
-
-	deleteIPReservationInput := DeleteIPReservationInput{
-		Name: ipReservation.Name,
-	}
-	err = iprc.DeleteIPReservation(&deleteIPReservationInput)
-	if err != nil {
-		t.Fatal(err)
-	}
-	log.Printf("Successfully deleted IPReservation")
 }
 
 func getIPReservationsClient() (*IPReservationsClient, error) {
@@ -58,4 +51,13 @@ func getIPReservationsClient() (*IPReservationsClient, error) {
 	}
 
 	return client.IPReservations(), nil
+}
+
+func destroyIPReservation(t *testing.T, client *IPReservationsClient, name string) {
+	input := &DeleteIPReservationInput{
+		Name: name,
+	}
+	if err := client.DeleteIPReservation(input); err != nil {
+		t.Fatal(err)
+	}
 }
