@@ -197,18 +197,54 @@ type StorageAttachmentInput struct {
 const ReservationPrefix = "ipreservation"
 const ReservationIPPrefix = "network/v1/ipreservation"
 
+// Struct of Networking info from a populated instance, or to be used as input to create an instance
 type NetworkingInfo struct {
-	DNS           []string `json:"dns,omitempty"`
-	IPAddress     string   `json:"ip,omitempty"`
-	IPNetwork     string   `json:"ipnetwork,omitempty"`
-	MACAddress    string   `json:"address,omitempty"`
-	Model         string   `json:"model,omitempty"`
-	NameServers   []string `json:"name_servers,omitempty"`
-	Nat           []string `json:"nat,omitempty"`
+	// The DNS name for the Shared network (Required)
+	// DNS A Record for an IP Network (Optional)
+	DNS []string `json:"dns,omitempty"`
+	// IP Network only.
+	// If you want to associate a static private IP Address,
+	// specify that here within the range of the supplied IPNetwork attribute.
+	// Optional
+	IPAddress string `json:"ip,omitempty"`
+	// IP Network only.
+	// The name of the IP Network you want to add the instance to.
+	// Required
+	IPNetwork string `json:"ipnetwork,omitempty"`
+	// IP Network only.
+	// The hexadecimal MAC Address of the interface
+	// Optional
+	MACAddress string `json:"address,omitempty"`
+	// Shared Network only.
+	// The type of NIC used. Must be set to 'e1000'
+	// Required
+	Model string `json:"model,omitempty"`
+	// IP Network and Shared Network
+	// The name servers that are sent through DHCP as option 6.
+	// You can specify a maximum of eight name server IP addresses per interface.
+	// Optional
+	NameServers []string `json:"name_servers,omitempty"`
+	// The names of an IP Reservation to associate in an IP Network (Optional)
+	// Indicates whether a temporary or permanent public IP Address should be assigned
+	// in a Shared Network (Required)
+	Nat []string `json:"nat,omitempty"`
+	// IP Network and Shared Network
+	// The search domains that should be sent through DHCP as option 119.
+	// You can enter a maximum of eight search domain zones per interface.
+	// Optional
 	SearchDomains []string `json:"search_domains,omitempty"`
-	SecLists      []string `json:"seclists,omitempty"`
-	Vnic          string   `json:"vnic,omitempty"`
-	VnicSets      []string `json:"vnicsets,omitempty"`
+	// Shared Network only.
+	// The security lists that you want to add the instance to
+	// Required
+	SecLists []string `json:"seclists,omitempty"`
+	// IP Network Only
+	// The name of the vNIC
+	// Optional
+	Vnic string `json:"vnic,omitempty"`
+	// IP Network only.
+	// The names of the vNICSets you want to add the interface to.
+	// Optional
+	VnicSets []string `json:"vnicsets,omitempty"`
 }
 
 // LaunchPlan defines a launch plan, used to launch instances with the supplied InstanceSpec(s)
