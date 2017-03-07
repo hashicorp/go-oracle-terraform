@@ -5,17 +5,29 @@ type IPReservationsClient struct {
 	*ResourceClient
 }
 
+const (
+	IPReservationDesc          = "ip reservation"
+	IPReservationContainerPath = "/ip/reservation/"
+	IPReservataionResourcePath = "/ip/reservation"
+)
+
 // IPReservations obtains an IPReservationsClient which can be used to access to the
 // IP Reservations functions of the Compute API
 func (c *Client) IPReservations() *IPReservationsClient {
 	return &IPReservationsClient{
 		ResourceClient: &ResourceClient{
 			Client:              c,
-			ResourceDescription: "ip reservation",
-			ContainerPath:       "/ip/reservation/",
-			ResourceRootPath:    "/ip/reservation",
+			ResourceDescription: IPReservationDesc,
+			ContainerPath:       IPReservationContainerPath,
+			ResourceRootPath:    IPReservataionResourcePath,
 		}}
 }
+
+type IPReservationPool string
+
+const (
+	PublicReservationPool IPReservationPool = "/oracle/public/ippool"
+)
 
 // IPReservationInput describes an existing IP reservation.
 type IPReservation struct {
@@ -26,7 +38,7 @@ type IPReservation struct {
 	// The three-part name of the IP Reservation (/Compute-identity_domain/user/object).
 	Name string `json:"name"`
 	// Pool of public IP addresses
-	ParentPool string `json:"parentpool"`
+	ParentPool IPReservationPool `json:"parentpool"`
 	// Is the IP Reservation Persistent (i.e. static) or not (i.e. Dynamic)?
 	Permanent bool `json:"permanent"`
 	// A comma-separated list of strings which helps you to identify IP reservation.
@@ -39,15 +51,15 @@ type IPReservation struct {
 
 // CreateIPReservationInput defines an IP reservation to be created.
 type CreateIPReservationInput struct {
-	// The three-part name of the object (/Compute-identity_domain/user/object).
+	// The name of the object
 	// If you don't specify a name for this object, then the name is generated automatically.
 	// Object names can contain only alphanumeric characters, hyphens, underscores, and periods.
 	// Object names are case-sensitive.
 	// Optional
 	Name string `json:"name"`
-	// Pool of public IP addresses. This must be set to `/oracle/public/ippool`
+	// Pool of public IP addresses. This must be set to `ippool`
 	// Required
-	ParentPool string `json:"parentpool"`
+	ParentPool IPReservationPool `json:"parentpool"`
 	// Is the IP Reservation Persistent (i.e. static) or not (i.e. Dynamic)?
 	// Required
 	Permanent bool `json:"permanent"`
@@ -57,9 +69,11 @@ type CreateIPReservationInput struct {
 }
 
 // CreateIPReservation creates a new IP reservation with the given parentpool, tags and permanent flag.
-func (c *IPReservationsClient) CreateIPReservation(createInput *CreateIPReservationInput) (*IPReservation, error) {
+func (c *IPReservationsClient) CreateIPReservation(input *CreateIPReservationInput) (*IPReservation, error) {
 	var ipInput IPReservation
-	if err := c.createResource(&createInput, &ipInput); err != nil {
+
+	input.Name = c.getQualifiedName(input.Name)
+	if err := c.createResource(input, &ipInput); err != nil {
 		return nil, err
 	}
 
@@ -68,15 +82,17 @@ func (c *IPReservationsClient) CreateIPReservation(createInput *CreateIPReservat
 
 // GetIPReservationInput defines an IP Reservation to get
 type GetIPReservationInput struct {
-	// The three-part name of the IP Reservation (/Compute-identity_domain/user/object).
+	// The name of the IP Reservation
 	// Required
 	Name string
 }
 
 // GetIPReservation retrieves the IP reservation with the given name.
-func (c *IPReservationsClient) GetIPReservation(getInput *GetIPReservationInput) (*IPReservation, error) {
+func (c *IPReservationsClient) GetIPReservation(input *GetIPReservationInput) (*IPReservation, error) {
 	var ipInput IPReservation
-	if err := c.getResource(getInput.Name, &ipInput); err != nil {
+
+	input.Name = c.getQualifiedName(input.Name)
+	if err := c.getResource(input.Name, &ipInput); err != nil {
 		return nil, err
 	}
 
@@ -85,15 +101,15 @@ func (c *IPReservationsClient) GetIPReservation(getInput *GetIPReservationInput)
 
 // UpdateIPReservationInput defines an IP Reservation to be updated
 type UpdateIPReservationInput struct {
-	// The three-part name of the object (/Compute-identity_domain/user/object).
+	// The name of the object
 	// If you don't specify a name for this object, then the name is generated automatically.
 	// Object names can contain only alphanumeric characters, hyphens, underscores, and periods.
 	// Object names are case-sensitive.
 	// Required
 	Name string `json:"name"`
-	// Pool of public IP addresses. This must be set to `/oracle/public/ippool`
+	// Pool of public IP addresses.
 	// Required
-	ParentPool string `json:"parentpool"`
+	ParentPool IPReservationPool `json:"parentpool"`
 	// Is the IP Reservation Persistent (i.e. static) or not (i.e. Dynamic)?
 	// Required
 	Permanent bool `json:"permanent"`
@@ -103,10 +119,10 @@ type UpdateIPReservationInput struct {
 }
 
 // UpdateIPReservation updates the IP reservation.
-func (c *IPReservationsClient) UpdateIPReservation(updateInput *UpdateIPReservationInput) (*IPReservation, error) {
+func (c *IPReservationsClient) UpdateIPReservation(input *UpdateIPReservationInput) (*IPReservation, error) {
 	var updateOutput IPReservation
-	updateInput.Name = c.getQualifiedName(updateInput.Name)
-	if err := c.updateResource(updateInput.Name, updateInput, &updateOutput); err != nil {
+	input.Name = c.getQualifiedName(input.Name)
+	if err := c.updateResource(input.Name, input, &updateOutput); err != nil {
 		return nil, err
 	}
 	return c.success(&updateOutput)
@@ -114,14 +130,15 @@ func (c *IPReservationsClient) UpdateIPReservation(updateInput *UpdateIPReservat
 
 // DeleteIPReservationInput defines an IP Reservation to delete
 type DeleteIPReservationInput struct {
-	// The three-part name of the IP Reservation (/Compute-identity_domain/user/object).
+	// The name of the IP Reservation
 	// Required
 	Name string
 }
 
 // DeleteIPReservation deletes the IP reservation with the given name.
-func (c *IPReservationsClient) DeleteIPReservation(deleteInput *DeleteIPReservationInput) error {
-	return c.deleteResource(deleteInput.Name)
+func (c *IPReservationsClient) DeleteIPReservation(input *DeleteIPReservationInput) error {
+	input.Name = c.getQualifiedName(input.Name)
+	return c.deleteResource(input.Name)
 }
 
 func (c *IPReservationsClient) success(result *IPReservation) (*IPReservation, error) {

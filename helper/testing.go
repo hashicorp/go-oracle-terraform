@@ -3,7 +3,9 @@ package helper
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"os"
+	"time"
 
 	"github.com/hashicorp/go-oracle-terraform/opc"
 )
@@ -34,4 +36,9 @@ type TestT interface {
 	Error(args ...interface{})
 	Fatal(args ...interface{})
 	Skip(args ...interface{})
+}
+
+func RInt() int {
+	rand.Seed(time.Now().UTC().UnixNano())
+	return rand.Int()
 }

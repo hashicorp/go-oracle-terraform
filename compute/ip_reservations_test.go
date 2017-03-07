@@ -1,50 +1,83 @@
 package compute
 
 import (
-	"log"
 	"testing"
+
+	"fmt"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
+	"github.com/kylelemons/godebug/pretty"
+)
+
+const (
+	_IPReservationPerm      = true
+	_IPReservationName      = "testing-ip-res"
+	_IPReservationTag       = "testing-tag"
+	_IPReservationTagUpdate = "testing-tag-update"
 )
 
 func TestAccIPReservationLifeCycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
-	createIPReservation := CreateIPReservationInput{
-		ParentPool: "/oracle/public/ippool",
-		Permanent:  true,
-	}
-
-	iprc, err := getIPReservationsClient()
+	iprClient, err := getIPReservationsTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
-	log.Printf("Obtained IP Reservation Client")
 
-	ipReservation, err := iprc.CreateIPReservation(&createIPReservation)
+	resName := fmt.Sprintf("%s-%d", _IPReservationName, helper.RInt())
+
+	createIPReservation := &CreateIPReservationInput{
+		Name:       resName,
+		ParentPool: PublicReservationPool,
+		Permanent:  _IPReservationPerm,
+		Tags:       []string{_IPReservationTag},
+	}
+
+	ipRes, err := iprClient.CreateIPReservation(createIPReservation)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer destroyIPReservation(t, iprc, ipReservation.Name)
 
-	log.Printf("Successfully created IP Reservation: %+v", ipReservation)
+	defer destroyIPReservation(t, iprClient, ipRes.Name)
 
-	getIPReservationInput := GetIPReservationInput{
-		Name: ipReservation.Name,
+	getInput := &GetIPReservationInput{
+		Name: resName,
 	}
-	ipReservationOutput, err := iprc.GetIPReservation(&getIPReservationInput)
+
+	receivedRes, err := iprClient.GetIPReservation(getInput)
 	if err != nil {
 		t.Fatal(err)
 	}
-	log.Printf("Successfully retrieved ip reservation")
 
-	if ipReservation.IP != ipReservationOutput.IP {
-		t.Fatalf("Created and retrived IP addresses don't match %s %s", ipReservation.IP, ipReservationOutput.IP)
+	if diff := pretty.Compare(ipRes, receivedRes); diff != "" {
+		t.Errorf("Created Reservation Diff: (-got +want)\n%s", diff)
 	}
+
+	updateInput := &UpdateIPReservationInput{
+		Name:       resName,
+		ParentPool: PublicReservationPool,
+		Permanent:  _IPReservationPerm,
+		Tags:       []string{_IPReservationTagUpdate},
+	}
+
+	updatedRes, err := iprClient.UpdateIPReservation(updateInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	receivedRes, err = iprClient.GetIPReservation(getInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if diff := pretty.Compare(updatedRes, receivedRes); diff != "" {
+		t.Errorf("Created Reservation Diff: (-got +want)\n%s", diff)
+	}
+
 }
 
-func getIPReservationsClient() (*IPReservationsClient, error) {
+func getIPReservationsTestClients() (*IPReservationsClient, error) {
 	client, err := getTestClient(&opc.Config{})
 	if err != nil {
 		return &IPReservationsClient{}, err
@@ -57,6 +90,7 @@ func destroyIPReservation(t *testing.T, client *IPReservationsClient, name strin
 	input := &DeleteIPReservationInput{
 		Name: name,
 	}
+
 	if err := client.DeleteIPReservation(input); err != nil {
 		t.Fatal(err)
 	}
