@@ -201,7 +201,7 @@ func (c *InstancesClient) CreateInstance(input *CreateInstanceInput) (*InstanceI
 	}
 
 	// Unqualify instance name
-	result.Name = input.Name
+	result.Name = c.getUnqualifiedName(input.Name)
 
 	// Unqualify ip network
 	for k, v := range result.Networking {
