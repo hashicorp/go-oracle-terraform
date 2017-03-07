@@ -243,7 +243,7 @@ func (c *InstancesClient) GetInstance(input *GetInstanceInput) (*InstanceInfo, e
 
 	// Overwrite returned name/ID with known name/ID
 	// Otherwise the returned name will be the fully qualified name, and the ID will be blank
-	responseBody.Name = input.Name
+	responseBody.Name = c.getUnqualifiedName(input.Name)
 	responseBody.ID = input.ID
 
 	c.unqualify(&responseBody.VCableID)

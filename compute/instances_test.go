@@ -78,14 +78,19 @@ func TestInstanceClient_CreateInstance(t *testing.T) {
 		},
 	}
 
-	id, err := iv.CreateInstance(input)
+	created, err := iv.CreateInstance(input)
 	if err != nil {
 		t.Fatalf("Create instance request failed: %s", err)
 	}
 
-	expected := "437b72fd-b870-47b1-9c01-7a2812bbe30c"
-	if id.ID != expected {
-		t.Errorf("Expected id %s, was %s", expected, id.ID)
+	expectedId := "437b72fd-b870-47b1-9c01-7a2812bbe30c"
+	if created.ID != expectedId {
+		t.Errorf("Expected id %s, was %s", expectedId, created.ID)
+	}
+
+	expectedName := "name"
+	if created.Name != expectedName {
+		t.Errorf("Expected name %s, was %s", expectedName, created.Name)
 	}
 }
 
@@ -123,6 +128,11 @@ func TestInstanceClient_RetrieveInstance(t *testing.T) {
 	}
 	if info.SSHKeys[0] != "acme-prod-admin" {
 		t.Errorf("Expected ssh key 'acme-prod-admin', was %s", info.SSHKeys[0])
+	}
+
+	expectedName := "test-instance"
+	if info.Name != expectedName {
+		t.Errorf("Expected name %s, was %s", expectedName, info.Name)
 	}
 }
 
