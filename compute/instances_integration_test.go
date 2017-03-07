@@ -99,6 +99,19 @@ func TestAccInstanceLifeCycle(t *testing.T) {
 		Virtio:        false,
 	}
 
+	// Verify Networking before zero
+	if receivedInstance.Networking["eth1"].Model != "e1000" {
+		t.Fatalf("Expected Networking model to be e1000, got: %s", receivedInstance.Networking["eth1"].Model)
+	}
+
+	if receivedInstance.Networking["eth0"].IPNetwork != ipNetwork.Name {
+		t.Fatalf("Expected IPNetwork name %s, got: %s", ipNetwork.Name, receivedInstance.Networking["eth0"].IPNetwork)
+	}
+
+	if diff := pretty.Compare(receivedInstance.Networking["eth0"].Nat, []string{"testing-acc"}); diff != "" {
+		t.Fatalf("Networking Diff: (-got +want)\n%s", diff)
+	}
+
 	// Zero the fields we can't statically check for
 	receivedInstance.zeroFields()
 

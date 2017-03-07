@@ -448,7 +448,6 @@ func (c *InstancesClient) qualifyNat(nat []string, shared bool) []string {
 }
 
 func (c *InstancesClient) unqualifyNat(nat []string) []string {
-	return nat
 	unQualifiedNats := []string{}
 	for _, v := range nat {
 		if strings.HasPrefix(v, "ippool:/oracle") {
