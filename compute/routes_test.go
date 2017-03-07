@@ -33,6 +33,7 @@ func TestAccRoutesLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	defer destroyIPNetwork(t, nClient, ipNetwork.Name)
 
 	instanceInput := &CreateInstanceInput{
 		Name:      _RouteTestName,

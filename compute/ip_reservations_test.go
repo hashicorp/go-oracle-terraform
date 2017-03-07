@@ -38,6 +38,7 @@ func TestAccIPReservationLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	defer destroyIPReservation(t, iprClient, ipRes.Name)
 
 	getInput := &GetIPReservationInput{
@@ -73,6 +74,7 @@ func TestAccIPReservationLifeCycle(t *testing.T) {
 	if diff := pretty.Compare(updatedRes, receivedRes); diff != "" {
 		t.Errorf("Created Reservation Diff: (-got +want)\n%s", diff)
 	}
+
 }
 
 func getIPReservationsTestClients() (*IPReservationsClient, error) {

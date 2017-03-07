@@ -96,29 +96,9 @@ func tearDownStorageAttachments(t *testing.T, attachmentsClient *StorageAttachme
 }
 
 func buildStorageAttachmentsClients() (*InstancesClient, *StorageVolumeClient, *StorageAttachmentsClient, error) {
-	instancesClient, err := getInstancesClient()
-	if err != nil {
-		return instancesClient, nil, nil, err
-	}
-
-	storageVolumesClient, err := getStorageVolumeClient()
-	if err != nil {
-		return instancesClient, nil, nil, err
-	}
-
-	storageAttachmentsClient, err := getStorageAttachmentsClient()
-	if err != nil {
-		return instancesClient, storageVolumesClient, nil, err
-	}
-
-	return instancesClient, storageVolumesClient, storageAttachmentsClient, nil
-}
-
-func getStorageAttachmentsClient() (*StorageAttachmentsClient, error) {
 	client, err := getTestClient(&opc.Config{})
 	if err != nil {
-		return &StorageAttachmentsClient{}, err
+		return nil, nil, nil, err
 	}
-
-	return client.StorageAttachments(), nil
+	return client.Instances(), client.StorageVolumes(), client.StorageAttachments(), nil
 }
