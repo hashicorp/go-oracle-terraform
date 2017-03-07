@@ -48,7 +48,7 @@ func TestInstanceClient_CreateInstance(t *testing.T) {
 
 			w.Write([]byte(exampleCreateResponse))
 		} else if r.Method == "GET" {
-			expectedPath := "/instance/Compute-test/test/name/437b72fd-b870-47b1-9c01-7a2812bbe30c"
+			expectedPath := "/instance/Compute-test/test/name/016e75e7-e911-42d1-bfe1-6a7f1b3f7908"
 			if r.URL.Path != expectedPath {
 				t.Errorf("Wrong HTTP URL %v, expected %v", r.URL.Path, expectedPath)
 			}
@@ -83,7 +83,7 @@ func TestInstanceClient_CreateInstance(t *testing.T) {
 		t.Fatalf("Create instance request failed: %s", err)
 	}
 
-	expected := "437b72fd-b870-47b1-9c01-7a2812bbe30c"
+	expected := "016e75e7-e911-42d1-bfe1-6a7f1b3f7908"
 	if id.ID != expected {
 		t.Errorf("Expected id %s, was %s", expected, id.ID)
 	}
@@ -160,7 +160,7 @@ var exampleCreateResponse = `
       "vethernets": null,
       "imagelist": "/oracle/public/oel_6.4_2GB_v1",
       "image_format": "raw",
-      "id": "437b72fd-b870-47b1-9c01-7a2812bbe30c",
+      "id": "016e75e7-e911-42d1-bfe1-6a7f1b3f7908",
       "cluster_uri": null,
       "networking": {
         "eth0": {
@@ -211,7 +211,7 @@ var exampleCreateResponse = `
       "metrics": null,
       "account": "/Compute-acme/default",
       "node_uuid": null,
-      "name": "/Compute-acme/jack.jones@example.com/dev-vm/437b72fd-b870-47b1-9c01-7a2812bbe30c",
+      "name": "/Compute-acme/jack.jones@example.com/name/016e75e7-e911-42d1-bfe1-6a7f1b3f7908",
       "vcable_id": null,
       "hypervisor": {"mode": "hvm"},
       "uri": "https://api.compute.us0.oraclecloud.com/instance/Compute-acme/jack.jones@example.com/dev-vm/437b72fd-b870-47b1-9c01-7a2812bbe30c",
@@ -303,7 +303,7 @@ var exampleRetrieveResponse = `
 ],
 "resolvers": null,
 "account": "/Compute-acme/default",
-"name": "/Compute-acme/jack.jones@example.com/dev1/f653a677-b566-4f92-8e93-71d47b364119",
+"name": "/Compute-acme/jack.jones@example.com/name/016e75e7-e911-42d1-bfe1-6a7f1b3f7908",
 "vcable_id": "/Compute-acme/jack.jones@example.com/016e75e7-e911-42d1-bfe1-6a7f1b3f7908",
 "uri": "http://10....",
 "reverse_dns": true,

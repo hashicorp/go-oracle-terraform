@@ -61,7 +61,9 @@ func (c *ResourceClient) unmarshalResponseBody(resp *http.Response, iface interf
 	// JSON decode response into interface
 	var tmp interface{}
 	dcd := json.NewDecoder(buf)
-	dcd.Decode(&tmp)
+	if err := dcd.Decode(&tmp); err != nil {
+		return err
+	}
 
 	// Use mapstructure to weakly decode into the resulting interface
 	msdcd, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
