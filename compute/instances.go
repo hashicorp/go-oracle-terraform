@@ -386,7 +386,7 @@ func (c *InstancesClient) qualifyNetworking(info map[string]NetworkingInfo) map[
 			qfd.Nat = c.qualifyNat(v.Nat, sharedNetwork)
 		}
 		if v.VnicSets != nil {
-			qfd.VnicSets = c.qualifyVnicSet(v.VnicSets)
+			qfd.VnicSets = c.getQualifiedList(v.VnicSets)
 		}
 		if v.SecLists != nil {
 			// Network interface is for the shared network
@@ -417,7 +417,7 @@ func (c *InstancesClient) unqualifyNetworking(info map[string]NetworkingInfo) ma
 			unq.Nat = c.unqualifyNat(v.Nat)
 		}
 		if v.VnicSets != nil {
-			unq.VnicSets = c.unqualifyVnicSet(v.VnicSets)
+			unq.VnicSets = c.getUnqualifiedList(v.VnicSets)
 		}
 		if v.SecLists != nil {
 			secLists := []string{}

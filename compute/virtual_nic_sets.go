@@ -57,7 +57,7 @@ type CreateVirtualNICSetInput struct {
 func (c *VirtNICSetsClient) CreateVirtualNICSet(input *CreateVirtualNICSetInput) (*VirtualNICSet, error) {
 	input.Name = c.getQualifiedName(input.Name)
 	input.AppliedACLs = c.getQualifiedAcls(input.AppliedACLs)
-	qualifiedNics := c.qualifyVnicSet(input.VirtualNICNames)
+	qualifiedNics := c.getQualifiedList(input.VirtualNICNames)
 	if len(qualifiedNics) != 0 {
 		input.VirtualNICNames = qualifiedNics
 	}
@@ -191,20 +191,4 @@ func (c *VirtNICSetsClient) success(info *VirtualNICSet) (*VirtualNICSet, error)
 	c.unqualify(&info.Name)
 	info.AppliedACLs = c.unqualifyAcls(info.AppliedACLs)
 	return info, nil
-}
-
-func (c *Client) qualifyVnicSet(set []string) []string {
-	qualifiedNics := []string{}
-	for _, v := range set {
-		qualifiedNics = append(qualifiedNics, c.getQualifiedName(v))
-	}
-	return qualifiedNics
-}
-
-func (c *Client) unqualifyVnicSet(set []string) []string {
-	unqualifiedNics := make([]string, len(set))
-	for k, v := range set {
-		unqualifiedNics[k] = c.getUnqualifiedName(v)
-	}
-	return unqualifiedNics
 }
