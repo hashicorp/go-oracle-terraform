@@ -118,7 +118,7 @@ func TestInstanceClient_RetrieveInstance(t *testing.T) {
 	if err != nil {
 		t.Fatalf("%s", err)
 	}
-	if info.State != "running" {
+	if info.State != InstanceRunning {
 		t.Errorf("Expected state 'running', was %s", info.State)
 	}
 	if info.SSHKeys[0] != "acme-prod-admin" {

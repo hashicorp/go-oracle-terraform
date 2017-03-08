@@ -107,7 +107,7 @@ func TestAccInstanceLifeCycle(t *testing.T) {
 		ReverseDNS:    true,
 		Site:          "",
 		SSHKeys:       []string{},
-		State:         "running",
+		State:         InstanceRunning,
 		Storage:       []StorageAttachment{},
 		Tags:          []string{},
 		Virtio:        false,

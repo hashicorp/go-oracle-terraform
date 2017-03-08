@@ -26,6 +26,14 @@ func (c *Client) Instances() *InstancesClient {
 		}}
 }
 
+type InstanceState string
+
+const (
+	InstanceRunning InstanceState = "running"
+	InstanceQueued  InstanceState = "queued"
+	InstanceError   InstanceState = "error"
+)
+
 // InstanceInfo represents the Compute API's view of the state of an instance.
 type InstanceInfo struct {
 	// The ID for the instance. Set by the SDK based on the request - not the API.
@@ -107,9 +115,8 @@ type InstanceInfo struct {
 	// The start time of the instance
 	StartTime string `json:"start_time"`
 
-	// TODO: make this a Constant
 	// State of the instance.
-	State string `json:"state"`
+	State InstanceState `json:"state"`
 
 	// The Storage Attachment information.
 	Storage []StorageAttachment `json:"storage_attachments"`
@@ -380,13 +387,17 @@ func (c *InstancesClient) WaitForInstanceRunning(input *GetInstanceInput, timeou
 		if getErr != nil {
 			return false, getErr
 		}
-		if info.State == "error" {
+		switch s := info.State; s {
+		case InstanceError:
 			return false, fmt.Errorf("Error initializing instance: %s", info.ErrorReason)
-		}
-		if info.State == "running" {
+		case InstanceRunning:
 			return true, nil
+		case InstanceQueued:
+			return false, nil
+		default:
+			c.debugLogString(fmt.Sprintf("Unknown instance state: %s, waiting", s))
+			return false, nil
 		}
-		return false, nil
 	})
 	return info, err
 }
