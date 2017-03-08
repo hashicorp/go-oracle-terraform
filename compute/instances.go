@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-const WaitForInstanceReadyTimeout = 300
+const WaitForInstanceReadyTimeout = 600
 const WaitForInstanceDeleteTimeout = 600
 
 // InstancesClient is a client for the Instance functions of the Compute API.
