@@ -29,9 +29,12 @@ func (c *Client) Instances() *InstancesClient {
 type InstanceState string
 
 const (
-	InstanceRunning InstanceState = "running"
-	InstanceQueued  InstanceState = "queued"
-	InstanceError   InstanceState = "error"
+	InstanceRunning      InstanceState = "running"
+	InstanceInitializing InstanceState = "initializing"
+	InstancePreparing    InstanceState = "preparing"
+	InstanceStopping     InstanceState = "stopping"
+	InstanceQueued       InstanceState = "queued"
+	InstanceError        InstanceState = "error"
 )
 
 // InstanceInfo represents the Compute API's view of the state of an instance.
@@ -391,8 +394,16 @@ func (c *InstancesClient) WaitForInstanceRunning(input *GetInstanceInput, timeou
 		case InstanceError:
 			return false, fmt.Errorf("Error initializing instance: %s", info.ErrorReason)
 		case InstanceRunning:
+			c.debugLogString("Instance Running")
 			return true, nil
 		case InstanceQueued:
+			c.debugLogString("Instance Queuing")
+			return false, nil
+		case InstanceInitializing:
+			c.debugLogString("Instance Initializing")
+			return false, nil
+		case InstancePreparing:
+			c.debugLogString("Instance Preparing")
 			return false, nil
 		default:
 			c.debugLogString(fmt.Sprintf("Unknown instance state: %s, waiting", s))
@@ -405,14 +416,25 @@ func (c *InstancesClient) WaitForInstanceRunning(input *GetInstanceInput, timeou
 // WaitForInstanceDeleted waits for an instance to be fully deleted.
 func (c *InstancesClient) WaitForInstanceDeleted(input *DeleteInstanceInput, timeoutSeconds int) error {
 	return c.waitFor("instance to be deleted", timeoutSeconds, func() (bool, error) {
-		var instanceInfo InstanceInfo
-		if err := c.getResource(input.String(), &instanceInfo); err != nil {
+		var info InstanceInfo
+		if err := c.getResource(input.String(), &info); err != nil {
 			if WasNotFoundError(err) {
+				// Instance could not be found, thus deleted
 				return true, nil
 			}
+			// Some other error occurred trying to get instance, exit
 			return false, err
 		}
-		return false, nil
+		switch s := info.State; s {
+		case InstanceError:
+			return false, fmt.Errorf("Error stopping instance: %s", info.ErrorReason)
+		case InstanceStopping:
+			c.debugLogString("Instance stopping")
+			return false, nil
+		default:
+			c.debugLogString(fmt.Sprintf("Unknown instance state: %s, waiting", s))
+			return false, nil
+		}
 	})
 }
 
