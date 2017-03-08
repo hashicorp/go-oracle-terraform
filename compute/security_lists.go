@@ -17,6 +17,14 @@ func (c *Client) SecurityLists() *SecurityListsClient {
 		}}
 }
 
+type SecurityListPolicy string
+
+const (
+	SecurityListPolicyDeny   SecurityListPolicy = "deny"
+	SecurityListPolicyReject SecurityListPolicy = "reject"
+	SecurityListPolicyPermit SecurityListPolicy = "permit"
+)
+
 // SecurityListInfo describes an existing security list.
 type SecurityListInfo struct {
 	// Shows the default account for your identity domain.
@@ -26,11 +34,9 @@ type SecurityListInfo struct {
 	// The three-part name of the security list (/Compute-identity_domain/user/object).
 	Name string `json:"name"`
 	// The policy for outbound traffic from the security list.
-	// TODO: this should become a Constant: deny/reject/permit
-	OutboundCIDRPolicy string `json:"outbound_cidr_policy"`
+	OutboundCIDRPolicy SecurityListPolicy `json:"outbound_cidr_policy"`
 	// The policy for inbound traffic to the security list
-	// TODO: This should become a Constant: deny/reject/permit
-	Policy string `json:"policy"`
+	Policy SecurityListPolicy `json:"policy"`
 	// Uniform Resource Identifier
 	URI string `json:"uri"`
 }
@@ -46,10 +52,10 @@ type CreateSecurityListInput struct {
 	Name string `json:"name"`
 	// The policy for outbound traffic from the security list.
 	// Optional (defaults to `permit`)
-	OutboundCIDRPolicy string `json:"outbound_cidr_policy"`
+	OutboundCIDRPolicy SecurityListPolicy `json:"outbound_cidr_policy"`
 	// The policy for inbound traffic to the security list.
 	// Optional (defaults to `deny`)
-	Policy string `json:"policy"`
+	Policy SecurityListPolicy `json:"policy"`
 }
 
 // CreateSecurityList creates a new security list with the given name, policy and outbound CIDR policy.
@@ -90,10 +96,10 @@ type UpdateSecurityListInput struct {
 	Name string `json:"name"`
 	// The policy for outbound traffic from the security list.
 	// Optional (defaults to `permit`)
-	OutboundCIDRPolicy string `json:"outbound_cidr_policy"`
+	OutboundCIDRPolicy SecurityListPolicy `json:"outbound_cidr_policy"`
 	// The policy for inbound traffic to the security list.
 	// Optional (defaults to `deny`)
-	Policy string `json:"policy"`
+	Policy SecurityListPolicy `json:"policy"`
 }
 
 // UpdateSecurityList updates the policy and outbound CIDR pol

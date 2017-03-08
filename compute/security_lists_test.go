@@ -24,8 +24,8 @@ func TestAccSecurityListLifeCycle(t *testing.T) {
 
 	createSecurityListInput := CreateSecurityListInput{
 		Name:               name,
-		OutboundCIDRPolicy: "DENY",
-		Policy:             "PERMIT",
+		OutboundCIDRPolicy: SecurityListPolicyDeny,
+		Policy:             SecurityListPolicyPermit,
 	}
 
 	createdSecurityList, err := securityListClient.CreateSecurityList(&createSecurityListInput)
@@ -49,8 +49,8 @@ func TestAccSecurityListLifeCycle(t *testing.T) {
 
 	updateSecurityListInput := UpdateSecurityListInput{
 		Name:               name,
-		OutboundCIDRPolicy: "PERMIT",
-		Policy:             "DENY",
+		OutboundCIDRPolicy: SecurityListPolicyPermit,
+		Policy:             SecurityListPolicyDeny,
 	}
 	updateSecurityListOutput, err := securityListClient.UpdateSecurityList(&updateSecurityListInput)
 	if err != nil {
