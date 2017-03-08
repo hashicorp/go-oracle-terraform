@@ -1,6 +1,7 @@
 package compute
 
 import (
+	"fmt"
 	"log"
 	"testing"
 
@@ -20,7 +21,7 @@ const (
 func TestAccInstanceLifeCycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
-	iClient, nClient, err := getInstancesTestClients()
+	iClient, ipaClient, nClient, err := getInstancesTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -31,7 +32,20 @@ func TestAccInstanceLifeCycle(t *testing.T) {
 	}
 	defer destroyIPNetwork(t, nClient, ipNetwork.Name)
 
-	// TODO (@jake): Remove static IPReservation once resource is available for modification
+	resName := fmt.Sprintf("%s-%d", _TestIPAddressResName, helper.RInt())
+
+	ipresInput := &CreateIPAddressReservationInput{
+		Description:   _TestIPAddressResDesc,
+		IPAddressPool: _TestIPAddressResPrivatePool,
+		Name:          resName,
+	}
+
+	ipRes, err := ipaClient.CreateIPAddressReservation(ipresInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer destroyIPAddressReservation(t, ipaClient, ipRes.Name)
+
 	input := &CreateInstanceInput{
 		Name:      _InstanceTestName,
 		Label:     _InstanceTestLabel,
@@ -43,7 +57,7 @@ func TestAccInstanceLifeCycle(t *testing.T) {
 		Networking: map[string]NetworkingInfo{
 			"eth0": {
 				IPNetwork: ipNetwork.Name,
-				Nat:       []string{"testing-acc"},
+				Nat:       []string{ipRes.Name},
 			},
 			"eth1": {
 				Model: "e1000",
@@ -108,7 +122,7 @@ func TestAccInstanceLifeCycle(t *testing.T) {
 		t.Fatalf("Expected IPNetwork name %s, got: %s", ipNetwork.Name, receivedInstance.Networking["eth0"].IPNetwork)
 	}
 
-	if diff := pretty.Compare(receivedInstance.Networking["eth0"].Nat, []string{"testing-acc"}); diff != "" {
+	if diff := pretty.Compare(receivedInstance.Networking["eth0"].Nat, []string{ipRes.Name}); diff != "" {
 		t.Fatalf("Networking Diff: (-got +want)\n%s", diff)
 	}
 
@@ -135,13 +149,13 @@ func tearDownInstances(t *testing.T, svc *InstancesClient, name, id string) {
 	}
 }
 
-func getInstancesTestClients() (*InstancesClient, *IPNetworksClient, error) {
+func getInstancesTestClients() (*InstancesClient, *IPAddressReservationsClient, *IPNetworksClient, error) {
 	client, err := getTestClient(&opc.Config{})
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
-	return client.Instances(), client.IPNetworks(), nil
+	return client.Instances(), client.IPAddressReservations(), client.IPNetworks(), nil
 }
 
 // Zero fields that we cannot check with a static struct
