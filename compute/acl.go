@@ -31,6 +31,8 @@ type ACLInfo struct {
 	Enabled bool `json:"enabledFlag"`
 	// The name of the ACL
 	Name string `json:"name"`
+	// Tags associated with the ACL
+	Tags []string `json:"tags"`
 	// Uniform Resource Identifier for the ACL
 	URI string `json:"uri"`
 }
