@@ -55,9 +55,9 @@ func TestAccRoutesLifeCycle(t *testing.T) {
 	defer tearDownInstances(t, iClient, createdInstance.Name, createdInstance.ID)
 
 	vnicSetInput := &CreateVirtualNICSetInput{
-		Name:            _RouteTestName,
-		Description:     _RouteTestDescription,
-		VirtualNICNames: []string{createdInstance.Networking["eth0"].Vnic},
+		Name:        _RouteTestName,
+		Description: _RouteTestDescription,
+		VirtualNICs: []string{createdInstance.Networking["eth0"].Vnic},
 	}
 
 	createdSet, err := vClient.CreateVirtualNICSet(vnicSetInput)

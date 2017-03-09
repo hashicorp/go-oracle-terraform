@@ -28,11 +28,7 @@ type VirtualNICSet struct {
 	// Uniform Resource Identifier
 	Uri string `json:"uri"`
 	// List of VNICs associated with this VNIC set.
-	VirtualNICs []VirtualNIC
-	// VirtualNICNames should not be used in any fashion except internally
-	// The API returns a slice of names, and we use those names to
-	// populate the slice of VirtualNICs
-	VirtualNICNames []string `json:"vnics"`
+	VirtualNICs []string `json:"vnics"`
 }
 
 type CreateVirtualNICSetInput struct {
@@ -51,27 +47,20 @@ type CreateVirtualNICSetInput struct {
 	Tags []string `json:"tags"`
 	// List of VNICs associated with this VNIC set.
 	// Optional
-	VirtualNICNames []string `json:"vnics"`
+	VirtualNICs []string `json:"vnics"`
 }
 
 func (c *VirtNICSetsClient) CreateVirtualNICSet(input *CreateVirtualNICSetInput) (*VirtualNICSet, error) {
 	input.Name = c.getQualifiedName(input.Name)
 	input.AppliedACLs = c.getQualifiedAcls(input.AppliedACLs)
-	qualifiedNics := c.getQualifiedList(input.VirtualNICNames)
+	qualifiedNics := c.getQualifiedList(input.VirtualNICs)
 	if len(qualifiedNics) != 0 {
-		input.VirtualNICNames = qualifiedNics
+		input.VirtualNICs = qualifiedNics
 	}
 
 	var virtNicSet VirtualNICSet
 	if err := c.createResource(input, &virtNicSet); err != nil {
 		return nil, err
-	}
-
-	// Populate the VirtNICs field
-	if virtNicSet.VirtualNICNames != nil {
-		if err := c.populateVirtualNICs(&virtNicSet); err != nil {
-			return nil, err
-		}
 	}
 
 	return c.success(&virtNicSet)
@@ -85,15 +74,10 @@ type GetVirtualNICSetInput struct {
 
 func (c *VirtNICSetsClient) GetVirtualNICSet(input *GetVirtualNICSetInput) (*VirtualNICSet, error) {
 	var virtNicSet VirtualNICSet
+	// Qualify Name
+	input.Name = c.getQualifiedName(input.Name)
 	if err := c.getResource(input.Name, &virtNicSet); err != nil {
 		return nil, err
-	}
-
-	// Populate the VirtNICs field
-	if virtNicSet.VirtualNICNames != nil {
-		if err := c.populateVirtualNICs(&virtNicSet); err != nil {
-			return nil, err
-		}
 	}
 
 	return c.success(&virtNicSet)
@@ -115,60 +99,35 @@ type UpdateVirtualNICSetInput struct {
 	Tags []string `json:"tags"`
 	// List of VNICs associated with this VNIC set.
 	// Optional
-	VirtualNICNames []string `json:"vnics"`
+	VirtualNICs []string `json:"vnics"`
 }
 
 func (c *VirtNICSetsClient) UpdateVirtualNICSet(input *UpdateVirtualNICSetInput) (*VirtualNICSet, error) {
 	input.Name = c.getQualifiedName(input.Name)
 	input.AppliedACLs = c.getQualifiedAcls(input.AppliedACLs)
-	// Qualify VirtualNICNames
-	qualifiedNames := []string{}
-	for _, v := range input.VirtualNICNames {
-		qualifiedNames = append(qualifiedNames, c.getQualifiedName(v))
-	}
-	if len(qualifiedNames) != 0 {
-		input.VirtualNICNames = qualifiedNames
+	// Qualify VirtualNICs
+	qualifiedVNICs := c.getQualifiedList(input.VirtualNICs)
+	if len(qualifiedVNICs) != 0 {
+		input.VirtualNICs = qualifiedVNICs
 	}
 
 	var virtNICSet VirtualNICSet
 	if err := c.updateResource(input.Name, input, &virtNICSet); err != nil {
 		return nil, err
 	}
-	// Populate the VirtNICs field
-	if virtNICSet.VirtualNICNames != nil {
-		if err := c.populateVirtualNICs(&virtNICSet); err != nil {
-			return nil, err
-		}
-	}
+
 	return c.success(&virtNICSet)
 }
 
 type DeleteVirtualNICSetInput struct {
-	// The three-part name (/Compute-identity_domain/user/object) of the virtual NIC set.
+	// The name of the virtual NIC set.
 	// Required
 	Name string `json:"name"`
 }
 
 func (c *VirtNICSetsClient) DeleteVirtualNICSet(input *DeleteVirtualNICSetInput) error {
+	input.Name = c.getQualifiedName(input.Name)
 	return c.deleteResource(input.Name)
-}
-
-func (c *VirtNICSetsClient) populateVirtualNICs(info *VirtualNICSet) error {
-	for _, name := range info.VirtualNICNames {
-		// Get a VirtNIC client
-		nicsClient := c.Client.VirtNICs()
-		input := &GetVirtualNICInput{
-			Name: name,
-		}
-		// Get info about the virtual NIC
-		nic, err := nicsClient.GetVirtualNIC(input)
-		if err != nil {
-			return err
-		}
-		// Append the NIC to the result
-		info.VirtualNICs = append(info.VirtualNICs, *nic)
-	}
-	return nil
 }
 
 func (c *VirtNICSetsClient) getQualifiedAcls(acls []string) []string {
@@ -190,5 +149,6 @@ func (c *VirtNICSetsClient) unqualifyAcls(acls []string) []string {
 func (c *VirtNICSetsClient) success(info *VirtualNICSet) (*VirtualNICSet, error) {
 	c.unqualify(&info.Name)
 	info.AppliedACLs = c.unqualifyAcls(info.AppliedACLs)
+	info.VirtualNICs = c.getUnqualifiedList(info.VirtualNICs)
 	return info, nil
 }
