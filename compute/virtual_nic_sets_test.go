@@ -71,7 +71,7 @@ func TestAccVirtNICSetsLifeCycle(t *testing.T) {
 	}
 }
 
-func TestAccVirtNICSetAddNICS(t *testing.T) {
+func TestAccVirtNICSetsAddNICS(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
 	// Fist, create necessary clients
@@ -133,10 +133,10 @@ func TestAccVirtNICSetAddNICS(t *testing.T) {
 
 	// Create virtual nic set using two of the created vNICs
 	input := &CreateVirtualNICSetInput{
-		Name:            "test-acc-nic-set-nics",
-		Description:     "testing nic sets",
-		Tags:            []string{"test-tag"},
-		VirtualNICNames: []string{vNIC1, vNIC2},
+		Name:        "test-acc-nic-set-nics",
+		Description: "testing nic sets",
+		Tags:        []string{"test-tag"},
+		VirtualNICs: []string{vNIC1, vNIC2},
 	}
 
 	createdSet, err := vnClient.CreateVirtualNICSet(input)
@@ -166,10 +166,10 @@ func TestAccVirtNICSetAddNICS(t *testing.T) {
 
 	// Update the set with the third vNIC
 	updateInput := &UpdateVirtualNICSetInput{
-		Name:            createdSet.Name,
-		Description:     createdSet.Description,
-		Tags:            createdSet.Tags,
-		VirtualNICNames: []string{vNIC1, vNIC2, vNIC3},
+		Name:        createdSet.Name,
+		Description: createdSet.Description,
+		Tags:        createdSet.Tags,
+		VirtualNICs: []string{vNIC1, vNIC2, vNIC3},
 	}
 
 	updatedSet, err := vnClient.UpdateVirtualNICSet(updateInput)
