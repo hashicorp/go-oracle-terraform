@@ -60,7 +60,7 @@ func TestAccInstanceLifeCycle(t *testing.T) {
 				Nat:       []string{ipRes.Name},
 			},
 			"eth1": {
-				Model: "e1000",
+				Model: NICDefaultModel,
 				Nat:   []string{_InstanceTestPublicPool},
 			},
 		},

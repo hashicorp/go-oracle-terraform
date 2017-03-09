@@ -207,6 +207,12 @@ type StorageAttachmentInput struct {
 const ReservationPrefix = "ipreservation"
 const ReservationIPPrefix = "network/v1/ipreservation"
 
+type NICModel string
+
+const (
+	NICDefaultModel NICModel = "e1000"
+)
+
 // Struct of Networking info from a populated instance, or to be used as input to create an instance
 type NetworkingInfo struct {
 	// The DNS name for the Shared network (Required)
@@ -228,7 +234,7 @@ type NetworkingInfo struct {
 	// Shared Network only.
 	// The type of NIC used. Must be set to 'e1000'
 	// Required
-	Model string `json:"model,omitempty"`
+	Model NICModel `json:"model,omitempty"`
 	// IP Network and Shared Network
 	// The name servers that are sent through DHCP as option 6.
 	// You can specify a maximum of eight name server IP addresses per interface.
