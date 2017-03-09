@@ -34,7 +34,7 @@ type CreateSecurityAssociationInput struct {
 	// The three-part name of the Security Association (/Compute-identity_domain/user/object).
 	// If you don't specify a name for this object, then the name is generated automatically.
 	// Object names can contain only alphanumeric characters, hyphens, underscores, and periods. Object names are case-sensitive.
-	// Required
+	// Optional
 	Name string `json:"name"`
 	// The name of the Security list that you want to associate with the instance.
 	// Required
@@ -46,6 +46,9 @@ type CreateSecurityAssociationInput struct {
 
 // CreateSecurityAssociation creates a security association between the given VCable and security list.
 func (c *SecurityAssociationsClient) CreateSecurityAssociation(createInput *CreateSecurityAssociationInput) (*SecurityAssociationInfo, error) {
+	if createInput.Name != "" {
+		createInput.Name = c.getQualifiedName(createInput.Name)
+	}
 	createInput.VCable = c.getQualifiedName(createInput.VCable)
 	createInput.SecList = c.getQualifiedName(createInput.SecList)
 
