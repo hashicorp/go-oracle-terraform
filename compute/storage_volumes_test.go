@@ -104,7 +104,7 @@ func serverWhereStorageVolumeBecomesAvailableAfterThreeSeconds(t *testing.T) *ht
 		}
 		count++
 		svr := fmt.Sprintf(
-			"{\"name\":\"/Compute-test/test/test\",\"size\":\"16G\",\"status\":\"%s\"}", status)
+			"{\"name\":\"/Compute-test/test/test\",\"size\":\"17179869184\",\"status\":\"%s\"}", status)
 
 		w.Write([]byte(svr))
 		w.WriteHeader(200)
@@ -115,7 +115,7 @@ func serverWhereStorageVolumeGetsDeletedAfterThreeSeconds(t *testing.T) *httptes
 	count := 0
 	return newAuthenticatingServer(func(w http.ResponseWriter, r *http.Request) {
 		if count < 3 {
-			status := "{\"name\":\"/storage/volume/test\",\"size\":\"16G\",\"status\":\"Deleting\"}"
+			status := "{\"name\":\"/storage/volume/test\",\"size\":\"17179869184\",\"status\":\"Deleting\"}"
 			w.WriteHeader(200)
 			w.Write([]byte(status))
 		} else {

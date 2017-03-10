@@ -3,7 +3,6 @@ package compute
 import (
 	"fmt"
 	"math/rand"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
@@ -24,7 +23,7 @@ func TestAccStorageVolumeLifecycle(t *testing.T) {
 	createRequest := CreateStorageVolumeInput{
 		Name:        name,
 		Description: "original description",
-		Size:        "10G",
+		Size:        "10240",
 		Properties:  []string{"/oracle/public/storage/default"},
 	}
 	createResponse, err := svc.CreateStorageVolume(&createRequest)
@@ -47,14 +46,14 @@ func TestAccStorageVolumeLifecycle(t *testing.T) {
 	}
 
 	actualSize := createdResponse.Size
-	expectedSize := strconv.Itoa(10 << 30)
+	expectedSize := "10240"
 	if actualSize != expectedSize {
 		t.Fatalf("Expected storage volume size %s, but was %s", expectedSize, actualSize)
 	}
 
 	updateRequest := UpdateStorageVolumeInput{
 		Name:        name,
-		Size:        "20G",
+		Size:        "20480",
 		Description: "updated description",
 		Properties:  []string{"/oracle/public/storage/default"},
 	}
@@ -73,7 +72,8 @@ func TestAccStorageVolumeLifecycle(t *testing.T) {
 	}
 
 	actualSize = updatedResponse.Size
-	expectedSize = strconv.Itoa(20 << 30)
+	expectedSize = "20480"
+
 	if actualSize != expectedSize {
 		t.Fatalf("Expected storage volume size %s, but was %s", expectedSize, actualSize)
 	}
