@@ -322,8 +322,8 @@ func sizeInMegaBytes(input string) (string, error) {
 	return strconv.Itoa(sizeInMB), nil
 }
 
-func sizeInBytes(sizeInGB string) (string, error) {
-	sizeInMB, err := strconv.Atoi(sizeInGB)
+func sizeInBytes(input string) (string, error) {
+	sizeInMB, err := strconv.Atoi(input)
 	if err != nil {
 		return "", err
 	}
