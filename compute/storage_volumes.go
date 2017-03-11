@@ -27,6 +27,13 @@ func (c *Client) StorageVolumes() *StorageVolumeClient {
 
 }
 
+type StorageVolumeKind string
+
+const (
+	StorageVolumeKindDefault StorageVolumeKind = "/oracle/public/storage/default"
+	StorageVolumeKindLatency StorageVolumeKind = "/oracle/public/storage/latency"
+)
+
 // StorageVolumeInfo represents information retrieved from the service about a Storage Volume.
 type StorageVolumeInfo struct {
 	// Shows the default account for your identity domain.
