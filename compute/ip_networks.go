@@ -182,5 +182,6 @@ func (c *IPNetworksClient) DeleteIPNetwork(input *DeleteIPNetworkInput) error {
 func (c *IPNetworksClient) success(info *IPNetworkInfo) (*IPNetworkInfo, error) {
 	c.unqualify(&info.Name)
 	c.unqualify(&info.IPNetworkExchange)
+	c.unqualify(&info.Uri)
 	return info, nil
 }
