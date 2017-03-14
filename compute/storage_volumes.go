@@ -2,6 +2,7 @@ package compute
 
 import (
 	"fmt"
+	"strconv"
 	"strings"
 )
 
@@ -25,6 +26,13 @@ func (c *Client) StorageVolumes() *StorageVolumeClient {
 		}}
 
 }
+
+type StorageVolumeKind string
+
+const (
+	StorageVolumeKindDefault StorageVolumeKind = "/oracle/public/storage/default"
+	StorageVolumeKindLatency StorageVolumeKind = "/oracle/public/storage/latency"
+)
 
 // StorageVolumeInfo represents information retrieved from the service about a Storage Volume.
 type StorageVolumeInfo struct {
@@ -65,7 +73,7 @@ type StorageVolumeInfo struct {
 	// Boolean field indicating whether this volume can be attached as readonly. If set to False the volume will be attached as read-write.
 	ReadOnly bool `json:"readonly,omitempty"`
 
-	// The size of this storage volume.
+	// The size of this storage volume in MB.
 	Size string `json:"size"`
 
 	// Name of the parent snapshot from which the storage volume is restored or cloned.
@@ -122,7 +130,7 @@ type CreateStorageVolumeInput struct {
 	// The storage-pool property: /oracle/public/storage/latency or /oracle/public/storage/default.
 	Properties []string `json:"properties,omitempty"`
 
-	// The size of this storage volume.
+	// The size of this storage volume in MB.
 	Size string `json:"size"`
 
 	// Name of the parent snapshot from which the storage volume is restored or cloned.
@@ -141,6 +149,11 @@ type CreateStorageVolumeInput struct {
 // CreateStorageVolume uses the given CreateStorageVolumeInput to create a new Storage Volume.
 func (c *StorageVolumeClient) CreateStorageVolume(input *CreateStorageVolumeInput) (*StorageVolumeInfo, error) {
 	input.Name = c.getQualifiedName(input.Name)
+	sizeInBytes, err := sizeInBytes(input.Size)
+	if err != nil {
+		return nil, err
+	}
+	input.Size = sizeInBytes
 
 	var storageInfo StorageVolumeInfo
 	if err := c.createResource(&input, &storageInfo); err != nil {
@@ -173,6 +186,13 @@ type GetStorageVolumeInput struct {
 
 func (c *StorageVolumeClient) success(result *StorageVolumeInfo) (*StorageVolumeInfo, error) {
 	c.unqualify(&result.Name)
+
+	sizeInMegaBytes, err := sizeInMegaBytes(result.Size)
+	if err != nil {
+		return nil, err
+	}
+	result.Size = sizeInMegaBytes
+
 	return result, nil
 }
 
@@ -207,7 +227,7 @@ type UpdateStorageVolumeInput struct {
 	// The storage-pool property: /oracle/public/storage/latency or /oracle/public/storage/default.
 	Properties []string `json:"properties,omitempty"`
 
-	// The size of this storage volume.
+	// The size of this storage volume in MB.
 	Size string `json:"size"`
 
 	// Name of the parent snapshot from which the storage volume is restored or cloned.
@@ -227,7 +247,14 @@ type UpdateStorageVolumeInput struct {
 func (c *StorageVolumeClient) UpdateStorageVolume(input *UpdateStorageVolumeInput) (*StorageVolumeInfo, error) {
 	input.Name = c.getQualifiedName(input.Name)
 	path := c.getStorageVolumePath(input.Name)
-	_, err := c.executeRequest("PUT", path, input)
+
+	sizeInBytes, err := sizeInBytes(input.Size)
+	if err != nil {
+		return nil, err
+	}
+	input.Size = sizeInBytes
+
+	_, err = c.executeRequest("PUT", path, input)
 	if err != nil {
 		return nil, err
 	}
@@ -290,4 +317,24 @@ func (c *StorageVolumeClient) waitForStorageVolumeToBeDeleted(name string, timeo
 
 			return result == nil, nil
 		})
+}
+
+func sizeInMegaBytes(input string) (string, error) {
+	sizeInBytes, err := strconv.Atoi(input)
+	if err != nil {
+		return "", err
+	}
+	sizeInKB := sizeInBytes / 1024
+	sizeInMB := sizeInKB / 1024
+	return strconv.Itoa(sizeInMB), nil
+}
+
+func sizeInBytes(input string) (string, error) {
+	sizeInMB, err := strconv.Atoi(input)
+	if err != nil {
+		return "", err
+	}
+	sizeInKB := sizeInMB * 1024
+	sizeInBytes := sizeInKB * 1024
+	return strconv.Itoa(sizeInBytes), nil
 }
