@@ -141,6 +141,9 @@ func (c *Client) getUserName() string {
 // From compute_client
 // GetObjectName returns the fully-qualified name of an OPC object, e.g. /identity-domain/user@email/{name}
 func (c *Client) getQualifiedName(name string) string {
+	if name == "" {
+		return ""
+	}
 	if strings.HasPrefix(name, "/oracle") || strings.HasPrefix(name, "/Compute-") {
 		return name
 	}

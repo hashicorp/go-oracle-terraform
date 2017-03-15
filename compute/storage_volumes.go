@@ -149,6 +149,8 @@ type CreateStorageVolumeInput struct {
 // CreateStorageVolume uses the given CreateStorageVolumeInput to create a new Storage Volume.
 func (c *StorageVolumeClient) CreateStorageVolume(input *CreateStorageVolumeInput) (*StorageVolumeInfo, error) {
 	input.Name = c.getQualifiedName(input.Name)
+	input.ImageList = c.getQualifiedName(input.ImageList)
+
 	sizeInBytes, err := sizeInBytes(input.Size)
 	if err != nil {
 		return nil, err
@@ -246,7 +248,7 @@ type UpdateStorageVolumeInput struct {
 // UpdateStorageVolume updates the specified storage volume, optionally modifying size, description and tags.
 func (c *StorageVolumeClient) UpdateStorageVolume(input *UpdateStorageVolumeInput) (*StorageVolumeInfo, error) {
 	input.Name = c.getQualifiedName(input.Name)
-	path := c.getStorageVolumePath(input.Name)
+	input.ImageList = c.getQualifiedName(input.ImageList)
 
 	sizeInBytes, err := sizeInBytes(input.Size)
 	if err != nil {
@@ -254,6 +256,7 @@ func (c *StorageVolumeClient) UpdateStorageVolume(input *UpdateStorageVolumeInpu
 	}
 	input.Size = sizeInBytes
 
+	path := c.getStorageVolumePath(input.Name)
 	_, err = c.executeRequest("PUT", path, input)
 	if err != nil {
 		return nil, err

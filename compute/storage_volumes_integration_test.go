@@ -15,26 +15,81 @@ func TestAccStorageVolumeLifecycle(t *testing.T) {
 	rInt := rand.Int()
 	name := fmt.Sprintf("test-acc-storage-volume-lifecycle-%d", rInt)
 
-	svc, err := getStorageVolumeClient()
-	if err != nil {
-		t.Fatal(err)
+	createRequest := CreateStorageVolumeInput{
+		Name:        name,
+		Description: "original description",
+		Size:        "10240",
+		Properties:  []string{string(StorageVolumeKindDefault)},
 	}
+
+	updateRequest := UpdateStorageVolumeInput{
+		Name:        name,
+		Size:        "20480",
+		Description: "updated description",
+		Properties:  []string{string(StorageVolumeKindDefault)},
+	}
+
+	testStorageVolume(t, createRequest, updateRequest)
+}
+
+func TestAccStorageVolumeBootableLifecycle(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
+
+	rInt := rand.Int()
+	name := fmt.Sprintf("test-acc-storage-volume-bootable-lifecycle-%d", rInt)
 
 	createRequest := CreateStorageVolumeInput{
 		Name:        name,
 		Description: "original description",
 		Size:        "10240",
-		Properties:  []string{"/oracle/public/storage/default"},
+		ImageList:   "foo",
+		Properties:  []string{string(StorageVolumeKindDefault)},
 	}
-	createResponse, err := svc.CreateStorageVolume(&createRequest)
+
+	updateRequest := UpdateStorageVolumeInput{
+		Name:        name,
+		Size:        "20480",
+		Description: "updated description",
+		ImageList:   "foo",
+		Properties:  []string{string(StorageVolumeKindDefault)},
+	}
+
+	testStorageVolume(t, createRequest, updateRequest)
+}
+
+func tearDownStorageVolumes(t *testing.T, svc *StorageVolumeClient, name string) {
+	deleteRequest := &DeleteStorageVolumeInput{
+		Name: name,
+	}
+	if err := svc.DeleteStorageVolume(deleteRequest); err != nil {
+		t.Fatalf("Error deleting storage volume, dangling resources may occur: %v", err)
+	}
+}
+
+func getStorageVolumeClient() (*StorageVolumeClient, error) {
+	client, err := getTestClient(&opc.Config{})
+	if err != nil {
+		return &StorageVolumeClient{}, err
+	}
+
+	return client.StorageVolumes(), nil
+}
+
+func testStorageVolume(t *testing.T, createInput CreateStorageVolumeInput, updateInput UpdateStorageVolumeInput) {
+	svc, err := getStorageVolumeClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	createResponse, err := svc.CreateStorageVolume(&createInput)
 	if err != nil {
 		t.Fatalf("Create volume failed: %s\n", err)
 	}
 
-	defer tearDownStorageVolumes(t, svc, name)
+	defer tearDownStorageVolumes(t, svc, createInput.Name)
 
 	getRequest := &GetStorageVolumeInput{
-		Name: name,
+		Name: createInput.Name,
 	}
 	createdResponse, err := svc.GetStorageVolume(getRequest)
 	if err != nil {
@@ -51,13 +106,7 @@ func TestAccStorageVolumeLifecycle(t *testing.T) {
 		t.Fatalf("Expected storage volume size %s, but was %s", expectedSize, actualSize)
 	}
 
-	updateRequest := UpdateStorageVolumeInput{
-		Name:        name,
-		Size:        "20480",
-		Description: "updated description",
-		Properties:  []string{"/oracle/public/storage/default"},
-	}
-	updateResponse, err := svc.UpdateStorageVolume(&updateRequest)
+	updateResponse, err := svc.UpdateStorageVolume(&updateInput)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -77,22 +126,4 @@ func TestAccStorageVolumeLifecycle(t *testing.T) {
 	if actualSize != expectedSize {
 		t.Fatalf("Expected storage volume size %s, but was %s", expectedSize, actualSize)
 	}
-}
-
-func tearDownStorageVolumes(t *testing.T, svc *StorageVolumeClient, name string) {
-	deleteRequest := &DeleteStorageVolumeInput{
-		Name: name,
-	}
-	if err := svc.DeleteStorageVolume(deleteRequest); err != nil {
-		t.Fatalf("Error deleting storage volume, dangling resources may occur: %v", err)
-	}
-}
-
-func getStorageVolumeClient() (*StorageVolumeClient, error) {
-	client, err := getTestClient(&opc.Config{})
-	if err != nil {
-		return &StorageVolumeClient{}, err
-	}
-
-	return client.StorageVolumes(), nil
 }
