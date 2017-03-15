@@ -1,5 +1,11 @@
 package compute
 
+const (
+	ImageListDescription   = "Image List"
+	ImageListContainerPath = "/imagelist/"
+	ImageListResourcePath  = "/imagelist"
+)
+
 // ImageListClient is a client for the Image List functions of the Compute API.
 type ImageListClient struct {
 	ResourceClient
@@ -11,9 +17,9 @@ func (c *Client) ImageList() *ImageListClient {
 	return &ImageListClient{
 		ResourceClient: ResourceClient{
 			Client:              c,
-			ResourceDescription: "Image List",
-			ContainerPath:       "/imagelist/",
-			ResourceRootPath:    "/imagelist",
+			ResourceDescription: ImageListDescription,
+			ContainerPath:       ImageListContainerPath,
+			ResourceRootPath:    ImageListResourcePath,
 		}}
 }
 
