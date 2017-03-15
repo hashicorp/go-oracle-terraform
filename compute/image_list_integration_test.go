@@ -33,19 +33,34 @@ func TestAccImageListLifeCycle(t *testing.T) {
 	getInput := GetImageListInput{
 		Name: createResult.Name,
 	}
-	getResult, err := client.GetImageList(&getInput)
+	createGetResult, err := client.GetImageList(&getInput)
 	if err != nil {
 		t.Fatalf("Error Getting Image List: %+v", err)
 	}
 
 	updateInput := UpdateImageListInput{
-		Name:        getResult.Name,
+		Name:        name,
 		Description: "Updated Description",
 	}
 
 	_, err = client.UpdateImageList(&updateInput)
 	if err != nil {
 		t.Fatalf("Error Updating Image List: %+v", updateInput)
+	}
+
+	updatedGetResult, err := client.GetImageList(&getInput)
+	if err != nil {
+		t.Fatalf("Error Getting Image List: %+v", err)
+	}
+
+	// we can't compare the entire object because of the additional fields :(
+	if createInput.Description != createGetResult.Description {
+		t.Fatalf("Created and retrieved Image List don't match.\n Desired: %s\n Actual: %s", createInput.Description, createGetResult.Description)
+	}
+
+	// we can't compare the entire object because of the additional fields :(
+	if updateInput.Description != updatedGetResult.Description {
+		t.Fatalf("Updated and retrieved Image List don't match.\n Desired: %s\n Actual: %s", updateInput.Description, updatedGetResult.Description)
 	}
 
 	log.Print("Successfully Updated Image List")
