@@ -73,7 +73,7 @@ func (c *ImageListEntriesClient) CreateImageListEntry(input *CreateImageListEntr
 	if err := c.createResource(&input.EntryInfo, &imageListInfo); err != nil {
 		return nil, err
 	}
-	return c.success(&imageListInfo)
+	return &imageListInfo, nil
 }
 
 type GetImageListEntryInput struct {
@@ -90,7 +90,7 @@ func (c *ImageListEntriesClient) GetImageListEntry(input *GetImageListEntryInput
 	if err := c.getResource("", &imageListInfo); err != nil {
 		return nil, err
 	}
-	return c.success(&imageListInfo)
+	return &imageListInfo, nil
 }
 
 type DeleteImageListEntryInput struct {
