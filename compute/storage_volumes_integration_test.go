@@ -38,11 +38,28 @@ func TestAccStorageVolumeBootableLifecycle(t *testing.T) {
 	rInt := rand.Int()
 	name := fmt.Sprintf("test-acc-storage-volume-bootable-lifecycle-%d", rInt)
 
+	imageListName := fmt.Sprintf("test-acc-storage-volume-bootable-lifecycle-il-%d", rInt)
+
+	imageListClient, err := getImageListClient()
+	if err != nil {
+		t.Fatalf("Error building Image List Client: %+v", err)
+	}
+
+	input := CreateImageListInput{
+		Name:        imageListName,
+		Description: "Test from the TestAccStorageVolumeBootableLifecycle",
+		Default:     1,
+	}
+	_, err = imageListClient.CreateImageList(&input)
+	if err != nil {
+		t.Fatalf("Error Creating Image List: %+v", err)
+	}
+	defer tearDownImageList(t, imageListClient, imageListName)
 	createRequest := CreateStorageVolumeInput{
 		Name:        name,
 		Description: "original description",
 		Size:        "10240",
-		ImageList:   "foo",
+		ImageList:   imageListName,
 		Properties:  []string{string(StorageVolumeKindDefault)},
 	}
 
@@ -50,7 +67,7 @@ func TestAccStorageVolumeBootableLifecycle(t *testing.T) {
 		Name:        name,
 		Size:        "20480",
 		Description: "updated description",
-		ImageList:   "foo",
+		ImageList:   imageListName,
 		Properties:  []string{string(StorageVolumeKindDefault)},
 	}
 
