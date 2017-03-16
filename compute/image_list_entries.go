@@ -117,8 +117,3 @@ func (c *ImageListEntriesClient) updateClientPaths(name, version string) {
 	c.ContainerPath = containerPath
 	c.ResourceRootPath = resourcePath
 }
-
-// Unqualifies any qualified fields in the ImageListEntryInfo struct
-func (c *ImageListEntriesClient) success(info *ImageListEntryInfo) (*ImageListEntryInfo, error) {
-	return info, nil
-}
