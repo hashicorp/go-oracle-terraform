@@ -17,14 +17,12 @@ const (
 func TestAccImageListEntriesLifeCycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
-	name := "test-image-list"
-
 	imageListClient, err := getImageListClient()
 	if err != nil {
 		t.Fatal("Error Creating Image List Client: %+v", err)
 	}
 	createImageListInput := CreateImageListInput{
-		Name:        name,
+		Name:        _ImageListEntryTestName,
 		Description: "This is the second greatest image list in the world. Period.",
 		Default:     1,
 	}
@@ -32,29 +30,34 @@ func TestAccImageListEntriesLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal("Error Creating Image List: %+v", err)
 	}
-	defer tearDownImageList(t, imageListClient, name)
+	defer tearDownImageList(t, imageListClient, _ImageListEntryTestName)
 
-	createClient, err := getImageListEntriesClient(createResult.Name, "")
+	entryClient, err := getImageListEntriesClient(createResult.Name, "")
 	if err != nil {
 		t.Fatal(err)
 	}
-	createInput := &CreateImageListEntryInput{
+
+	createInformation := CreateImageListEntryInformation{
 		MachineImages: []string{"/oracle/public/oel_6.7_apaas_16.4.5_1610211300"},
 		Version:       1,
 	}
-	createdImageListEntry, err := createClient.CreateImageListEntry(createInput)
+	createInput := &CreateImageListEntryInput{
+		Name:      _ImageListEntryTestName,
+		EntryInfo: createInformation,
+	}
+
+	createdImageListEntry, err := entryClient.CreateImageListEntry(createInput)
 	if err != nil {
 		t.Fatal(err)
 	}
 	log.Print("Image List Entry succcessfully created")
+	defer destroyImageListEntry(t, entryClient)
 
-	gdc, err := getImageListEntriesClient(createResult.Name, _ImageListEntryTestVersion)
-	if err != nil {
-		t.Fatal(err)
+	getInput := &GetImageListEntryInput{
+		Name:    _ImageListEntryTestName,
+		Version: _ImageListEntryTestVersion,
 	}
-	defer destroyImageListEntry(t, gdc)
-
-	receivedImageListEntry, err := gdc.GetImageListEntry()
+	receivedImageListEntry, err := entryClient.GetImageListEntry(getInput)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -65,7 +68,11 @@ func TestAccImageListEntriesLifeCycle(t *testing.T) {
 }
 
 func destroyImageListEntry(t *testing.T, svc *ImageListEntriesClient) {
-	if err := svc.DeleteImageListEntry(); err != nil {
+	deleteInput := &DeleteImageListEntryInput{
+		Name:    _ImageListEntryTestName,
+		Version: _ImageListEntryTestVersion,
+	}
+	if err := svc.DeleteImageListEntry(deleteInput); err != nil {
 		t.Fatal(err)
 	}
 }
