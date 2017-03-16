@@ -45,11 +45,6 @@ type ImageListEntryInfo struct {
 type CreateImageListEntryInput struct {
 	// The name of the Image List
 	Name string
-	// The information needed to create the Image List Entry
-	EntryInfo CreateImageListEntryInformation
-}
-
-type CreateImageListEntryInformation struct {
 	// User-defined parameters, in JSON format, that can be passed to an instance of this machine
 	// image when it is launched. This field can be used, for example, to specify the location of
 	// a database server and login details. Instance metadata, including user-defined data is
@@ -70,7 +65,7 @@ type CreateImageListEntryInformation struct {
 func (c *ImageListEntriesClient) CreateImageListEntry(input *CreateImageListEntryInput) (*ImageListEntryInfo, error) {
 	c.updateClientPaths(input.Name, "")
 	var imageListInfo ImageListEntryInfo
-	if err := c.createResource(&input.EntryInfo, &imageListInfo); err != nil {
+	if err := c.createResource(&input, &imageListInfo); err != nil {
 		return nil, err
 	}
 	return &imageListInfo, nil

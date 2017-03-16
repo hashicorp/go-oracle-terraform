@@ -37,13 +37,10 @@ func TestAccImageListEntriesLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	createInformation := CreateImageListEntryInformation{
+	createInput := &CreateImageListEntryInput{
+		Name:          _ImageListEntryTestName,
 		MachineImages: []string{"/oracle/public/oel_6.7_apaas_16.4.5_1610211300"},
 		Version:       1,
-	}
-	createInput := &CreateImageListEntryInput{
-		Name:      _ImageListEntryTestName,
-		EntryInfo: createInformation,
 	}
 
 	createdImageListEntry, err := entryClient.CreateImageListEntry(createInput)
