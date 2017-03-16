@@ -10,14 +10,14 @@ import (
 )
 
 const (
-	_ImageListEntryTestName        = "test-acc-ip-network-image-list-entry"
-  _ImageListEntryTestVersion      = "1"
+	_ImageListEntryTestName    = "test-acc-ip-network-image-list-entry"
+	_ImageListEntryTestVersion = "1"
 )
 
 func TestAccImageListEntriesLifeCycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
-  name := "test-image-list"
+	name := "test-image-list"
 
 	imageListClient, err := getImageListClient()
 	if err != nil {
@@ -39,8 +39,8 @@ func TestAccImageListEntriesLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 	createInput := &CreateImageListEntryInput{
-    MachineImages: []string{"/oracle/public/oel_6.7_apaas_16.4.5_1610211300"},
-    Version: 1,
+		MachineImages: []string{"/oracle/public/oel_6.7_apaas_16.4.5_1610211300"},
+		Version:       1,
 	}
 	createdImageListEntry, err := createClient.CreateImageListEntry(createInput)
 	if err != nil {
@@ -48,24 +48,24 @@ func TestAccImageListEntriesLifeCycle(t *testing.T) {
 	}
 	log.Print("Image List Entry succcessfully created")
 
-  gdc, err := getImageListEntriesClient(createResult.Name, _ImageListEntryTestVersion)
-  if err != nil {
+	gdc, err := getImageListEntriesClient(createResult.Name, _ImageListEntryTestVersion)
+	if err != nil {
 		t.Fatal(err)
 	}
-  defer destroyImageListEntry(t, gdc)
+	defer destroyImageListEntry(t, gdc)
 
-  receivedImageListEntry, err := gdc.GetImageListEntry()
+	receivedImageListEntry, err := gdc.GetImageListEntry()
 	if err != nil {
 		t.Fatal(err)
 	}
 	log.Print("Image List Entry successfully fetched")
-  if !reflect.DeepEqual(createdImageListEntry, receivedImageListEntry) {
+	if !reflect.DeepEqual(createdImageListEntry, receivedImageListEntry) {
 		t.Fatalf("Mismatch found after create.\nExpected: %+v\nReceived: %+v", createdImageListEntry, receivedImageListEntry)
 	}
 }
 
 func destroyImageListEntry(t *testing.T, svc *ImageListEntriesClient) {
-  if err := svc.DeleteImageListEntry(); err != nil {
+	if err := svc.DeleteImageListEntry(); err != nil {
 		t.Fatal(err)
 	}
 }
