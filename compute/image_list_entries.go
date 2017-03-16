@@ -12,7 +12,7 @@ type ImageListEntriesClient struct {
 
 // ImageListEntries() returns an ImageListEntriesClient that can be used to access the
 // necessary CRUD functions for Image List Entrys.
-func (c *Client) ImageListEntries(name string, version string) *ImageListEntriesClient {
+func (c *Client) ImageListEntries() *ImageListEntriesClient {
 	return &ImageListEntriesClient{
 		ResourceClient: ResourceClient{
 			Client:              c,

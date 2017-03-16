@@ -26,13 +26,13 @@ func TestAccImageListEntriesLifeCycle(t *testing.T) {
 		Description: "This is the second greatest image list in the world. Period.",
 		Default:     1,
 	}
-	createResult, err := imageListClient.CreateImageList(&createImageListInput)
+	_, err = imageListClient.CreateImageList(&createImageListInput)
 	if err != nil {
 		t.Fatal("Error Creating Image List: %+v", err)
 	}
 	defer tearDownImageList(t, imageListClient, _ImageListEntryTestName)
 
-	entryClient, err := getImageListEntriesClient(createResult.Name, "")
+	entryClient, err := getImageListEntriesClient()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -77,10 +77,10 @@ func destroyImageListEntry(t *testing.T, svc *ImageListEntriesClient) {
 	}
 }
 
-func getImageListEntriesClient(name, version string) (*ImageListEntriesClient, error) {
+func getImageListEntriesClient() (*ImageListEntriesClient, error) {
 	client, err := getTestClient(&opc.Config{})
 	if err != nil {
 		return nil, err
 	}
-	return client.ImageListEntries(name, version), nil
+	return client.ImageListEntries(), nil
 }
