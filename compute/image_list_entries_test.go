@@ -10,59 +10,70 @@ import (
 )
 
 const (
-	_IPNetworkExchangeTestName        = "test-acc-ip-network-exchange"
-	_IPNetworkExchangeTestDescription = "testing ip network exchange"
+	_ImageListEntryTestName        = "test-acc-ip-network-image-list-entry"
+  _ImageListEntryTestVersion      = "1"
 )
 
-func TestAccIPNetworkExchangesLifeCycle(t *testing.T) {
+func TestAccImageListEntriesLifeCycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
-	svc, err := getIPNetworkExchangesClient()
+  name := "test-image-list"
+
+	imageListClient, err := getImageListClient()
+	if err != nil {
+		t.Fatal("Error Creating Image List Client: %+v", err)
+	}
+	createImageListInput := CreateImageListInput{
+		Name:        name,
+		Description: "This is the second greatest image list in the world. Period.",
+		Default:     1,
+	}
+	createResult, err := imageListClient.CreateImageList(&createImageListInput)
+	if err != nil {
+		t.Fatal("Error Creating Image List: %+v", err)
+	}
+	defer tearDownImageList(t, imageListClient, name)
+
+	createClient, err := getImageListEntriesClient(createResult.Name, "")
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	createInput := &CreateIPNetworkExchangeInput{
-		Name:        _IPNetworkExchangeTestName,
-		Description: _IPNetworkExchangeTestDescription,
-		Tags:        []string{"testing"},
+	createInput := &CreateImageListEntryInput{
+    MachineImages: []string{"/oracle/public/oel_6.7_apaas_16.4.5_1610211300"},
+    Version: 1,
 	}
-
-	createdNetworkExchange, err := svc.CreateIPNetworkExchange(createInput)
+	createdImageListEntry, err := createClient.CreateImageListEntry(createInput)
 	if err != nil {
 		t.Fatal(err)
 	}
-	log.Print("IP Network Exchange succcessfully created")
-	defer destroyIPNetworkExchange(t, svc, _IPNetworkExchangeTestName)
+	log.Print("Image List Entry succcessfully created")
 
-	getInput := &GetIPNetworkExchangeInput{
-		Name: _IPNetworkExchangeTestName,
+  gdc, err := getImageListEntriesClient(createResult.Name, _ImageListEntryTestVersion)
+  if err != nil {
+		t.Fatal(err)
 	}
-	receivedNetworkExchange, err := svc.GetIPNetworkExchange(getInput)
+  defer destroyImageListEntry(t, gdc)
+
+  receivedImageListEntry, err := gdc.GetImageListEntry()
 	if err != nil {
 		t.Fatal(err)
 	}
-	log.Print("IP Network Exchange successfully fetched")
-
-	if !reflect.DeepEqual(createdNetworkExchange, receivedNetworkExchange) {
-		t.Fatalf("Mismatch found after create.\nExpected: %+v\nReceived: %+v", createdNetworkExchange, receivedNetworkExchange)
+	log.Print("Image List Entry successfully fetched")
+  if !reflect.DeepEqual(createdImageListEntry, receivedImageListEntry) {
+		t.Fatalf("Mismatch found after create.\nExpected: %+v\nReceived: %+v", createdImageListEntry, receivedImageListEntry)
 	}
 }
 
-func destroyIPNetworkExchange(t *testing.T, svc *IPNetworkExchangesClient, name string) {
-	input := &DeleteIPNetworkExchangeInput{
-		Name: name,
-	}
-	if err := svc.DeleteIPNetworkExchange(input); err != nil {
+func destroyImageListEntry(t *testing.T, svc *ImageListEntriesClient) {
+  if err := svc.DeleteImageListEntry(); err != nil {
 		t.Fatal(err)
 	}
 }
 
-func getIPNetworkExchangesClient() (*IPNetworkExchangesClient, error) {
+func getImageListEntriesClient(name, version string) (*ImageListEntriesClient, error) {
 	client, err := getTestClient(&opc.Config{})
 	if err != nil {
 		return nil, err
 	}
-
-	return client.IPNetworkExchanges(), nil
+	return client.ImageListEntries(name, version), nil
 }

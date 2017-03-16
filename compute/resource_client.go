@@ -36,7 +36,13 @@ func (c *ResourceClient) updateResource(name string, requestBody interface{}, re
 }
 
 func (c *ResourceClient) getResource(name string, responseBody interface{}) error {
-	resp, err := c.executeRequest("GET", c.getObjectPath(c.ResourceRootPath, name), nil)
+	var objectPath string
+	if name != "" {
+		objectPath = c.getObjectPath(c.ResourceRootPath, name)
+	} else {
+		objectPath = c.ResourceRootPath
+	}
+	resp, err := c.executeRequest("GET", objectPath, nil)
 	if err != nil {
 		return err
 	}
@@ -45,7 +51,13 @@ func (c *ResourceClient) getResource(name string, responseBody interface{}) erro
 }
 
 func (c *ResourceClient) deleteResource(name string) error {
-	_, err := c.executeRequest("DELETE", c.getObjectPath(c.ResourceRootPath, name), nil)
+	var objectPath string
+	if name != "" {
+		objectPath = c.getObjectPath(c.ResourceRootPath, name)
+	} else {
+		objectPath = c.ResourceRootPath
+	}
+	_, err := c.executeRequest("DELETE", objectPath, nil)
 	if err != nil {
 		return err
 	}
