@@ -47,7 +47,7 @@ func TestAccStorageAttachmentsLifecycle(t *testing.T) {
 
 	createStorageVolumeInput := &CreateStorageVolumeInput{
 		Name:       volumeName,
-		Size:       "10240",
+		Size:       "10",
 		Properties: []string{"/oracle/public/storage/default"},
 	}
 	_, err = storageVolumesClient.CreateStorageVolume(createStorageVolumeInput)
