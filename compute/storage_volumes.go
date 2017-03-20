@@ -73,7 +73,7 @@ type StorageVolumeInfo struct {
 	// Boolean field indicating whether this volume can be attached as readonly. If set to False the volume will be attached as read-write.
 	ReadOnly bool `json:"readonly,omitempty"`
 
-	// The size of this storage volume in MB.
+	// The size of this storage volume in GB.
 	Size string `json:"size"`
 
 	// Name of the parent snapshot from which the storage volume is restored or cloned.
@@ -130,7 +130,7 @@ type CreateStorageVolumeInput struct {
 	// The storage-pool property: /oracle/public/storage/latency or /oracle/public/storage/default.
 	Properties []string `json:"properties,omitempty"`
 
-	// The size of this storage volume in MB.
+	// The size of this storage volume in GB.
 	Size string `json:"size"`
 
 	// Name of the parent snapshot from which the storage volume is restored or cloned.
@@ -189,7 +189,7 @@ type GetStorageVolumeInput struct {
 func (c *StorageVolumeClient) success(result *StorageVolumeInfo) (*StorageVolumeInfo, error) {
 	c.unqualify(&result.Name)
 
-	sizeInMegaBytes, err := sizeInMegaBytes(result.Size)
+	sizeInMegaBytes, err := sizeInGigaBytes(result.Size)
 	if err != nil {
 		return nil, err
 	}
@@ -229,7 +229,7 @@ type UpdateStorageVolumeInput struct {
 	// The storage-pool property: /oracle/public/storage/latency or /oracle/public/storage/default.
 	Properties []string `json:"properties,omitempty"`
 
-	// The size of this storage volume in MB.
+	// The size of this storage volume in GB.
 	Size string `json:"size"`
 
 	// Name of the parent snapshot from which the storage volume is restored or cloned.
@@ -322,21 +322,23 @@ func (c *StorageVolumeClient) waitForStorageVolumeToBeDeleted(name string, timeo
 		})
 }
 
-func sizeInMegaBytes(input string) (string, error) {
+func sizeInGigaBytes(input string) (string, error) {
 	sizeInBytes, err := strconv.Atoi(input)
 	if err != nil {
 		return "", err
 	}
 	sizeInKB := sizeInBytes / 1024
 	sizeInMB := sizeInKB / 1024
-	return strconv.Itoa(sizeInMB), nil
+	sizeInGb := sizeInMB / 1024
+	return strconv.Itoa(sizeInGb), nil
 }
 
 func sizeInBytes(input string) (string, error) {
-	sizeInMB, err := strconv.Atoi(input)
+	sizeInGB, err := strconv.Atoi(input)
 	if err != nil {
 		return "", err
 	}
+	sizeInMB := sizeInGB * 1024
 	sizeInKB := sizeInMB * 1024
 	sizeInBytes := sizeInKB * 1024
 	return strconv.Itoa(sizeInBytes), nil
