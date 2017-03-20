@@ -76,14 +76,14 @@ func TestAccStorageVolumeBootableLifecycle(t *testing.T) {
 	createRequest := CreateStorageVolumeInput{
 		Name:        name,
 		Description: "original description",
-		Size:        "10",
+		Size:        "20",
 		ImageList:   imageListName,
 		Properties:  []string{string(StorageVolumeKindDefault)},
 	}
 
 	updateRequest := UpdateStorageVolumeInput{
 		Name:        name,
-		Size:        "20",
+		Size:        "30",
 		Description: "updated description",
 		ImageList:   imageListName,
 		Properties:  []string{string(StorageVolumeKindDefault)},
@@ -136,22 +136,12 @@ func testStorageVolume(t *testing.T, createInput CreateStorageVolumeInput, updat
 	}
 
 	actualSize := createdResponse.Size
-	expectedSize := "10"
+	expectedSize := "20"
 	if actualSize != expectedSize {
 		t.Fatalf("Expected storage volume size %s, but was %s", expectedSize, actualSize)
 	}
 
-<<<<<<< HEAD
 	updateResponse, err := svc.UpdateStorageVolume(&updateInput)
-=======
-	updateRequest := UpdateStorageVolumeInput{
-		Name:        name,
-		Size:        "20",
-		Description: "updated description",
-		Properties:  []string{"/oracle/public/storage/default"},
-	}
-	updateResponse, err := svc.UpdateStorageVolume(&updateRequest)
->>>>>>> master
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -166,7 +156,7 @@ func testStorageVolume(t *testing.T, createInput CreateStorageVolumeInput, updat
 	}
 
 	actualSize = updatedResponse.Size
-	expectedSize = "20"
+	expectedSize = "30"
 
 	if actualSize != expectedSize {
 		t.Fatalf("Expected storage volume size %s, but was %s", expectedSize, actualSize)
