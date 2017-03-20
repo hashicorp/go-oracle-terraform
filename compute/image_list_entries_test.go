@@ -3,6 +3,7 @@ package compute
 import (
 	"log"
 	"reflect"
+	"strconv"
 	"testing"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
@@ -48,7 +49,7 @@ func TestAccImageListEntriesLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 	log.Print("Image List Entry succcessfully created")
-	defer destroyImageListEntry(t, entryClient)
+	defer destroyImageListEntry(t, entryClient, createdImageListEntry)
 
 	getInput := &GetImageListEntryInput{
 		Name:    _ImageListEntryTestName,
@@ -64,10 +65,10 @@ func TestAccImageListEntriesLifeCycle(t *testing.T) {
 	}
 }
 
-func destroyImageListEntry(t *testing.T, svc *ImageListEntriesClient) {
+func destroyImageListEntry(t *testing.T, svc *ImageListEntriesClient, imageListEntry *ImageListEntryInfo) {
 	deleteInput := &DeleteImageListEntryInput{
-		Name:    _ImageListEntryTestName,
-		Version: _ImageListEntryTestVersion,
+		Name:    imageListEntry.Uri,
+		Version: strconv.Itoa(imageListEntry.Version),
 	}
 	if err := svc.DeleteImageListEntry(deleteInput); err != nil {
 		t.Fatal(err)

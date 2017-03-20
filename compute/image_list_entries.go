@@ -64,11 +64,11 @@ type CreateImageListEntryInput struct {
 // Returns a populated Info struct for the Image List Entry, and any errors
 func (c *ImageListEntriesClient) CreateImageListEntry(input *CreateImageListEntryInput) (*ImageListEntryInfo, error) {
 	c.updateClientPaths(input.Name, "")
-	var imageListInfo ImageListEntryInfo
-	if err := c.createResource(&input, &imageListInfo); err != nil {
+	var imageListEntryInfo ImageListEntryInfo
+	if err := c.createResource(&input, &imageListEntryInfo); err != nil {
 		return nil, err
 	}
-	return &imageListInfo, nil
+	return c.success(&imageListEntryInfo)
 }
 
 type GetImageListEntryInput struct {
@@ -81,11 +81,11 @@ type GetImageListEntryInput struct {
 // Returns a populated ImageListEntryInfo struct from an input struct
 func (c *ImageListEntriesClient) GetImageListEntry(input *GetImageListEntryInput) (*ImageListEntryInfo, error) {
 	c.updateClientPaths(input.Name, input.Version)
-	var imageListInfo ImageListEntryInfo
-	if err := c.getResource("", &imageListInfo); err != nil {
+	var imageListEntryInfo ImageListEntryInfo
+	if err := c.getResource("", &imageListEntryInfo); err != nil {
 		return nil, err
 	}
-	return &imageListInfo, nil
+	return c.success(&imageListEntryInfo)
 }
 
 type DeleteImageListEntryInput struct {
@@ -111,4 +111,10 @@ func (c *ImageListEntriesClient) updateClientPaths(name, version string) {
 	}
 	c.ContainerPath = containerPath
 	c.ResourceRootPath = resourcePath
+}
+
+// Unqualifies any qualified fields in the IPNetworkInfo struct
+func (c *ImageListEntriesClient) success(info *ImageListEntryInfo) (*ImageListEntryInfo, error) {
+	c.unqualifyUrl(&info.Uri)
+	return info, nil
 }

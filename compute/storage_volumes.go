@@ -149,7 +149,7 @@ type CreateStorageVolumeInput struct {
 // CreateStorageVolume uses the given CreateStorageVolumeInput to create a new Storage Volume.
 func (c *StorageVolumeClient) CreateStorageVolume(input *CreateStorageVolumeInput) (*StorageVolumeInfo, error) {
 	input.Name = c.getQualifiedName(input.Name)
-	//input.ImageList = c.getQualifiedName(input.ImageList)
+	input.ImageList = c.getQualifiedName(input.ImageList)
 
 	sizeInBytes, err := sizeInBytes(input.Size)
 	if err != nil {

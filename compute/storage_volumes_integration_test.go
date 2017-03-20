@@ -55,6 +55,24 @@ func TestAccStorageVolumeBootableLifecycle(t *testing.T) {
 		t.Fatalf("Error Creating Image List: %+v", err)
 	}
 	defer tearDownImageList(t, imageListClient, imageListName)
+
+	entryClient, err := getImageListEntriesClient()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	createEntryInput := &CreateImageListEntryInput{
+		Name:          imageListName,
+		MachineImages: []string{"/oracle/public/oel_6.7_apaas_16.4.5_1610211300"},
+		Version:       1,
+	}
+
+	createdImageListEntry, err := entryClient.CreateImageListEntry(createEntryInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer destroyImageListEntry(t, entryClient, createdImageListEntry)
+
 	createRequest := CreateStorageVolumeInput{
 		Name:        name,
 		Description: "original description",
