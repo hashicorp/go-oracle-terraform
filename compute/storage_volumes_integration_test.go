@@ -18,13 +18,13 @@ func TestAccStorageVolumeLifecycle(t *testing.T) {
 	createRequest := CreateStorageVolumeInput{
 		Name:        name,
 		Description: "original description",
-		Size:        "10240",
+		Size:        "20",
 		Properties:  []string{string(StorageVolumeKindDefault)},
 	}
 
 	updateRequest := UpdateStorageVolumeInput{
 		Name:        name,
-		Size:        "20480",
+		Size:        "30",
 		Description: "updated description",
 		Properties:  []string{string(StorageVolumeKindDefault)},
 	}
