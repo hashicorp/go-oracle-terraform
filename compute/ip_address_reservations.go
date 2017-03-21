@@ -51,8 +51,6 @@ type IPAddressReservation struct {
 	Uri string `json:"uri"`
 }
 
-type IPAddressReservationPool string
-
 const (
 	PublicIPAddressPool  = "public-ippool"
 	PrivateIPAddressPool = "cloud-ippool"
