@@ -11,11 +11,9 @@ import (
 )
 
 const (
-	_TestIPAddressResDesc        = "testing-acc"
-	_TestIPAddressResPrivatePool = "cloud-ippool"
-	_TestIPAddressResPublicPool  = "public-ippool"
-	_TestIPAddressResName        = "ip-res-testing"
-	_TestIPAddressResTag         = "testing-tag"
+	_TestIPAddressResDesc = "testing-acc"
+	_TestIPAddressResName = "ip-res-testing"
+	_TestIPAddressResTag  = "testing-tag"
 )
 
 func TestAccIPAddressReservationLifeCycle(t *testing.T) {
@@ -30,7 +28,7 @@ func TestAccIPAddressReservationLifeCycle(t *testing.T) {
 
 	input := &CreateIPAddressReservationInput{
 		Description:   _TestIPAddressResDesc,
-		IPAddressPool: _TestIPAddressResPrivatePool,
+		IPAddressPool: PrivateIPAddressPool,
 		Name:          resName,
 		Tags:          []string{_TestIPAddressResTag},
 	}
@@ -64,7 +62,7 @@ func TestAccIPAddressReservationLifeCycle(t *testing.T) {
 
 	updateInput := &UpdateIPAddressReservationInput{
 		Description:   _TestIPAddressResDesc,
-		IPAddressPool: _TestIPAddressResPublicPool,
+		IPAddressPool: PublicIPAddressPool,
 		Name:          resName,
 		Tags:          []string{_TestIPAddressResTag},
 	}
