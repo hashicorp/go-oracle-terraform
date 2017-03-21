@@ -51,6 +51,11 @@ type IPAddressReservation struct {
 	Uri string `json:"uri"`
 }
 
+const (
+	PublicIPAddressPool  = "public-ippool"
+	PrivateIPAddressPool = "cloud-ippool"
+)
+
 // CreateIPAddressReservationInput defines input parameters to create an ip address reservation
 type CreateIPAddressReservationInput struct {
 	// Description of the IP Address Reservation
