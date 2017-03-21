@@ -81,7 +81,7 @@ func tearDownImageList(t *testing.T, client *ImageListClient, name string) {
 	}
 	err := client.DeleteImageList(&deleteInput)
 	if err != nil {
-		t.Fatal("Error Deleting Image List: %+v", err)
+		t.Fatalf("Error Deleting Image List: %+v", err)
 	}
 	log.Printf("Successfully deleted Image List")
 }

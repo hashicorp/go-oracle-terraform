@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"regexp"
 	"strings"
 	"time"
 
@@ -141,6 +142,9 @@ func (c *Client) getUserName() string {
 // From compute_client
 // GetObjectName returns the fully-qualified name of an OPC object, e.g. /identity-domain/user@email/{name}
 func (c *Client) getQualifiedName(name string) string {
+	if name == "" {
+		return ""
+	}
 	if strings.HasPrefix(name, "/oracle") || strings.HasPrefix(name, "/Compute-") {
 		return name
 	}
@@ -171,6 +175,12 @@ func (c *Client) unqualify(names ...*string) {
 	for _, name := range names {
 		*name = c.getUnqualifiedName(*name)
 	}
+}
+
+func (c *Client) unqualifyUrl(url *string) {
+	var validID = regexp.MustCompile(`(\/(Compute[^\/\s]+))(\/[^\/\s]+)(\/[^\/\s]+)`)
+	name := validID.FindString(*url)
+	*url = c.getUnqualifiedName(name)
 }
 
 func (c *Client) getQualifiedList(list []string) []string {
