@@ -3,7 +3,6 @@ package compute
 import (
 	"log"
 	"reflect"
-	"strconv"
 	"testing"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
@@ -12,7 +11,7 @@ import (
 
 const (
 	_ImageListEntryTestName    = "test-acc-ip-network-image-list-entry"
-	_ImageListEntryTestVersion = "1"
+	_ImageListEntryTestVersion = 1
 )
 
 func TestAccImageListEntriesLifeCycle(t *testing.T) {
@@ -41,7 +40,7 @@ func TestAccImageListEntriesLifeCycle(t *testing.T) {
 	createInput := &CreateImageListEntryInput{
 		Name:          _ImageListEntryTestName,
 		MachineImages: []string{"/oracle/public/oel_6.7_apaas_16.4.5_1610211300"},
-		Version:       1,
+		Version:       _ImageListEntryTestVersion,
 	}
 
 	createdImageListEntry, err := entryClient.CreateImageListEntry(createInput)
@@ -68,7 +67,7 @@ func TestAccImageListEntriesLifeCycle(t *testing.T) {
 func destroyImageListEntry(t *testing.T, svc *ImageListEntriesClient, imageListEntry *ImageListEntryInfo) {
 	deleteInput := &DeleteImageListEntryInput{
 		Name:    imageListEntry.Uri,
-		Version: strconv.Itoa(imageListEntry.Version),
+		Version: imageListEntry.Version,
 	}
 	if err := svc.DeleteImageListEntry(deleteInput); err != nil {
 		t.Fatal(err)
