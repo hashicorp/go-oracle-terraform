@@ -11,7 +11,7 @@ type ImageListEntriesClient struct {
 }
 
 // ImageListEntries() returns an ImageListEntriesClient that can be used to access the
-// necessary CRUD functions for Image List Entrys.
+// necessary CRUD functions for Image List Entry's.
 func (c *Client) ImageListEntries() *ImageListEntriesClient {
 	return &ImageListEntriesClient{
 		ResourceClient: ResourceClient{
@@ -33,7 +33,7 @@ type ImageListEntryInfo struct {
 	// Oracle Compute Cloud Service (IaaS).
 	Attributes map[string]interface{} `json:"attributes"`
 	// Name of the imagelist.
-	ImageList string `json:"imagelist"`
+	Name string `json:"imagelist"`
 	// A list of machine images.
 	MachineImages []string `json:"machineimages"`
 	// Uniform Resource Identifier for the Image List Entry
