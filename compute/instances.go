@@ -26,6 +26,17 @@ func (c *Client) Instances() *InstancesClient {
 		}}
 }
 
+type InstanceState string
+
+const (
+	InstanceRunning      InstanceState = "running"
+	InstanceInitializing InstanceState = "initializing"
+	InstancePreparing    InstanceState = "preparing"
+	InstanceStopping     InstanceState = "stopping"
+	InstanceQueued       InstanceState = "queued"
+	InstanceError        InstanceState = "error"
+)
+
 // InstanceInfo represents the Compute API's view of the state of an instance.
 type InstanceInfo struct {
 	// The ID for the instance. Set by the SDK based on the request - not the API.
@@ -107,9 +118,8 @@ type InstanceInfo struct {
 	// The start time of the instance
 	StartTime string `json:"start_time"`
 
-	// TODO: make this a Constant
 	// State of the instance.
-	State string `json:"state"`
+	State InstanceState `json:"state"`
 
 	// The Storage Attachment information.
 	Storage []StorageAttachment `json:"storage_attachments"`
@@ -197,6 +207,12 @@ type StorageAttachmentInput struct {
 const ReservationPrefix = "ipreservation"
 const ReservationIPPrefix = "network/v1/ipreservation"
 
+type NICModel string
+
+const (
+	NICDefaultModel NICModel = "e1000"
+)
+
 // Struct of Networking info from a populated instance, or to be used as input to create an instance
 type NetworkingInfo struct {
 	// The DNS name for the Shared network (Required)
@@ -218,7 +234,7 @@ type NetworkingInfo struct {
 	// Shared Network only.
 	// The type of NIC used. Must be set to 'e1000'
 	// Required
-	Model string `json:"model,omitempty"`
+	Model NICModel `json:"model,omitempty"`
 	// IP Network and Shared Network
 	// The name servers that are sent through DHCP as option 6.
 	// You can specify a maximum of eight name server IP addresses per interface.
@@ -380,13 +396,25 @@ func (c *InstancesClient) WaitForInstanceRunning(input *GetInstanceInput, timeou
 		if getErr != nil {
 			return false, getErr
 		}
-		if info.State == "error" {
+		switch s := info.State; s {
+		case InstanceError:
 			return false, fmt.Errorf("Error initializing instance: %s", info.ErrorReason)
-		}
-		if info.State == "running" {
+		case InstanceRunning:
+			c.debugLogString("Instance Running")
 			return true, nil
+		case InstanceQueued:
+			c.debugLogString("Instance Queuing")
+			return false, nil
+		case InstanceInitializing:
+			c.debugLogString("Instance Initializing")
+			return false, nil
+		case InstancePreparing:
+			c.debugLogString("Instance Preparing")
+			return false, nil
+		default:
+			c.debugLogString(fmt.Sprintf("Unknown instance state: %s, waiting", s))
+			return false, nil
 		}
-		return false, nil
 	})
 	return info, err
 }
@@ -394,14 +422,25 @@ func (c *InstancesClient) WaitForInstanceRunning(input *GetInstanceInput, timeou
 // WaitForInstanceDeleted waits for an instance to be fully deleted.
 func (c *InstancesClient) WaitForInstanceDeleted(input *DeleteInstanceInput, timeoutSeconds int) error {
 	return c.waitFor("instance to be deleted", timeoutSeconds, func() (bool, error) {
-		var instanceInfo InstanceInfo
-		if err := c.getResource(input.String(), &instanceInfo); err != nil {
+		var info InstanceInfo
+		if err := c.getResource(input.String(), &info); err != nil {
 			if WasNotFoundError(err) {
+				// Instance could not be found, thus deleted
 				return true, nil
 			}
+			// Some other error occurred trying to get instance, exit
 			return false, err
 		}
-		return false, nil
+		switch s := info.State; s {
+		case InstanceError:
+			return false, fmt.Errorf("Error stopping instance: %s", info.ErrorReason)
+		case InstanceStopping:
+			c.debugLogString("Instance stopping")
+			return false, nil
+		default:
+			c.debugLogString(fmt.Sprintf("Unknown instance state: %s, waiting", s))
+			return false, nil
+		}
 	})
 }
 
