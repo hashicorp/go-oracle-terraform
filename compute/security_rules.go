@@ -27,7 +27,7 @@ func (c *Client) SecurityRules() *SecurityRuleClient {
 // Security Rule
 type SecurityRuleInfo struct {
 	// Name of the ACL that contains this rule.
-	ACL string `json:acl`
+	ACL string `json:"acl"`
 	// Description of the Security Rule
 	Description string `json:"description"`
 	// List of IP address prefix set names to match the packet's destination IP address.
@@ -56,7 +56,7 @@ type CreateSecurityRuleInput struct {
 	//Select the name of the access control list (ACL) that you want to add this
 	// security rule to. Security rules are applied to vNIC sets by using ACLs.
 	// Optional
-	ACL string `json:"acl"`
+	ACL string `json:"acl,omitempty"`
 
 	// Description of the Security Rule
 	// Optional
@@ -163,7 +163,7 @@ type UpdateSecurityRuleInput struct {
 	//Select the name of the access control list (ACL) that you want to add this
 	// security rule to. Security rules are applied to vNIC sets by using ACLs.
 	// Optional
-	ACL string `json:"acl"`
+	ACL string `json:"acl,omitempty"`
 
 	// Description of the Security Rule
 	// Optional
