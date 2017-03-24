@@ -1,5 +1,7 @@
 package compute
 
+import "fmt"
+
 const (
 	ImageListEntryDescription   = "image list entry"
 	ImageListEntryContainerPath = "/imagelist"
@@ -63,7 +65,7 @@ type CreateImageListEntryInput struct {
 // Create a new Image List Entry from an ImageListEntriesClient and an input struct.
 // Returns a populated Info struct for the Image List Entry, and any errors
 func (c *ImageListEntriesClient) CreateImageListEntry(input *CreateImageListEntryInput) (*ImageListEntryInfo, error) {
-	c.updateClientPaths(input.Name, "")
+	c.updateClientPaths(input.Name, -1)
 	var imageListEntryInfo ImageListEntryInfo
 	if err := c.createResource(&input, &imageListEntryInfo); err != nil {
 		return nil, err
@@ -75,7 +77,7 @@ type GetImageListEntryInput struct {
 	// The name of the Image List
 	Name string
 	// Version number of these machineImages in the imagelist.
-	Version string
+	Version int
 }
 
 // Returns a populated ImageListEntryInfo struct from an input struct
@@ -92,7 +94,7 @@ type DeleteImageListEntryInput struct {
 	// The name of the Image List
 	Name string
 	// Version number of these machineImages in the imagelist.
-	Version string
+	Version int
 }
 
 func (c *ImageListEntriesClient) DeleteImageListEntry(input *DeleteImageListEntryInput) error {
@@ -100,14 +102,14 @@ func (c *ImageListEntriesClient) DeleteImageListEntry(input *DeleteImageListEntr
 	return c.deleteResource("")
 }
 
-func (c *ImageListEntriesClient) updateClientPaths(name, version string) {
+func (c *ImageListEntriesClient) updateClientPaths(name string, version int) {
 	var containerPath, resourcePath string
 	name = c.getQualifiedName(name)
 	containerPath = ImageListEntryContainerPath + name + "/entry/"
 	resourcePath = ImageListEntryContainerPath + name + "/entry"
-	if version != "" {
-		containerPath = containerPath + version
-		resourcePath = resourcePath + "/" + version
+	if version != -1 {
+		containerPath = fmt.Sprintf("%s%d", containerPath, version)
+		resourcePath = fmt.Sprintf("%s/%d", resourcePath, version)
 	}
 	c.ContainerPath = containerPath
 	c.ResourceRootPath = resourcePath
