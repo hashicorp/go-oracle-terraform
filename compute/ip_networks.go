@@ -68,7 +68,7 @@ type CreateIPNetworkInput struct {
 	//that have non-overlapping addresses, so that instances on these networks can exchange packets
 	//with each other without NAT.
 	// Optional
-	IPNetworkExchange string `json:"ipNetworkExchange"`
+	IPNetworkExchange string `json:"ipNetworkExchange,omitempty"`
 
 	// Description of the IPNetwork
 	// Optional
