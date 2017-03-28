@@ -31,7 +31,7 @@ type IPNetworkInfo struct {
 	// The CIDR IPv4 prefix associated with the IP Network
 	IPAddressPrefix string `json:"ipAddressPrefix"`
 	// Name of the IP Network Exchange associated with the IP Network
-	IPNetworkExchange string `json:"ipNetworkExchange"`
+	IPNetworkExchange string `json:"ipNetworkExchange,omitempty"`
 	// Description of the IP Network
 	Description string `json:"description"`
 	// Whether public internet access was enabled using NAPT for VNICs without any public IP reservation
