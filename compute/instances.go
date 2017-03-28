@@ -192,6 +192,9 @@ type CreateInstanceInput struct {
 	// A list of the SSH public keys that you want to associate with the instance.
 	// Optional
 	SSHKeys []string `json:"sshkeys"`
+	// A list of tags to be supplied to the instance
+	// Optional
+	Tags []string `json:"tags"`
 }
 
 type StorageAttachmentInput struct {
