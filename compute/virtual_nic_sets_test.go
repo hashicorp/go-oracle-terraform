@@ -5,6 +5,8 @@ import (
 	"reflect"
 	"testing"
 
+	"sort"
+
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
 )
@@ -37,6 +39,7 @@ func TestAccVirtNICSetsLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
 	// Verify they're the same
 	if createdSet.Name != returnedSet.Name {
 		t.Fatalf("Mismatched Sets found.\nExpected: %+v\nReceived: %+v", createdSet, returnedSet)
@@ -65,6 +68,11 @@ func TestAccVirtNICSetsLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	// Need to sort slices, for ordering. The Provider takes care of this at the end-user level, but for
+	// testing these can be out of whack when returned from the API
+	sort.Strings(updatedSet.Tags)
+	sort.Strings(returnedSet.Tags)
 
 	if !reflect.DeepEqual(updatedSet, returnedSet) {
 		t.Fatalf("Mismatched Sets found.\nExpected: %+v\nReceived: %+v", updatedSet, returnedSet)
@@ -159,6 +167,10 @@ func TestAccVirtNICSetsAddNICS(t *testing.T) {
 		t.Fatalf("Expected 2 sets of virtual nics, got: %d", len(returnedSet.VirtualNICs))
 	}
 
+	// Sort slices
+	sort.Strings(createdSet.VirtualNICs)
+	sort.Strings(returnedSet.VirtualNICs)
+
 	// Verify that the vNICs in the returned set are populated
 	if !reflect.DeepEqual(createdSet, returnedSet) {
 		t.Fatalf("Mismatch Found!\nExpected: %+v\nReceived: %+v", createdSet, returnedSet)
@@ -182,6 +194,10 @@ func TestAccVirtNICSetsAddNICS(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	// Sort slices
+	sort.Strings(updatedSet.VirtualNICs)
+	sort.Strings(returnedSet.VirtualNICs)
 
 	// Verify that the vNICs in the returned set are populated
 	if !reflect.DeepEqual(updatedSet, returnedSet) {
