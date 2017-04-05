@@ -18,7 +18,7 @@ const (
 func TestAccIPAddressAssociationsLifeCycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
-	iClient, nClient, vnClient, err := getVirtNICsTestClients()
+	iClient, nClient, vnClient, iprClient, ipaClient, err := getIPAssociationTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -53,17 +53,12 @@ func TestAccIPAddressAssociationsLifeCycle(t *testing.T) {
 	defer tearDownInstances(t, iClient, createdInstance.Name, createdInstance.ID)
 
 	// Use the static "eth0" interface, as we statically created that above
-	createdVNIC := createdInstance.Networking["eth0"].Vnic
-	getVNICInput := &GetVirtualNICInput{
-		Name: createdVNIC,
+	createdVnic := createdInstance.Networking["eth0"].Vnic
+	getVnicInput := &GetVirtualNICInput{
+		Name: createdVnic,
 	}
 
-	vNIC, err := vnClient.GetVirtualNIC(getVNICInput)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	ipaClient, err := getIPAddressReservationsTestClients()
+	vNIC, err := vnClient.GetVirtualNIC(getVnicInput)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -77,36 +72,31 @@ func TestAccIPAddressAssociationsLifeCycle(t *testing.T) {
 		Tags:          []string{_TestIPAddressResTag},
 	}
 
-	ipRes, err := ipaClient.CreateIPAddressReservation(input)
+	ipRes, err := iprClient.CreateIPAddressReservation(input)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer destroyIPAddressReservation(t, ipaClient, resName)
-
-	svc, err := getIPAddressAssociationsClient()
-	if err != nil {
-		t.Fatal(err)
-	}
+	defer destroyIPAddressReservation(t, iprClient, resName)
 
 	createInput := &CreateIPAddressAssociationInput{
 		Name:                 _IPAddressAssociationTestName,
 		Description:          _IPAddressAssociationTestDescription,
 		IPAddressReservation: ipRes.Name,
-		VNIC:                 vNIC.Name,
+		Vnic:                 vNIC.Name,
 		Tags:                 []string{"testing"},
 	}
 
-	createdIPAddressAssociation, err := svc.CreateIPAddressAssociation(createInput)
+	createdIPAddressAssociation, err := ipaClient.CreateIPAddressAssociation(createInput)
 	if err != nil {
 		t.Fatal(err)
 	}
+  defer destroyIPAddressAssociation(t, ipaClient, _IPAddressAssociationTestName)
 	log.Print("IP Address Association succcessfully created")
-	defer destroyIPAddressAssociation(t, svc, _IPAddressAssociationTestName)
 
 	getInput := &GetIPAddressAssociationInput{
 		Name: _IPAddressAssociationTestName,
 	}
-	receivedIPAddressAssociation, err := svc.GetIPAddressAssociation(getInput)
+	receivedIPAddressAssociation, err := ipaClient.GetIPAddressAssociation(getInput)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -115,8 +105,8 @@ func TestAccIPAddressAssociationsLifeCycle(t *testing.T) {
 	if !reflect.DeepEqual(createdIPAddressAssociation, receivedIPAddressAssociation) {
 		t.Fatalf("Mismatch found after create.\nExpected: %+v\nReceived: %+v", createdIPAddressAssociation, receivedIPAddressAssociation)
 	}
-	if receivedIPAddressAssociation.VNIC != vNIC.Name {
-		t.Fatalf("VNIC Mismatch found after create.\nExpected: %+v\nReceived: %+v", vNIC.Name, receivedIPAddressAssociation.VNIC)
+	if receivedIPAddressAssociation.Vnic != vNIC.Name {
+		t.Fatalf("Vnic Mismatch found after create.\nExpected: %+v\nReceived: %+v", vNIC.Name, receivedIPAddressAssociation.Vnic)
 	}
 	if receivedIPAddressAssociation.IPAddressReservation != ipRes.Name {
 		t.Fatalf("IPAddressReservation Mismatch found after create.\nExpected: %+v\nReceived: %+v", ipRes.Name, receivedIPAddressAssociation.IPAddressReservation)
@@ -126,15 +116,15 @@ func TestAccIPAddressAssociationsLifeCycle(t *testing.T) {
 		Name:                 _IPAddressAssociationTestName,
 		Description:          _IPAddressAssociationTestDescription,
 		IPAddressReservation: ipRes.Name,
-		VNIC:                 vNIC.Name,
+		Vnic:                 vNIC.Name,
 		Tags:                 []string{"testing-updated"},
 	}
-	updatedIPAddressAssociation, err := svc.UpdateIPAddressAssociation(updateInput)
+	updatedIPAddressAssociation, err := ipaClient.UpdateIPAddressAssociation(updateInput)
 	if err != nil {
 		t.Fatal(err)
 	}
 	log.Print("IP Address Association succcessfully updated")
-	receivedIPAddressAssociation, err = svc.GetIPAddressAssociation(getInput)
+	receivedIPAddressAssociation, err = ipaClient.GetIPAddressAssociation(getInput)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -144,20 +134,19 @@ func TestAccIPAddressAssociationsLifeCycle(t *testing.T) {
 	}
 }
 
-func destroyIPAddressAssociation(t *testing.T, svc *IPAddressAssociationsClient, name string) {
+func destroyIPAddressAssociation(t *testing.T, ipaClient *IPAddressAssociationsClient, name string) {
 	input := &DeleteIPAddressAssociationInput{
 		Name: name,
 	}
-	if err := svc.DeleteIPAddressAssociation(input); err != nil {
+	if err := ipaClient.DeleteIPAddressAssociation(input); err != nil {
 		t.Fatal(err)
 	}
 }
 
-func getIPAddressAssociationsClient() (*IPAddressAssociationsClient, error) {
+func getIPAssociationTestClients() (*InstancesClient, *IPNetworksClient, *VirtNICsClient, *IPAddressReservationsClient, *IPAddressAssociationsClient, error) {
 	client, err := getTestClient(&opc.Config{})
 	if err != nil {
-		return nil, err
+		return nil, nil, nil, nil, nil, err
 	}
-
-	return client.IPAddressAssociations(), nil
+	return client.Instances(), client.IPNetworks(), client.VirtNICs(), client.IPAddressReservations(), client.IPAddressAssociations(), nil
 }

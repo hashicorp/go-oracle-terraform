@@ -29,7 +29,7 @@ type IPAddressAssociationInfo struct {
 	// The name of the NAT IP address reservation.
 	IPAddressReservation string `json:"ipAddressReservation"`
 	// Name of the virtual NIC associated with this NAT IP reservation.
-	VNIC string `json:"vnic"`
+	Vnic string `json:"vnic"`
 	// The name of the IP Address Association
 	Name string `json:"name"`
 	// Description of the IP Address Association
@@ -52,7 +52,7 @@ type CreateIPAddressAssociationInput struct {
 
 	// Name of the virtual NIC associated with this NAT IP reservation.
 	// Optional
-	VNIC string `json:"vnic,omitempty"`
+	Vnic string `json:"vnic,omitempty"`
 
 	// Description of the IPAddressAssociation
 	// Optional
@@ -68,7 +68,7 @@ type CreateIPAddressAssociationInput struct {
 func (c *IPAddressAssociationsClient) CreateIPAddressAssociation(input *CreateIPAddressAssociationInput) (*IPAddressAssociationInfo, error) {
 	input.Name = c.getQualifiedName(input.Name)
 	input.IPAddressReservation = c.getQualifiedName(input.IPAddressReservation)
-	input.VNIC = c.getQualifiedName(input.VNIC)
+	input.Vnic = c.getQualifiedName(input.Vnic)
 
 	var ipInfo IPAddressAssociationInfo
 	if err := c.createResource(&input, &ipInfo); err != nil {
@@ -109,7 +109,7 @@ type UpdateIPAddressAssociationInput struct {
 
 	// Name of the virtual NIC associated with this NAT IP reservation.
 	// Optional
-	VNIC string `json:"vnic,omitempty"`
+	Vnic string `json:"vnic,omitempty"`
 
 	// Description of the IPAddressAssociation
 	// Optional
@@ -124,7 +124,7 @@ type UpdateIPAddressAssociationInput struct {
 func (c *IPAddressAssociationsClient) UpdateIPAddressAssociation(updateInput *UpdateIPAddressAssociationInput) (*IPAddressAssociationInfo, error) {
 	updateInput.Name = c.getQualifiedName(updateInput.Name)
 	updateInput.IPAddressReservation = c.getQualifiedName(updateInput.IPAddressReservation)
-	updateInput.VNIC = c.getQualifiedName(updateInput.VNIC)
+	updateInput.Vnic = c.getQualifiedName(updateInput.Vnic)
 	var ipInfo IPAddressAssociationInfo
 	if err := c.updateResource(updateInput.Name, updateInput, &ipInfo); err != nil {
 		return nil, err
@@ -146,7 +146,7 @@ func (c *IPAddressAssociationsClient) DeleteIPAddressAssociation(input *DeleteIP
 // Unqualifies any qualified fields in the IPAddressAssociationInfo struct
 func (c *IPAddressAssociationsClient) success(info *IPAddressAssociationInfo) (*IPAddressAssociationInfo, error) {
 	c.unqualify(&info.Name)
-	c.unqualify(&info.VNIC)
+	c.unqualify(&info.Vnic)
 	c.unqualify(&info.IPAddressReservation)
 	return info, nil
 }
