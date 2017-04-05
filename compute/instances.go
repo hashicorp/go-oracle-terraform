@@ -543,11 +543,10 @@ func (c *InstancesClient) unqualifyNat(nat []string) []string {
 func (c *InstancesClient) unqualifyStorage(attachments []StorageAttachment) []StorageAttachment {
 	unqAttachments := []StorageAttachment{}
 	for _, v := range attachments {
-		unq := v
 		if v.StorageVolumeName != "" {
-			unq.StorageVolumeName = c.getUnqualifiedName(v.StorageVolumeName)
+			v.StorageVolumeName = c.getUnqualifiedName(v.StorageVolumeName)
 		}
-		unqAttachments = append(unqAttachments, unq)
+		unqAttachments = append(unqAttachments, v)
 	}
 
 	return unqAttachments
