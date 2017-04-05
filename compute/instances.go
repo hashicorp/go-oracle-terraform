@@ -365,6 +365,7 @@ func (c *InstancesClient) GetInstance(input *GetInstanceInput) (*InstanceInfo, e
 	responseBody.SSHKeys = sshKeyNames
 
 	responseBody.Networking = c.unqualifyNetworking(responseBody.Networking)
+	responseBody.Storage = c.unqualifyStorage(responseBody.Storage)
 
 	return &responseBody, nil
 }
@@ -537,4 +538,17 @@ func (c *InstancesClient) unqualifyNat(nat []string) []string {
 		unQualifiedNats = append(unQualifiedNats, c.getUnqualifiedName(u))
 	}
 	return unQualifiedNats
+}
+
+func (c *InstancesClient) unqualifyStorage(attachments []StorageAttachment) []StorageAttachment {
+	unqAttachments := []StorageAttachment{}
+	for _, v := range attachments {
+		unq := v
+		if v.StorageVolumeName != "" {
+			unq.StorageVolumeName = c.getUnqualifiedName(v.StorageVolumeName)
+		}
+		unqAttachments = append(unqAttachments, unq)
+	}
+
+	return unqAttachments
 }
