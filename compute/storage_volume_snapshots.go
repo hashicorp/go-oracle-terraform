@@ -216,6 +216,8 @@ func (c *StorageVolumeSnapshotClient) waitForStorageSnapshotAvailable(name strin
 				result = res
 				if strings.ToLower(result.Status) == "completed" {
 					return true, nil
+				} else if strings.ToLower(result.Status) == "error" {
+					return false, fmt.Errorf("Snapshot '%s' failed to create successfully. Status: %s Status Detail: %s", result.Name, result.Status, result.StatusDetail)
 				}
 			}
 
