@@ -13,7 +13,7 @@ func (c *Client) debugLogString(str string) {
 	if c.loglevel != opc.LogDebug {
 		return
 	}
-	c.logger.Log(fmt.Sprintf("[DEBUG]: %s", str))
+	c.logger.Log(fmt.Sprintf("%s", str))
 }
 
 func (c *Client) debugLogReq(req *http.Request) {
