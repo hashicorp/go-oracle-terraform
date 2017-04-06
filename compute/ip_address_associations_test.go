@@ -90,7 +90,7 @@ func TestAccIPAddressAssociationsLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-  defer destroyIPAddressAssociation(t, ipaClient, _IPAddressAssociationTestName)
+	defer destroyIPAddressAssociation(t, ipaClient, _IPAddressAssociationTestName)
 	log.Print("IP Address Association succcessfully created")
 
 	getInput := &GetIPAddressAssociationInput{
