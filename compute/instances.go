@@ -340,11 +340,8 @@ func (c *InstancesClient) GetInstance(input *GetInstanceInput) (*InstanceInfo, e
 		return nil, errors.New("Both instance name and ID need to be specified")
 	}
 
-	var (
-		responseBody InstanceInfo
-		err          error
-	)
-	if err = c.getResource(input.String(), &responseBody); err != nil {
+	var responseBody InstanceInfo
+	if err := c.getResource(input.String(), &responseBody); err != nil {
 		return nil, err
 	}
 
@@ -367,9 +364,10 @@ func (c *InstancesClient) GetInstance(input *GetInstanceInput) (*InstanceInfo, e
 	}
 	responseBody.SSHKeys = sshKeyNames
 
-	responseBody.Networking, err = c.unqualifyNetworking(responseBody.Networking)
-	if err != nil {
-		return nil, err
+	var networkingErr error
+	responseBody.Networking, networkingErr = c.unqualifyNetworking(responseBody.Networking)
+	if networkingErr != nil {
+		return nil, networkingErr
 	}
 	responseBody.Storage = c.unqualifyStorage(responseBody.Storage)
 
@@ -545,7 +543,7 @@ func (c *InstancesClient) unqualifyNat(nat []string) ([]string, error) {
 		}
 		n := strings.Split(v, ":")
 		if len(n) < 1 {
-			return nil, fmt.Errorf("Error unqualifying nats")
+			return nil, fmt.Errorf("Error unqualifying NAT: %s", v)
 		}
 		u := n[1]
 		unQualifiedNats = append(unQualifiedNats, c.getUnqualifiedName(u))
