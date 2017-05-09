@@ -52,6 +52,16 @@ func (c *SSHKeysClient) CreateSSHKey(createInput *CreateSSHKeyInput) (*SSHKey, e
 		return nil, err
 	}
 
+	updateSSHKeyInput := UpdateSSHKeyInput{
+		Name:    createInput.Name,
+		Key:     createInput.Key,
+		Enabled: createInput.Enabled,
+	}
+	_, err := c.UpdateSSHKey(&updateSSHKeyInput)
+	if err != nil {
+		return nil, err
+	}
+
 	return c.success(&keyInfo)
 }
 

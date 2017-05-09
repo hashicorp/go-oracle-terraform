@@ -39,8 +39,8 @@ func TestAccSSHKeyLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if sshKey.Key != getSSHKeyOutput.Key {
-		t.Fatalf("Created and retrived keys don't match %s %s\n", sshKey.Key, getSSHKeyOutput.Key)
+	if createSSHKeyInput.Key != getSSHKeyOutput.Key {
+		t.Fatalf("Created and retrived keys don't match %s\n%s\n", createSSHKeyInput.Key, getSSHKeyOutput.Key)
 	}
 	log.Printf("Successfully retrieved ssh key\n")
 
