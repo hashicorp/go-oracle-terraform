@@ -91,12 +91,13 @@ func TestAccInstanceLifeCycle(t *testing.T) {
 	}
 
 	expectedInstance := &InstanceInfo{
-		Name:        _InstanceTestName,
-		Label:       _InstanceTestLabel,
-		Shape:       _InstanceTestShape,
-		ImageList:   _InstanceTestImage,
-		Entry:       1,
-		ImageFormat: "raw",
+		Name:         _InstanceTestName,
+		Label:        _InstanceTestLabel,
+		Shape:        _InstanceTestShape,
+		ImageList:    _InstanceTestImage,
+		DesiredState: "running",
+		Entry:        1,
+		ImageFormat:  "raw",
 		PlacementRequirements: []string{
 			"/system/compute/placement/default",
 			"/system/compute/allow_instances",
@@ -113,30 +114,211 @@ func TestAccInstanceLifeCycle(t *testing.T) {
 		Virtio:        false,
 	}
 
+	if err := verifyInstance(expectedInstance, receivedInstance, ipRes, ipNetwork); err != nil {
+		t.Fatal(err)
+	}
+
+	updateInput := &UpdateInstanceInput{
+		Name: createdInstance.Name,
+		ID:   createdInstance.ID,
+		Tags: []string{"new_tag1", "new_tag2"},
+	}
+
+	updatedInstance, err := iClient.UpdateInstance(updateInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	getInput = &GetInstanceInput{
+		Name: updatedInstance.Name,
+		ID:   updatedInstance.ID,
+	}
+
+	receivedInstance, err = iClient.GetInstance(getInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Update Expected instance + verify
+	expectedInstance.Tags = []string{"new_tag1", "new_tag2"}
+	if err := verifyInstance(expectedInstance, receivedInstance, ipRes, ipNetwork); err != nil {
+		t.Fatal(err)
+	}
+
+}
+
+// Test that we can shutdown and startup an instance
+func TestAccInstanceStopStart(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
+
+	// Setup Instance Client
+	iClient, _, _, err := getInstancesTestClients()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Setup Storage Clients and build bootable storage volume
+	client, err := getTestClient(&opc.Config{})
+	if err != nil {
+		t.Fatal(err)
+	}
+	sClient := client.StorageVolumes()
+	imageListClient := client.ImageList()
+	entryClient := client.ImageListEntries()
+
+	// Create Image List
+	imageListInput := &CreateImageListInput{
+		Name:        _InstanceTestName,
+		Description: "Testing Bootable Instance Reboot",
+		Default:     1,
+	}
+	createdImageList, err := imageListClient.CreateImageList(imageListInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tearDownImageList(t, imageListClient, _InstanceTestName)
+
+	// Create Image List Entry
+	createEntryInput := &CreateImageListEntryInput{
+		Name:          _InstanceTestName,
+		MachineImages: []string{_InstanceTestImage},
+		Version:       1,
+	}
+
+	createdListEntry, err := entryClient.CreateImageListEntry(createEntryInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer destroyImageListEntry(t, entryClient, createdListEntry)
+
+	// Create the bootable storage volume
+	volumeName := fmt.Sprintf("%s-volume", _InstanceTestName)
+	volumeInput := &CreateStorageVolumeInput{
+		Name:           volumeName,
+		Size:           "20",
+		ImageList:      createdImageList.Name,
+		ImageListEntry: createdListEntry.Version,
+		Bootable:       true,
+		Properties:     []string{string(StorageVolumeKindDefault)},
+	}
+
+	storageVolume, err := sClient.CreateStorageVolume(volumeInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tearDownStorageVolumes(t, sClient, volumeName)
+
+	// Finally, create Basic Testing Instance with a root storage volume
+	input := &CreateInstanceInput{
+		Name:      _InstanceTestName,
+		Label:     _InstanceTestLabel,
+		Shape:     _InstanceTestShape,
+		BootOrder: []int{1},
+		//ImageList: _InstanceTestImage,
+		Storage: []StorageAttachmentInput{
+			{
+				Index:  1,
+				Volume: storageVolume.Name,
+			},
+		},
+	}
+
+	createdInstance, err := iClient.CreateInstance(input)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tearDownInstances(t, iClient, createdInstance.Name, createdInstance.ID)
+	log.Printf("Instance Created: %#v\n", createdInstance)
+
+	// Instance is created, time to shut it down
+	updateInput := &UpdateInstanceInput{
+		Name:         createdInstance.Name,
+		ID:           createdInstance.ID,
+		DesiredState: InstanceDesiredShutdown,
+	}
+
+	updatedInstance, err := iClient.UpdateInstance(updateInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	getInput := &GetInstanceInput{
+		Name: updatedInstance.Name,
+		ID:   updatedInstance.ID,
+	}
+
+	info, err := iClient.GetInstance(getInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if info.DesiredState != InstanceDesiredShutdown {
+		t.Fatalf("Instance desired state should be `shutdown`, got: %s", info.DesiredState)
+	}
+
+	// Verify the instance is actually shut down
+	if info.State != InstanceShutdown {
+		t.Fatalf("Instance should be in the `shutdown` state, got: %s", info.State)
+	}
+
+	// Instance is verified to be shutdown, spin it back up
+	rebootInput := &UpdateInstanceInput{
+		Name:         updatedInstance.Name,
+		ID:           updatedInstance.ID,
+		DesiredState: InstanceDesiredRunning,
+	}
+
+	rebootedInstance, err := iClient.UpdateInstance(rebootInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	getInput = &GetInstanceInput{
+		Name: rebootedInstance.Name,
+		ID:   rebootedInstance.ID,
+	}
+
+	info, err = iClient.GetInstance(getInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if info.DesiredState != InstanceDesiredRunning {
+		t.Fatalf("Instance desired state should be `running`, got: %s", info.DesiredState)
+	}
+
+	if info.State != InstanceRunning {
+		t.Fatalf("Instance should be in the `running` state, got: %s", info.State)
+	}
+	// All pass, let defer cleanup instance
+}
+
+func verifyInstance(expected, received *InstanceInfo, ipRes *IPAddressReservation, ipNetwork *IPNetworkInfo) error {
 	// Verify Networking before zero
-	if receivedInstance.Networking["eth1"].Model != "e1000" {
-		t.Fatalf("Expected Networking model to be e1000, got: %s", receivedInstance.Networking["eth1"].Model)
+	if received.Networking["eth1"].Model != "e1000" {
+		return fmt.Errorf("Expected Networking model to be e1000, got: %s", received.Networking["eth1"].Model)
 	}
 
-	if receivedInstance.Networking["eth0"].IPNetwork != ipNetwork.Name {
-		t.Fatalf("Expected IPNetwork name %s, got: %s", ipNetwork.Name, receivedInstance.Networking["eth0"].IPNetwork)
+	if received.Networking["eth0"].IPNetwork != ipNetwork.Name {
+		return fmt.Errorf("Expected IPNetwork name %s, got: %s", ipNetwork.Name, received.Networking["eth0"].IPNetwork)
 	}
 
-	if diff := pretty.Compare(receivedInstance.Networking["eth0"].Nat, []string{ipRes.Name}); diff != "" {
-		t.Fatalf("Networking Diff: (-got +want)\n%s", diff)
+	if diff := pretty.Compare(received.Networking["eth0"].Nat, []string{ipRes.Name}); diff != "" {
+		return fmt.Errorf("Networking Diff: (-got +want)\n%s", diff)
 	}
 
 	// Zero the fields we can't statically check for
-	receivedInstance.zeroFields()
+	received.zeroFields()
 
-	if diff := pretty.Compare(receivedInstance, expectedInstance); diff != "" {
-		t.Errorf("Created Instance Diff: (-got +want)\n%s", diff)
+	if diff := pretty.Compare(received, expected); diff != "" {
+		return fmt.Errorf("Created Instance Diff: (-got +want)\n%s", diff)
 	}
 	// Verify
-	if !receivedInstance.ReverseDNS {
-		t.Fatal("Expected ReverseDNS to have default 'true' value. Got False")
+	if !received.ReverseDNS {
+		return fmt.Errorf("Expected ReverseDNS to have default 'true' value. Got False")
 	}
 
+	return nil
 }
 
 func tearDownInstances(t *testing.T, svc *InstancesClient, name, id string) {
