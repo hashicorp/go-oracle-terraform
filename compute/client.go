@@ -14,6 +14,7 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/opc"
 )
 
+const CMP_ACME = "/Compute-%s"
 const CMP_USERNAME = "/Compute-%s/%s"
 const CMP_QUALIFIED_NAME = "%s/%s"
 
@@ -137,6 +138,10 @@ func (c *Client) formatURL(path *url.URL) string {
 	return c.apiEndpoint.ResolveReference(path).String()
 }
 
+func (c *Client) getACME() string {
+	return fmt.Sprintf(CMP_ACME, *c.identityDomain)
+}
+
 func (c *Client) getUserName() string {
 	return fmt.Sprintf(CMP_USERNAME, *c.identityDomain, *c.userName)
 }
@@ -151,6 +156,16 @@ func (c *Client) getQualifiedName(name string) string {
 		return name
 	}
 	return fmt.Sprintf(CMP_QUALIFIED_NAME, c.getUserName(), name)
+}
+
+func (c *Client) getQualifiedACMEName(name string) string {
+	if name == "" {
+		return ""
+	}
+	if strings.HasPrefix(name, "/Compute-") {
+		return name
+	}
+	return fmt.Sprintf(CMP_QUALIFIED_NAME, c.getACME(), name)
 }
 
 func (c *Client) getObjectPath(root, name string) string {
@@ -170,7 +185,7 @@ func (c *Client) getUnqualifiedName(name string) string {
 	}
 
 	nameParts := strings.Split(name, "/")
-	return strings.Join(nameParts[3:], "/")
+	return strings.Join(nameParts[len(nameParts):], "/")
 }
 
 func (c *Client) unqualify(names ...*string) {

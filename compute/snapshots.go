@@ -70,9 +70,11 @@ type CreateSnapshotInput struct {
 
 // CreateSnapshot creates a new Snapshot
 func (c *SnapshotsClient) CreateSnapshot(createInput *CreateSnapshotInput) (*Snapshot, error) {
-	var snapshotInfo Snapshot
-	createInput.Name = c.getQualifiedName(createInput.Name)
   createInput.Account = c.getQualifiedACMEName(createInput.Account)
+	createInput.Instance = c.getQualifiedName(createInput.Instance)
+	createInput.MachineImage = c.getQualifiedName(createInput.MachineImage)
+
+	var snapshotInfo Snapshot
 	if err := c.createResource(&createInput, &snapShot); err != nil {
 		return nil, err
 	}
@@ -82,12 +84,13 @@ func (c *SnapshotsClient) CreateSnapshot(createInput *CreateSnapshotInput) (*Sna
 
 // GetSnapshotInput describes the snapshot to get
 type GetSnapshotInput struct {
-	// The three-part name of the Snapshot (/Compute-identity_domain/user/object).
+	// The name of the Snapshot (/Compute-identity_domain/user/object).
 	Name string `json:name`
 }
 
 // GetSnapshot retrieves the Snapshot with the given name.
 func (c *SnapshotsClient) GetSnapshot(getInput *GetSnapshotInput) (*Snapshot, error) {
+	getInput.
 	var snapshotInfo Snapshot
 	if err := c.getResource(getInput.Name, &snapshotInfo); err != nil {
 		return nil, err
@@ -98,6 +101,7 @@ func (c *SnapshotsClient) GetSnapshot(getInput *GetSnapshotInput) (*Snapshot, er
 
 // DeleteSnapshotInput describes the snapshot to delete
 type DeleteSnapshotInput struct {
+
 }
 
 // DeleteSnapshot deletes the Snapshot with the given name.
@@ -105,7 +109,10 @@ func (c *SnapshotsClient) DeleteSnapshot(deleteInput *DeleteSnapshotInput) error
 	return c.deleteResource(deleteInput.Name)
 }
 
-func (c *SnapshotsClient) success(snapshot *Snapshot) (*Snapshot, error) {
-	c.unqualify(&snapshot.Name)
+func (c *SnapshotsClient) success(snapshotInfo *Snapshot) (*Snapshot, error) {
+	c.unqualify(&snapshotInfo.Account)
+	c.unqualify(&snapshotInfo.Instance)
+	c.unqualify(&snapshotInfo.MachineImage)
+	c.unqualify(&snapshotInfo.Name)
 	return keyInfo, nil
 }
