@@ -152,19 +152,10 @@ func TestAccInstanceStopStart(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
 	// Setup Instance Client
-	iClient, _, _, err := getInstancesTestClients()
+	iClient, sClient, lClient, eClient, err := getInstanceStartStopTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	// Setup Storage Clients and build bootable storage volume
-	client, err := getTestClient(&opc.Config{})
-	if err != nil {
-		t.Fatal(err)
-	}
-	sClient := client.StorageVolumes()
-	imageListClient := client.ImageList()
-	entryClient := client.ImageListEntries()
 
 	// Create Image List
 	imageListInput := &CreateImageListInput{
@@ -172,11 +163,11 @@ func TestAccInstanceStopStart(t *testing.T) {
 		Description: "Testing Bootable Instance Reboot",
 		Default:     1,
 	}
-	createdImageList, err := imageListClient.CreateImageList(imageListInput)
+	createdImageList, err := lClient.CreateImageList(imageListInput)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer tearDownImageList(t, imageListClient, _InstanceTestName)
+	defer tearDownImageList(t, lClient, _InstanceTestName)
 
 	// Create Image List Entry
 	createEntryInput := &CreateImageListEntryInput{
@@ -185,11 +176,11 @@ func TestAccInstanceStopStart(t *testing.T) {
 		Version:       1,
 	}
 
-	createdListEntry, err := entryClient.CreateImageListEntry(createEntryInput)
+	createdListEntry, err := eClient.CreateImageListEntry(createEntryInput)
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer destroyImageListEntry(t, entryClient, createdListEntry)
+	defer destroyImageListEntry(t, eClient, createdListEntry)
 
 	// Create the bootable storage volume
 	volumeName := fmt.Sprintf("%s-volume", _InstanceTestName)
@@ -214,7 +205,6 @@ func TestAccInstanceStopStart(t *testing.T) {
 		Label:     _InstanceTestLabel,
 		Shape:     _InstanceTestShape,
 		BootOrder: []int{1},
-		//ImageList: _InstanceTestImage,
 		Storage: []StorageAttachmentInput{
 			{
 				Index:  1,
@@ -338,6 +328,17 @@ func getInstancesTestClients() (*InstancesClient, *IPAddressReservationsClient, 
 	}
 
 	return client.Instances(), client.IPAddressReservations(), client.IPNetworks(), nil
+}
+
+func getInstanceStartStopTestClients() (*InstancesClient,
+	*StorageVolumeClient, *ImageListClient, *ImageListEntriesClient, error) {
+
+	client, err := getTestClient(&opc.Config{})
+	if err != nil {
+		return nil, nil, nil, nil, err
+	}
+
+	return client.Instances(), client.StorageVolumes(), client.ImageList(), client.ImageListEntries(), nil
 }
 
 // Zero fields that we cannot check with a static struct
