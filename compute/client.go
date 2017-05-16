@@ -185,7 +185,7 @@ func (c *Client) getUnqualifiedName(name string) string {
 	}
 
 	nameParts := strings.Split(name, "/")
-	return strings.Join(nameParts[len(nameParts):], "/")
+	return strings.Join(nameParts[3:], "/")
 }
 
 func (c *Client) unqualify(names ...*string) {

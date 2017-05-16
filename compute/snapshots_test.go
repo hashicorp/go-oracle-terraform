@@ -3,6 +3,7 @@ package compute
 import (
 	"log"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
@@ -32,15 +33,6 @@ func TestAccSnapshotLifeCycle(t *testing.T) {
 		Label:     _SnapshotInstanceTestLabel,
 		Shape:     _SnapshotInstanceTestShape,
 		ImageList: _SnapshotInstanceTestImage,
-		Storage:   nil,
-		BootOrder: nil,
-		SSHKeys:   []string{},
-		Attributes: map[string]interface{}{
-			"attr1": 12,
-			"attr2": map[string]interface{}{
-				"inner_attr1": "foo",
-			},
-		},
 	}
 
 	createdInstance, err := iClient.CreateInstance(instanceInput)
@@ -48,16 +40,17 @@ func TestAccSnapshotLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer tearDownInstances(t, iClient, createdInstance.Name, createdInstance.ID)
-
 	createSnapshotInput := &CreateSnapshotInput{
-		Instance:     _SnapshotInstanceTestName,
+		Account:      "cloud_storage",
+		Instance:     strings.Join([]string{createdInstance.Name, createdInstance.ID}, "/"),
 		MachineImage: _SnapshotInstanceTestName,
 	}
 	createdSnapshot, err := sClient.CreateSnapshot(createSnapshotInput)
 	if err != nil {
+		// t.Fatal(fmt.Sprintf("Snapshot: %+v", createSnapshotInput))
 		t.Fatal(err)
 	}
-	defer tearDownSnapshots(t, sClient, createdSnapshot.Name)
+	defer tearDownSnapshots(t, sClient, createdInstance.Name)
 
 	getInput := &GetSnapshotInput{
 		Name: createdSnapshot.Name,
