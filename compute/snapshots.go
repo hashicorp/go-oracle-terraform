@@ -53,7 +53,7 @@ type CreateSnapshotInput struct {
 	// Oracle Storage Cloud Service. The machine image file is uploaded to the Oracle
 	// Storage Cloud Service account that you specify.
 	// Optional
-	Account string `json:"account"`
+	Account string `json:"account,omitempty"`
 	// Use this option when you want to preserve the custom changes you have made
 	// to an instance before deleting the instance. The only permitted value is shutdown.
 	// Snapshot of the instance is not taken immediately. It creates a machine image which
@@ -62,7 +62,7 @@ type CreateSnapshotInput struct {
 	// snapshot request on that instance goes into error state. You must delete the instance
 	// (DELETE /instance/{name}).
 	// Optional
-	Delay string `json:"delay"`
+	Delay string `json:"delay,omitempty"`
 	// Name of the instance that you want to clone.
 	// Required
 	Instance string `json:"instance"`
@@ -71,7 +71,7 @@ type CreateSnapshotInput struct {
 	// Object names are case-sensitive.
 	// If you don't specify a name for this object, then the name is generated automatically.
 	// Optional
-	MachineImage string `json:"machineimage"`
+	MachineImage string `json:"machineimage,omitempty"`
 }
 
 // CreateSnapshot creates a new Snapshot

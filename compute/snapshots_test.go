@@ -1,10 +1,12 @@
 package compute
 
 import (
+	"fmt"
 	"log"
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
@@ -40,14 +42,16 @@ func TestAccSnapshotLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer tearDownInstances(t, iClient, createdInstance.Name, createdInstance.ID)
+
+	time.Sleep(300*time.Second)
 	createSnapshotInput := &CreateSnapshotInput{
-		Account:      "cloud_storage",
-		Instance:     strings.Join([]string{createdInstance.Name, createdInstance.ID}, "/"),
-		MachineImage: _SnapshotInstanceTestName,
+		//Account:      "cloud_storage",
+		Instance: strings.Join([]string{createdInstance.Name, createdInstance.ID}, "/"),
+		//MachineImage: _SnapshotInstanceTestName,
 	}
 	createdSnapshot, err := sClient.CreateSnapshot(createSnapshotInput)
 	if err != nil {
-		// t.Fatal(fmt.Sprintf("Snapshot: %+v", createSnapshotInput))
+		t.Fatal(fmt.Sprintf("Snapshot: %+v", createSnapshotInput))
 		t.Fatal(err)
 	}
 	defer tearDownSnapshots(t, sClient, createdInstance.Name)
