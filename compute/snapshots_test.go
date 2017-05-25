@@ -6,7 +6,6 @@ import (
 	"reflect"
 	"strings"
 	"testing"
-	"time"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
@@ -43,7 +42,6 @@ func TestAccSnapshotLifeCycle(t *testing.T) {
 	}
 	defer tearDownInstances(t, iClient, createdInstance.Name, createdInstance.ID)
 
-	time.Sleep(300*time.Second)
 	createSnapshotInput := &CreateSnapshotInput{
 		//Account:      "cloud_storage",
 		Instance: strings.Join([]string{createdInstance.Name, createdInstance.ID}, "/"),
