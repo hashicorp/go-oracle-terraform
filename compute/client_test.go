@@ -2,11 +2,9 @@ package compute
 
 import (
 	"fmt"
-	"testing"
-
 	"net/http"
-
 	"net/url"
+	"testing"
 
 	"github.com/hashicorp/go-oracle-terraform/opc"
 	"github.com/kylelemons/godebug/pretty"
