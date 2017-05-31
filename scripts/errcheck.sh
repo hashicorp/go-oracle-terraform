@@ -11,7 +11,7 @@ fi
 err_files=$(errcheck -ignoretests \
   -ignore 'bytes:.*' \
   -ignore 'io:Close|Write' \
-  ./...)
+  $(go list ./... | grep -v /vendor/))
 
 if [[ -n ${err_files} ]]; then
     echo 'Unchecked errors found in the following places:'
