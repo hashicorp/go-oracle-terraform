@@ -159,7 +159,7 @@ type CreateInstanceInput struct {
 	Attributes map[string]interface{} `json:"attributes"`
 	// Boot order list
 	// Optional
-	BootOrder []int `json:"boot_order"`
+	BootOrder []int `json:"boot_order,omitempty"`
 	// The host name assigned to the instance. On an Oracle Linux instance,
 	// this host name is displayed in response to the hostname command.
 	// Only relative DNS is supported. The domain name is suffixed to the host name
@@ -188,7 +188,7 @@ type CreateInstanceInput struct {
 	Shape string `json:"shape"`
 	// A list of the Storage Attachments you want to associate with the instance.
 	// Optional
-	Storage []StorageAttachmentInput `json:"storage_attachments"`
+	Storage []StorageAttachmentInput `json:"storage_attachments,omitempty"`
 	// A list of the SSH public keys that you want to associate with the instance.
 	// Optional
 	SSHKeys []string `json:"sshkeys"`

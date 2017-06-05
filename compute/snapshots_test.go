@@ -1,7 +1,6 @@
 package compute
 
 import (
-	"fmt"
 	"log"
 	"reflect"
 	"strings"
@@ -15,12 +14,13 @@ const (
 	_SnapshotInstanceTestName  = "test-acc-snapshot"
 	_SnapshotInstanceTestLabel = "test"
 	_SnapshotInstanceTestShape = "oc3"
-	_SnapshotInstanceTestImage = "/oracle/public/Oracle_Solaris_11.3"
+	_SnapshotInstanceTestImage = "/oracle/public/JEOS_OL_6.6_10GB_RD-1.2.217-20151201-194209"
 )
 
 func TestAccSnapshotLifeCycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
+	// sClient, iClient, vClient, imageListClient, entryClient, err := getSnapshotsTestClients()
 	sClient, iClient, err := getSnapshotsTestClients()
 	if err != nil {
 		t.Fatal(err)
@@ -34,6 +34,7 @@ func TestAccSnapshotLifeCycle(t *testing.T) {
 		Label:     _SnapshotInstanceTestLabel,
 		Shape:     _SnapshotInstanceTestShape,
 		ImageList: _SnapshotInstanceTestImage,
+		// Storage:   storageAttachments,
 	}
 
 	createdInstance, err := iClient.CreateInstance(instanceInput)
@@ -43,16 +44,14 @@ func TestAccSnapshotLifeCycle(t *testing.T) {
 	defer tearDownInstances(t, iClient, createdInstance.Name, createdInstance.ID)
 
 	createSnapshotInput := &CreateSnapshotInput{
-		//Account:      "cloud_storage",
-		Instance: strings.Join([]string{createdInstance.Name, createdInstance.ID}, "/"),
-		//MachineImage: _SnapshotInstanceTestName,
+		Instance:     strings.Join([]string{createdInstance.Name, createdInstance.ID}, "/"),
+		MachineImage: _SnapshotInstanceTestName,
 	}
 	createdSnapshot, err := sClient.CreateSnapshot(createSnapshotInput)
 	if err != nil {
-		t.Fatal(fmt.Sprintf("Snapshot: %+v", createSnapshotInput))
 		t.Fatal(err)
 	}
-	defer tearDownSnapshots(t, sClient, createdInstance.Name)
+	defer tearDownSnapshots(t, sClient, createdSnapshot.Name)
 
 	getInput := &GetSnapshotInput{
 		Name: createdSnapshot.Name,

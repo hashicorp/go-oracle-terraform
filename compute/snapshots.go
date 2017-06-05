@@ -1,5 +1,11 @@
 package compute
 
+import (
+	"fmt"
+)
+
+const WaitForSnapshotCompleteTimeout = 600
+
 // SnapshotsClient is a client for the Snapshot functions of the Compute API.
 type SnapshotsClient struct {
 	ResourceClient
@@ -16,6 +22,15 @@ func (c *Client) Snapshots() *SnapshotsClient {
 			ResourceRootPath:    "/snapshot",
 		}}
 }
+
+type SnapshotState string
+
+const (
+	SnapshotActive   SnapshotState = "active"
+	SnapshotComplete SnapshotState = "complete"
+	SnapshotQueued   SnapshotState = "queued"
+	SnapshotError    SnapshotState = "error"
+)
 
 type SnapshotDelay string
 
@@ -42,7 +57,7 @@ type Snapshot struct {
 	// Not used
 	Quota string `json:"quota"`
 	// The state of the request.
-	State string `json:"state"`
+	State SnapshotState `json:"state"`
 	// Uniform Resource Identifier
 	URI string `json:"uri"`
 }
@@ -85,7 +100,13 @@ func (c *SnapshotsClient) CreateSnapshot(createInput *CreateSnapshotInput) (*Sna
 		return nil, err
 	}
 
-	return c.success(&snapshotInfo)
+	// Call wait for instance ready now, as creating the instance is an eventually consistent operation
+	getInput := &GetSnapshotInput{
+		Name: snapshotInfo.Name,
+	}
+
+	// Wait for instance to be ready and return the result
+	return c.WaitForSnapshotComplete(getInput, WaitForSnapshotCompleteTimeout)
 }
 
 // GetSnapshotInput describes the snapshot to get
@@ -114,6 +135,35 @@ type DeleteSnapshotInput struct {
 // DeleteSnapshot deletes the Snapshot with the given name.
 func (c *SnapshotsClient) DeleteSnapshot(deleteInput *DeleteSnapshotInput) error {
 	return c.deleteResource(deleteInput.Name)
+}
+
+// WaitForSnapshotComplete waits for an snapshot to be completely initialized and available.
+func (c *SnapshotsClient) WaitForSnapshotComplete(input *GetSnapshotInput, timeoutSeconds int) (*Snapshot, error) {
+	var info *Snapshot
+	var getErr error
+	err := c.waitFor("snapshot to be complete", timeoutSeconds, func() (bool, error) {
+		info, getErr = c.GetSnapshot(input)
+		if getErr != nil {
+			return false, getErr
+		}
+		switch s := info.State; s {
+		case SnapshotError:
+			return false, fmt.Errorf("Error initializing snapshot: %s", info.ErrorReason)
+		case SnapshotComplete:
+			c.debugLogString("Snapshot Complete")
+			return true, nil
+		case SnapshotQueued:
+			c.debugLogString("Snapshot Queuing")
+			return false, nil
+		case SnapshotActive:
+			c.debugLogString("Snapshot Active")
+			return false, nil
+		default:
+			c.debugLogString(fmt.Sprintf("Unknown snapshot state: %s, waiting", s))
+			return false, nil
+		}
+	})
+	return info, err
 }
 
 func (c *SnapshotsClient) success(snapshotInfo *Snapshot) (*Snapshot, error) {
