@@ -162,7 +162,7 @@ func (c *Client) getQualifiedACMEName(name string) string {
 	if name == "" {
 		return ""
 	}
-	if strings.HasPrefix(name, "/Compute-") {
+	if strings.HasPrefix(name, "/Compute-") && len(strings.Split(name, "/")) == 1 {
 		return name
 	}
 	return fmt.Sprintf(CMP_QUALIFIED_NAME, c.getACME(), name)

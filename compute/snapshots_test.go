@@ -17,11 +17,11 @@ const (
 	_SnapshotInstanceTestImage = "/oracle/public/JEOS_OL_6.6_10GB_RD-1.2.217-20151201-194209"
 )
 
-func TestAccSnapshotLifeCycle(t *testing.T) {
+func TestAccSnapshotLifeCycleBasic(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
 	// sClient, iClient, vClient, imageListClient, entryClient, err := getSnapshotsTestClients()
-	sClient, iClient, err := getSnapshotsTestClients()
+	sClient, iClient, mClient, err := getSnapshotsTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -34,7 +34,55 @@ func TestAccSnapshotLifeCycle(t *testing.T) {
 		Label:     _SnapshotInstanceTestLabel,
 		Shape:     _SnapshotInstanceTestShape,
 		ImageList: _SnapshotInstanceTestImage,
-		// Storage:   storageAttachments,
+	}
+
+	createdInstance, err := iClient.CreateInstance(instanceInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tearDownInstances(t, iClient, createdInstance.Name, createdInstance.ID)
+
+	createSnapshotInput := &CreateSnapshotInput{
+		Instance: strings.Join([]string{createdInstance.Name, createdInstance.ID}, "/"),
+	}
+	createdSnapshot, err := sClient.CreateSnapshot(createSnapshotInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tearDownSnapshots(t, sClient, mClient, createdSnapshot.Name, createdSnapshot.MachineImage)
+
+	getInput := &GetSnapshotInput{
+		Name: createdSnapshot.Name,
+	}
+
+	snapshot, err := sClient.GetSnapshot(getInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	log.Printf("Snapshot Retrieved: %+v", snapshot)
+	if !reflect.DeepEqual(snapshot.Name, createdSnapshot.Name) {
+		t.Fatal("Snapshot Name mismatch! Got: %s Expected: %s", snapshot.Name, createdSnapshot.Name)
+	}
+}
+
+func TestAccSnapshotLifeCycleMachineImage(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
+
+	// sClient, iClient, vClient, imageListClient, entryClient, err := getSnapshotsTestClients()
+	sClient, iClient, mClient, err := getSnapshotsTestClients()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// In order to get details on a Snapshot we need to create the following resources
+	// - Instance
+
+	instanceInput := &CreateInstanceInput{
+		Name:      _SnapshotInstanceTestName,
+		Label:     _SnapshotInstanceTestLabel,
+		Shape:     _SnapshotInstanceTestShape,
+		ImageList: _SnapshotInstanceTestImage,
 	}
 
 	createdInstance, err := iClient.CreateInstance(instanceInput)
@@ -51,7 +99,7 @@ func TestAccSnapshotLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer tearDownSnapshots(t, sClient, createdSnapshot.Name)
+	defer tearDownSnapshots(t, sClient, mClient, createdSnapshot.Name, createdSnapshot.MachineImage)
 
 	getInput := &GetSnapshotInput{
 		Name: createdSnapshot.Name,
@@ -68,21 +116,22 @@ func TestAccSnapshotLifeCycle(t *testing.T) {
 	}
 }
 
-func tearDownSnapshots(t *testing.T, snapshotsClient *SnapshotsClient, name string) {
-	log.Printf("Deleting Snapshot %s", name)
+func tearDownSnapshots(t *testing.T, snapshotsClient *SnapshotsClient, machineImagesClient *MachineImagesClient, snapshotName string, machineImageName string) {
+	log.Printf("Deleting Snapshot %s", snapshotName)
 
 	deleteRequest := &DeleteSnapshotInput{
-		Name: name,
+		Snapshot:     snapshotName,
+		MachineImage: machineImageName,
 	}
-	if err := snapshotsClient.DeleteSnapshot(deleteRequest); err != nil {
+	if err := snapshotsClient.DeleteSnapshot(machineImagesClient, deleteRequest); err != nil {
 		t.Fatalf("Error deleting snapshot, dangling resources may occur: %v", err)
 	}
 }
 
-func getSnapshotsTestClients() (*SnapshotsClient, *InstancesClient, error) {
+func getSnapshotsTestClients() (*SnapshotsClient, *InstancesClient, *MachineImagesClient, error) {
 	client, err := getTestClient(&opc.Config{})
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
-	return client.Snapshots(), client.Instances(), nil
+	return client.Snapshots(), client.Instances(), client.MachineImages(), nil
 }
