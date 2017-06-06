@@ -15,7 +15,7 @@ const (
 	_SnapshotInstanceTestLabel   = "test"
 	_SnapshotInstanceTestShape   = "oc3"
 	_SnapshotInstanceTestImage   = "/oracle/public/JEOS_OL_6.6_10GB_RD-1.2.217-20151201-194209"
-	_SnapshotInstanceTestAccount = ""
+	_SnapshotInstanceTestAccount = "cloud_storage"
 )
 
 func TestAccSnapshotLifeCycleBasic(t *testing.T) {

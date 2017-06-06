@@ -91,7 +91,7 @@ type CreateSnapshotInput struct {
 
 // CreateSnapshot creates a new Snapshot
 func (c *SnapshotsClient) CreateSnapshot(createInput *CreateSnapshotInput) (*Snapshot, error) {
-	createInput.Account = c.getQualifiedStorageName(createInput.Account)
+	createInput.Account = c.getQualifiedACMEName(createInput.Account)
 	createInput.Instance = c.getQualifiedName(createInput.Instance)
 	createInput.MachineImage = c.getQualifiedName(createInput.MachineImage)
 
