@@ -64,11 +64,11 @@ type Snapshot struct {
 
 // CreateSnapshotInput defines an Snapshot to be created.
 type CreateSnapshotInput struct {
-	//The name of the account that contains the credentials and access details of
+	// The name of the account that contains the credentials and access details of
 	// Oracle Storage Cloud Service. The machine image file is uploaded to the Oracle
 	// Storage Cloud Service account that you specify.
 	// Optional
-	Account string `json:"account"`
+	Account string `json:"account,omitempty"`
 	// Use this option when you want to preserve the custom changes you have made
 	// to an instance before deleting the instance. The only permitted value is shutdown.
 	// Snapshot of the instance is not taken immediately. It creates a machine image which
@@ -77,7 +77,7 @@ type CreateSnapshotInput struct {
 	// snapshot request on that instance goes into error state. You must delete the instance
 	// (DELETE /instance/{name}).
 	// Optional
-	Delay string `json:"delay"`
+	Delay SnapshotDelay `json:"delay,omitempty"`
 	// Name of the instance that you want to clone.
 	// Required
 	Instance string `json:"instance"`
@@ -86,12 +86,12 @@ type CreateSnapshotInput struct {
 	// Object names are case-sensitive.
 	// If you don't specify a name for this object, then the name is generated automatically.
 	// Optional
-	MachineImage string `json:"machineimage"`
+	MachineImage string `json:"machineimage,omitempty"`
 }
 
 // CreateSnapshot creates a new Snapshot
 func (c *SnapshotsClient) CreateSnapshot(createInput *CreateSnapshotInput) (*Snapshot, error) {
-	createInput.Account = c.getQualifiedACMEName(createInput.Account)
+	createInput.Account = c.getQualifiedStorageName(createInput.Account)
 	createInput.Instance = c.getQualifiedName(createInput.Instance)
 	createInput.MachineImage = c.getQualifiedName(createInput.MachineImage)
 
@@ -100,18 +100,19 @@ func (c *SnapshotsClient) CreateSnapshot(createInput *CreateSnapshotInput) (*Sna
 		return nil, err
 	}
 
-	// Call wait for instance ready now, as creating the instance is an eventually consistent operation
+	// Call wait for snapshot complete now, as creating the snashot is an eventually consistent operation
 	getInput := &GetSnapshotInput{
 		Name: snapshotInfo.Name,
 	}
 
-	// Wait for instance to be ready and return the result
+	// Wait for snapshot to be complete and return the result
 	return c.WaitForSnapshotComplete(getInput, WaitForSnapshotCompleteTimeout)
 }
 
 // GetSnapshotInput describes the snapshot to get
 type GetSnapshotInput struct {
 	// The name of the Snapshot
+	// Required
 	Name string `json:name`
 }
 
@@ -129,14 +130,24 @@ func (c *SnapshotsClient) GetSnapshot(getInput *GetSnapshotInput) (*Snapshot, er
 // DeleteSnapshotInput describes the snapshot to delete
 type DeleteSnapshotInput struct {
 	// The name of the Snapshot
+	// Required
 	Snapshot string
 	// The name of the machine image
+	// Required
 	MachineImage string
 }
 
 // DeleteSnapshot deletes the Snapshot with the given name.
 // A machine image gets created with the associated snapshot and needs to be deleted as well.
 func (c *SnapshotsClient) DeleteSnapshot(machineImagesClient *MachineImagesClient, deleteInput *DeleteSnapshotInput) error {
+	// Wait for snapshot complete in case delay is active and the corresponding instance needs to be deleted first
+	getInput := &GetSnapshotInput{
+		Name: deleteInput.Snapshot,
+	}
+	if _, err := c.WaitForSnapshotComplete(getInput, WaitForSnapshotCompleteTimeout); err != nil {
+		return fmt.Errorf("Could not delete snapshot: %s", err)
+	}
+
 	if err := c.deleteResource(deleteInput.Snapshot); err != nil {
 		return fmt.Errorf("Could not delete snapshot: %s", err)
 	}
@@ -171,6 +182,9 @@ func (c *SnapshotsClient) WaitForSnapshotComplete(input *GetSnapshotInput, timeo
 			return false, nil
 		case SnapshotActive:
 			c.debugLogString("Snapshot Active")
+			if info.Delay == SnapshotDelayShutdown {
+				return true, nil
+			}
 			return false, nil
 		default:
 			c.debugLogString(fmt.Sprintf("Unknown snapshot state: %s, waiting", s))

@@ -17,6 +17,7 @@ import (
 const CMP_ACME = "/Compute-%s"
 const CMP_USERNAME = "/Compute-%s/%s"
 const CMP_QUALIFIED_NAME = "%s/%s"
+const STR_ACME = "/Storage-%s"
 
 // Client represents an authenticated compute client, with compute credentials and an api client.
 type Client struct {
@@ -142,6 +143,10 @@ func (c *Client) getACME() string {
 	return fmt.Sprintf(CMP_ACME, *c.identityDomain)
 }
 
+func (c *Client) getStorageName() string {
+	return fmt.Sprintf(STR_ACME, *c.identityDomain)
+}
+
 func (c *Client) getUserName() string {
 	return fmt.Sprintf(CMP_USERNAME, *c.identityDomain, *c.userName)
 }
@@ -166,6 +171,16 @@ func (c *Client) getQualifiedACMEName(name string) string {
 		return name
 	}
 	return fmt.Sprintf(CMP_QUALIFIED_NAME, c.getACME(), name)
+}
+
+func (c *Client) getQualifiedStorageName(name string) string {
+	if name == "" {
+		return ""
+	}
+	if strings.HasPrefix(name, "/Storage-") && len(strings.Split(name, "/")) == 1 {
+		return name
+	}
+	return fmt.Sprintf(CMP_QUALIFIED_NAME, c.getStorageName(), name)
 }
 
 func (c *Client) getObjectPath(root, name string) string {
