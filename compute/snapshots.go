@@ -142,7 +142,7 @@ func (c *SnapshotsClient) DeleteSnapshot(machineImagesClient *MachineImagesClien
 	}
 
 	deleteMachineImageRequest := &DeleteMachineImageInput{
-		Name: deleteInput.MachineImage, // strings.Replace(deleteInput.MachineImageName, "/", "-", -1),
+		Name: deleteInput.MachineImage,
 	}
 	if err := machineImagesClient.DeleteMachineImage(deleteMachineImageRequest); err != nil {
 		return fmt.Errorf("Could not delete machine image associated with snapshot: %s", err)

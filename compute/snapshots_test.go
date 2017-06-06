@@ -20,7 +20,6 @@ const (
 func TestAccSnapshotLifeCycleBasic(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
-	// sClient, iClient, vClient, imageListClient, entryClient, err := getSnapshotsTestClients()
 	sClient, iClient, mClient, err := getSnapshotsTestClients()
 	if err != nil {
 		t.Fatal(err)
@@ -69,7 +68,6 @@ func TestAccSnapshotLifeCycleBasic(t *testing.T) {
 func TestAccSnapshotLifeCycleMachineImage(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
-	// sClient, iClient, vClient, imageListClient, entryClient, err := getSnapshotsTestClients()
 	sClient, iClient, mClient, err := getSnapshotsTestClients()
 	if err != nil {
 		t.Fatal(err)
@@ -109,7 +107,7 @@ func TestAccSnapshotLifeCycleMachineImage(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// Don't need to tear down the Snapshot, it's attached to the instance
+
 	log.Printf("Snapshot Retrieved: %+v", snapshot)
 	if !reflect.DeepEqual(snapshot.Name, createdSnapshot.Name) {
 		t.Fatal("Snapshot Name mismatch! Got: %s Expected: %s", snapshot.Name, createdSnapshot.Name)
