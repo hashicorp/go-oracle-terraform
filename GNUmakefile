@@ -4,7 +4,7 @@ GOFMT_FILES?=$$(find . -name '*.go' |grep -v vendor)
 test: fmtcheck errcheck
 	go test -i $(TEST) || exit 1
 	echo $(TEST) | \
-		xargs -t -n4 go test $(TESTARGS) -timeout=3000s -parallel=4
+		xargs -t -n4 go test $(TESTARGS) -timeout=60m -parallel=4
 
 testacc: fmtcheck
 	ORACLE_ACC=1 go test -v $(TEST) $(TESTARGS) -timeout 120m
