@@ -19,7 +19,7 @@ type Client struct {
 	IdentityDomain *string
 	UserName       *string
 	Password       *string
-	apiEndpoint    *url.URL
+	APIEndpoint    *url.URL
 	httpClient     *http.Client
 	authCookie     *http.Cookie
 	cookieIssued   time.Time
@@ -34,7 +34,7 @@ func NewClient(c *opc.Config) (*Client, error) {
 		IdentityDomain: c.IdentityDomain,
 		UserName:       c.Username,
 		Password:       c.Password,
-		apiEndpoint:    c.APIEndpoint,
+		APIEndpoint:    c.APIEndpoint,
 		httpClient:     c.HTTPClient,
 		maxRetries:     c.MaxRetries,
 		loglevel:       c.LogLevel,
@@ -169,7 +169,7 @@ func (c *Client) retryRequest(req *http.Request) (*http.Response, error) {
 }
 
 func (c *Client) formatURL(path *url.URL) string {
-	return c.apiEndpoint.ResolveReference(path).String()
+	return c.APIEndpoint.ResolveReference(path).String()
 }
 
 // Retry function
