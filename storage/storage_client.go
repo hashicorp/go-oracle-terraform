@@ -81,8 +81,7 @@ func (c *StorageClient) getAccount() string {
 	return fmt.Sprintf(STR_ACCOUNT, *c.client.IdentityDomain)
 }
 
-// From compute_client
-// GetObjectName returns the fully-qualified name of an OPC object, e.g. /identity-domain/user@email/{name}
+// GetQualifiedName returns the fully-qualified name of a storage object, e.g. /v1/{account}/{name}
 func (c *StorageClient) getQualifiedName(version string, name string) string {
 	if name == "" {
 		return ""
@@ -93,12 +92,9 @@ func (c *StorageClient) getQualifiedName(version string, name string) string {
 	return fmt.Sprintf(STR_QUALIFIED_NAME, version, c.getAccount(), name)
 }
 
-// GetUnqualifiedName returns the unqualified name of an OPC object, e.g. the {name} part of /identity-domain/user@email/{name}
+// GetUnqualifiedName returns the unqualified name of a Storage object, e.g. the {name} part of /v1/{account}/{name}
 func (c *StorageClient) getUnqualifiedName(name string) string {
 	if name == "" {
-		return name
-	}
-	if strings.HasPrefix(name, "/oracle") {
 		return name
 	}
 	if !strings.Contains(name, "/") {
@@ -106,7 +102,7 @@ func (c *StorageClient) getUnqualifiedName(name string) string {
 	}
 
 	nameParts := strings.Split(name, "/")
-	return strings.Join(nameParts[3:], "/")
+	return strings.Join(nameParts[2:], "/")
 }
 
 func (c *StorageClient) unqualify(names ...*string) {

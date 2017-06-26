@@ -110,6 +110,8 @@ func (c *StorageClient) GetContainer(getInput *GetContainerInput) (*Container, e
 	if rsp, err = c.getResource(getInput.Name, &container); err != nil {
 		return nil, err
 	}
+	// The response doesn't come back with the name so we need to set it from the Input Name
+	container.Name = c.getUnqualifiedName(getInput.Name)
 	return c.success(rsp, &container)
 }
 
@@ -162,7 +164,6 @@ func (c *StorageClient) UpdateContainer(updateInput *UpdateContainerInput) (*Con
 
 func (c *StorageClient) success(rsp *http.Response, container *Container) (*Container, error) {
 	var err error
-	c.unqualify(&container.Name)
 	container.ReadACLs = strings.Split(rsp.Header.Get("X-Container-Read"), ",")
 	container.WriteACLs = strings.Split(rsp.Header.Get("X-Container-Write"), ",")
 	container.URLKey = rsp.Header.Get("X-Container-Meta-Temp-URL-Key")

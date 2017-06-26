@@ -90,6 +90,9 @@ func TestAccContainerLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if container.Name != _ContainerName {
+		t.Fatalf(fmt.Sprintf("Names don't match. Wanted: %s Recieved: %s", _ContainerName, container.Name))
+	}
 	if !reflect.DeepEqual(container.ReadACLs, updateReadACLs) {
 		t.Fatalf(fmt.Sprintf("UpdatedReadACLs do not match Wanted: %+v Recieved: %+v", container.ReadACLs, updateReadACLs))
 	}
