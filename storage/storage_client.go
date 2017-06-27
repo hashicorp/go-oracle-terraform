@@ -29,12 +29,13 @@ func NewStorageClient(c *opc.Config) (*StorageClient, error) {
 	if err != nil {
 		return nil, err
 	}
-	storageClient.client = client
 
-	storageClient.client.APIEndpoint, err = url.Parse(fmt.Sprintf("https://%s.storage.oraclecloud.com", *client.IdentityDomain))
+	endpoint, err := url.Parse(fmt.Sprintf("https://%s.storage.oraclecloud.com", *client.IdentityDomain))
 	if err != nil {
 		return nil, err
 	}
+	client.APIEndpoint = endpoint
+	storageClient.client = client
 
 	if err := storageClient.getAuthenticationToken(); err != nil {
 		return nil, err
@@ -101,7 +102,7 @@ func (c *StorageClient) getUnqualifiedName(name string) string {
 	}
 
 	nameParts := strings.Split(name, "/")
-	return strings.Join(nameParts[2:], "/")
+	return strings.Join(nameParts[len(nameParts)-1:], "/")
 }
 
 func (c *StorageClient) unqualify(names ...*string) {

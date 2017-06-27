@@ -35,44 +35,50 @@ type CreateContainerInput struct {
 	// Required
 	Name string `json:"name"`
 	// Sets a container access control list (ACL) that grants read access.
+	// Optional
 	ReadACLs []string
 	// Sets a container access control list (ACL) that grants read access.
+	// Optional
 	WriteACLs []string
 	// Sets a secret key value for temporary URLs.
+	// Optional
 	PrimaryKey string
 	// Sets a second secret key value for temporary URLs.
+	// Optional
 	SecondaryKey string
 	// Sets the list of origins allowed to make cross-origin requests.
+	// Optional
 	AllowedOrigins []string
 	// Sets the maximum age in seconds for the origin to hold the preflight results.
+	// Optional
 	MaxAge int
 }
 
 // CreateContainer creates a new Container with the given name, key and enabled flag.
-func (c *StorageClient) CreateContainer(createInput *CreateContainerInput) (*Container, error) {
+func (c *StorageClient) CreateContainer(input *CreateContainerInput) (*Container, error) {
 	headers := make(map[string]string)
 
-	createInput.Name = c.getQualifiedName(CONTAINER_VERSION, createInput.Name)
+	input.Name = c.getQualifiedName(CONTAINER_VERSION, input.Name)
 
 	// There are default values for these that we don't want to zero out if Read and Write ACLs are not set.
-	if len(createInput.ReadACLs) > 0 {
-		headers["X-Container-Read"] = strings.Join(createInput.ReadACLs, ",")
+	if len(input.ReadACLs) > 0 {
+		headers["X-Container-Read"] = strings.Join(input.ReadACLs, ",")
 	}
-	if len(createInput.WriteACLs) > 0 {
-		headers["X-Container-Write"] = strings.Join(createInput.WriteACLs, ",")
+	if len(input.WriteACLs) > 0 {
+		headers["X-Container-Write"] = strings.Join(input.WriteACLs, ",")
 	}
 
-	headers["X-Container-Meta-Temp-URL-Key"] = createInput.PrimaryKey
-	headers["X-Container-Meta-Temp-URL-Key-2"] = createInput.SecondaryKey
-	headers["X-Container-Meta-Access-Control-Expose-Headers"] = strings.Join(createInput.AllowedOrigins, " ")
-	headers["X-Container-Meta-Access-Control-Max-Age"] = strconv.Itoa(createInput.MaxAge)
+	headers["X-Container-Meta-Temp-URL-Key"] = input.PrimaryKey
+	headers["X-Container-Meta-Temp-URL-Key-2"] = input.SecondaryKey
+	headers["X-Container-Meta-Access-Control-Expose-Headers"] = strings.Join(input.AllowedOrigins, " ")
+	headers["X-Container-Meta-Access-Control-Max-Age"] = strconv.Itoa(input.MaxAge)
 
-	if err := c.createResource(createInput.Name, headers); err != nil {
+	if err := c.createResource(input.Name, headers); err != nil {
 		return nil, err
 	}
 
 	getInput := GetContainerInput{
-		Name: createInput.Name,
+		Name: input.Name,
 	}
 
 	return c.GetContainer(&getInput)
@@ -86,9 +92,9 @@ type DeleteContainerInput struct {
 }
 
 // DeleteContainer deletes the Container with the given name.
-func (c *StorageClient) DeleteContainer(deleteInput *DeleteContainerInput) error {
-	deleteInput.Name = c.getQualifiedName(CONTAINER_VERSION, deleteInput.Name)
-	return c.deleteResource(deleteInput.Name)
+func (c *StorageClient) DeleteContainer(input *DeleteContainerInput) error {
+	input.Name = c.getQualifiedName(CONTAINER_VERSION, input.Name)
+	return c.deleteResource(input.Name)
 }
 
 // GetContainerInput describes the container to get
@@ -99,19 +105,16 @@ type GetContainerInput struct {
 }
 
 // GetContainer retrieves the Container with the given name.
-func (c *StorageClient) GetContainer(getInput *GetContainerInput) (*Container, error) {
-	var (
-		container Container
-		rsp       *http.Response
-		err       error
-	)
-	getInput.Name = c.getQualifiedName(CONTAINER_VERSION, getInput.Name)
+func (c *StorageClient) GetContainer(input *GetContainerInput) (*Container, error) {
+	var container Container
+	input.Name = c.getQualifiedName(CONTAINER_VERSION, input.Name)
 
-	if rsp, err = c.getResource(getInput.Name, &container); err != nil {
+	rsp, err := c.getResource(input.Name, &container)
+	if err != nil {
 		return nil, err
 	}
 	// The response doesn't come back with the name so we need to set it from the Input Name
-	container.Name = c.getUnqualifiedName(getInput.Name)
+	container.Name = c.getUnqualifiedName(input.Name)
 	return c.success(rsp, &container)
 }
 
@@ -121,43 +124,49 @@ type UpdateContainerInput struct {
 	// Required
 	Name string `json:"name"`
 	// Updates a container access control list (ACL) that grants read access.
+	// Optional
 	ReadACLs []string
 	// Updates a container access control list (ACL) that grants write access.
+	// Optional
 	WriteACLs []string
 	// Updates the secret key value for temporary URLs.
+	// Optional
 	PrimaryKey string
 	// Update the second secret key value for temporary URLs.
+	// Optional
 	SecondaryKey string
 	// Updates the list of origins allowed to make cross-origin requests.
+	// Optional
 	AllowedOrigins []string
 	// Updates the maximum age in seconds for the origin to hold the preflight results.
+	// Optional
 	MaxAge int
 }
 
 // UpdateContainer updates the key and enabled flag of the Container with the given name.
-func (c *StorageClient) UpdateContainer(updateInput *UpdateContainerInput) (*Container, error) {
+func (c *StorageClient) UpdateContainer(input *UpdateContainerInput) (*Container, error) {
 	headers := make(map[string]string)
 
 	// There are default values for these that we don't want to zero out if Read and Write ACLs are not set.
-	if len(updateInput.ReadACLs) > 0 {
-		headers["X-Container-Read"] = strings.Join(updateInput.ReadACLs, ",")
+	if len(input.ReadACLs) > 0 {
+		headers["X-Container-Read"] = strings.Join(input.ReadACLs, ",")
 	}
-	if len(updateInput.WriteACLs) > 0 {
-		headers["X-Container-Write"] = strings.Join(updateInput.WriteACLs, ",")
+	if len(input.WriteACLs) > 0 {
+		headers["X-Container-Write"] = strings.Join(input.WriteACLs, ",")
 	}
 
-	headers["X-Container-Meta-Temp-URL-Key"] = updateInput.PrimaryKey
-	headers["X-Container-Meta-Temp-URL-Key-2"] = updateInput.SecondaryKey
-	headers["X-Container-Meta-Access-Control-Expose-Headers"] = strings.Join(updateInput.AllowedOrigins, " ")
-	headers["X-Container-Meta-Access-Control-Max-Age"] = strconv.Itoa(updateInput.MaxAge)
+	headers["X-Container-Meta-Temp-URL-Key"] = input.PrimaryKey
+	headers["X-Container-Meta-Temp-URL-Key-2"] = input.SecondaryKey
+	headers["X-Container-Meta-Access-Control-Expose-Headers"] = strings.Join(input.AllowedOrigins, " ")
+	headers["X-Container-Meta-Access-Control-Max-Age"] = strconv.Itoa(input.MaxAge)
 
-	updateInput.Name = c.getQualifiedName(CONTAINER_VERSION, updateInput.Name)
-	if err := c.updateResource(updateInput.Name, headers); err != nil {
+	input.Name = c.getQualifiedName(CONTAINER_VERSION, input.Name)
+	if err := c.updateResource(input.Name, headers); err != nil {
 		return nil, err
 	}
 
 	getInput := GetContainerInput{
-		Name: updateInput.Name,
+		Name: input.Name,
 	}
 	return c.GetContainer(&getInput)
 }

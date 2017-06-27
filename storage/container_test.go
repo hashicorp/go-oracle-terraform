@@ -3,11 +3,11 @@ package storage
 import (
 	"fmt"
 	"log"
-	"reflect"
 	"testing"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
+	"github.com/kylelemons/godebug/pretty"
 )
 
 const _ContainerName = "test-str-container"
@@ -50,11 +50,11 @@ func TestAccContainerLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !reflect.DeepEqual(container.ReadACLs, readACLs) {
-		t.Fatalf(fmt.Sprintf("ReadACLs do not match Wanted: %+v Recieved: %+v", readACLs, container.ReadACLs))
+	if diff := pretty.Compare(container.ReadACLs, readACLs); diff != "" {
+		t.Fatalf(fmt.Sprintf("ReadACL diff (-got +want)\n%s", diff))
 	}
-	if !reflect.DeepEqual(container.WriteACLs, writeACLs) {
-		t.Fatalf(fmt.Sprintf("WriteACLs do not match Wanted: %+v Recieved: %+v", writeACLs, container.WriteACLs))
+	if diff := pretty.Compare(container.WriteACLs, writeACLs); diff != "" {
+		t.Fatalf(fmt.Sprintf("WriteACL diff (-got +want)\n%s", diff)
 	}
 	if container.PrimaryKey != _ContainerPrimaryKey {
 		t.Fatalf(fmt.Sprintf("URLKeys don't match. Wanted: %s Recieved: %s", _ContainerPrimaryKey, container.PrimaryKey))
@@ -62,8 +62,8 @@ func TestAccContainerLifeCycle(t *testing.T) {
 	if container.SecondaryKey != _ContainerSecondaryKey {
 		t.Fatalf(fmt.Sprintf("URLKey2 do not match. Wanted: %s Recieved: %s", _ContainerSecondaryKey, container.SecondaryKey))
 	}
-	if !reflect.DeepEqual(container.AllowedOrigins, allowedOrigins) {
-		t.Fatalf(fmt.Sprintf("AllowedOrigins do not match Wanted: %+v Recieved: %+v", allowedOrigins, container.AllowedOrigins))
+	if diff := pretty.Compare(container.AllowedOrigins, allowedOrigins); diff != "" {
+		t.Fatalf(fmt.Sprintf("AllowedOrigin diff (-got +want)\n%s", diff))
 	}
 
 	log.Print("Successfully retrieved Container")
@@ -93,11 +93,11 @@ func TestAccContainerLifeCycle(t *testing.T) {
 	if container.Name != _ContainerName {
 		t.Fatalf(fmt.Sprintf("Names don't match. Wanted: %s Recieved: %s", _ContainerName, container.Name))
 	}
-	if !reflect.DeepEqual(container.ReadACLs, updateReadACLs) {
-		t.Fatalf(fmt.Sprintf("UpdatedReadACLs do not match Wanted: %+v Recieved: %+v", container.ReadACLs, updateReadACLs))
+	if diff := pretty.Compare(container.ReadACLs, updateReadACLs); diff != "" {
+		t.Fatalf(fmt.Sprintf("UpdatedReadACL diff (-got +want)\n%s", diff))
 	}
-	if !reflect.DeepEqual(container.WriteACLs, updateWriteACLs) {
-		t.Fatalf(fmt.Sprintf("UpdatedWriteACLs do not match Wanted: %+v Recieved: %+v", container.WriteACLs, updateWriteACLs))
+	if diff := pretty.Compare(container.WriteACLs, updateWriteACLs); diff != "" {
+		t.Fatalf(fmt.Sprintf("UpdatedWriteACL diff (-got +want)\n%s", diff))
 	}
 	if container.PrimaryKey != "" {
 		t.Fatalf(fmt.Sprintf("Expected URL Key to be empty. Recieved: %s", container.PrimaryKey))
@@ -105,8 +105,8 @@ func TestAccContainerLifeCycle(t *testing.T) {
 	if container.SecondaryKey != _ContainerPrimaryKey {
 		t.Fatalf(fmt.Sprintf("Updated URL Key 2 does not match. Wanted: %s Recieved: %s", _ContainerPrimaryKey, container.SecondaryKey))
 	}
-	if !reflect.DeepEqual(container.AllowedOrigins, updatedAllowedOrigins) {
-		t.Fatalf(fmt.Sprintf("Updated AllowedOrigins do not match Wanted: %+v Recieved: %+v", updatedAllowedOrigins, container.AllowedOrigins))
+	if diff := pretty.Compare(container.AllowedOrigins, updatedAllowedOrigins); diff != "" {
+		t.Fatalf(fmt.Sprintf("Updated AllowedOrigin diff (-got +want)\n%s", diff))
 	}
 	if container.MaxAge != _ContainerMaxAge {
 		t.Fatalf(fmt.Sprintf("Max Age do not match Wanted: %s Recieved: %s", _ContainerMaxAge, container.MaxAge))
