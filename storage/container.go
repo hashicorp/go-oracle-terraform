@@ -17,9 +17,9 @@ type Container struct {
 	// A container access control list (ACL) that grants write access
 	WriteACLs []string
 	// The secret key value for temporary URLs.
-	URLKey string
+	PrimaryKey string
 	// The second secret key value for temporary URLs.
-	URLKey2 string
+	SecondaryKey string
 	// List of origins to be allowed to make cross-origin Requests.
 	AllowedOrigins []string
 	// Maximum age in seconds for the origin to hold the preflight results.
@@ -39,9 +39,9 @@ type CreateContainerInput struct {
 	// Sets a container access control list (ACL) that grants read access.
 	WriteACLs []string
 	// Sets a secret key value for temporary URLs.
-	URLKey string
+	PrimaryKey string
 	// Sets a second secret key value for temporary URLs.
-	URLKey2 string
+	SecondaryKey string
 	// Sets the list of origins allowed to make cross-origin requests.
 	AllowedOrigins []string
 	// Sets the maximum age in seconds for the origin to hold the preflight results.
@@ -62,8 +62,8 @@ func (c *StorageClient) CreateContainer(createInput *CreateContainerInput) (*Con
 		headers["X-Container-Write"] = strings.Join(createInput.WriteACLs, ",")
 	}
 
-	headers["X-Container-Meta-Temp-URL-Key"] = createInput.URLKey
-	headers["X-Container-Meta-Temp-URL-Key-2"] = createInput.URLKey2
+	headers["X-Container-Meta-Temp-URL-Key"] = createInput.PrimaryKey
+	headers["X-Container-Meta-Temp-URL-Key-2"] = createInput.SecondaryKey
 	headers["X-Container-Meta-Access-Control-Expose-Headers"] = strings.Join(createInput.AllowedOrigins, " ")
 	headers["X-Container-Meta-Access-Control-Max-Age"] = strconv.Itoa(createInput.MaxAge)
 
@@ -125,9 +125,9 @@ type UpdateContainerInput struct {
 	// Updates a container access control list (ACL) that grants write access.
 	WriteACLs []string
 	// Updates the secret key value for temporary URLs.
-	URLKey string
+	PrimaryKey string
 	// Update the second secret key value for temporary URLs.
-	URLKey2 string
+	SecondaryKey string
 	// Updates the list of origins allowed to make cross-origin requests.
 	AllowedOrigins []string
 	// Updates the maximum age in seconds for the origin to hold the preflight results.
@@ -146,8 +146,8 @@ func (c *StorageClient) UpdateContainer(updateInput *UpdateContainerInput) (*Con
 		headers["X-Container-Write"] = strings.Join(updateInput.WriteACLs, ",")
 	}
 
-	headers["X-Container-Meta-Temp-URL-Key"] = updateInput.URLKey
-	headers["X-Container-Meta-Temp-URL-Key-2"] = updateInput.URLKey2
+	headers["X-Container-Meta-Temp-URL-Key"] = updateInput.PrimaryKey
+	headers["X-Container-Meta-Temp-URL-Key-2"] = updateInput.SecondaryKey
 	headers["X-Container-Meta-Access-Control-Expose-Headers"] = strings.Join(updateInput.AllowedOrigins, " ")
 	headers["X-Container-Meta-Access-Control-Max-Age"] = strconv.Itoa(updateInput.MaxAge)
 
@@ -166,8 +166,8 @@ func (c *StorageClient) success(rsp *http.Response, container *Container) (*Cont
 	var err error
 	container.ReadACLs = strings.Split(rsp.Header.Get("X-Container-Read"), ",")
 	container.WriteACLs = strings.Split(rsp.Header.Get("X-Container-Write"), ",")
-	container.URLKey = rsp.Header.Get("X-Container-Meta-Temp-URL-Key")
-	container.URLKey2 = rsp.Header.Get("X-Container-Meta-Temp-URL-Key-2")
+	container.PrimaryKey = rsp.Header.Get("X-Container-Meta-Temp-URL-Key")
+	container.SecondaryKey = rsp.Header.Get("X-Container-Meta-Temp-URL-Key-2")
 	container.AllowedOrigins = strings.Split(rsp.Header.Get("X-Container-Meta-Access-Control-Expose-Headers"), " ")
 	container.MaxAge, err = strconv.Atoi(rsp.Header.Get("X-Container-Meta-Access-Control-Max-Age"))
 	if err != nil {

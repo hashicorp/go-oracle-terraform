@@ -22,7 +22,7 @@ func (c *StorageClient) getAuthenticationToken() error {
 		return fmt.Errorf("No authentication token found in response %#v", rsp)
 	}
 
-	c.client.DebugLogString("Successfully authenticated to OPC")
+	c.client.DebugLogString("Successfully authenticated to IaaS Storage")
 	c.authToken = &authToken
 	c.tokenIssued = time.Now()
 	return nil

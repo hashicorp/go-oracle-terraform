@@ -11,8 +11,8 @@ import (
 )
 
 const _ContainerName = "test-str-container"
-const _ContainerURLKey = "test-url-key"
-const _ContainerURLKey2 = "test-url-key2"
+const _ContainerPrimaryKey = "test-url-key"
+const _ContainerSecondaryKey = "test-url-key2"
 const _ContainerMaxAge = 50
 
 func TestAccContainerLifeCycle(t *testing.T) {
@@ -31,8 +31,8 @@ func TestAccContainerLifeCycle(t *testing.T) {
 		Name:           _ContainerName,
 		ReadACLs:       readACLs,
 		WriteACLs:      writeACLs,
-		URLKey:         _ContainerURLKey,
-		URLKey2:        _ContainerURLKey2,
+		PrimaryKey:     _ContainerPrimaryKey,
+		SecondaryKey:   _ContainerSecondaryKey,
 		AllowedOrigins: allowedOrigins,
 	}
 
@@ -56,11 +56,11 @@ func TestAccContainerLifeCycle(t *testing.T) {
 	if !reflect.DeepEqual(container.WriteACLs, writeACLs) {
 		t.Fatalf(fmt.Sprintf("WriteACLs do not match Wanted: %+v Recieved: %+v", writeACLs, container.WriteACLs))
 	}
-	if container.URLKey != _ContainerURLKey {
-		t.Fatalf(fmt.Sprintf("URLKeys don't match. Wanted: %s Recieved: %s", _ContainerURLKey, container.URLKey))
+	if container.PrimaryKey != _ContainerPrimaryKey {
+		t.Fatalf(fmt.Sprintf("URLKeys don't match. Wanted: %s Recieved: %s", _ContainerPrimaryKey, container.PrimaryKey))
 	}
-	if container.URLKey2 != _ContainerURLKey2 {
-		t.Fatalf(fmt.Sprintf("URLKey2 do not match. Wanted: %s Recieved: %s", _ContainerURLKey2, container.URLKey2))
+	if container.SecondaryKey != _ContainerSecondaryKey {
+		t.Fatalf(fmt.Sprintf("URLKey2 do not match. Wanted: %s Recieved: %s", _ContainerSecondaryKey, container.SecondaryKey))
 	}
 	if !reflect.DeepEqual(container.AllowedOrigins, allowedOrigins) {
 		t.Fatalf(fmt.Sprintf("AllowedOrigins do not match Wanted: %+v Recieved: %+v", allowedOrigins, container.AllowedOrigins))
@@ -75,7 +75,7 @@ func TestAccContainerLifeCycle(t *testing.T) {
 		Name:           _ContainerName,
 		ReadACLs:       updateReadACLs,
 		WriteACLs:      updateWriteACLs,
-		URLKey2:        _ContainerURLKey,
+		SecondaryKey:   _ContainerPrimaryKey,
 		AllowedOrigins: updatedAllowedOrigins,
 		MaxAge:         _ContainerMaxAge,
 	}
@@ -99,11 +99,11 @@ func TestAccContainerLifeCycle(t *testing.T) {
 	if !reflect.DeepEqual(container.WriteACLs, updateWriteACLs) {
 		t.Fatalf(fmt.Sprintf("UpdatedWriteACLs do not match Wanted: %+v Recieved: %+v", container.WriteACLs, updateWriteACLs))
 	}
-	if container.URLKey != "" {
-		t.Fatalf(fmt.Sprintf("Expected URL Key to be empty. Recieved: %s", container.URLKey))
+	if container.PrimaryKey != "" {
+		t.Fatalf(fmt.Sprintf("Expected URL Key to be empty. Recieved: %s", container.PrimaryKey))
 	}
-	if container.URLKey2 != _ContainerURLKey {
-		t.Fatalf(fmt.Sprintf("Updated URL Key 2 does not match. Wanted: %s Recieved: %s", _ContainerURLKey, container.URLKey))
+	if container.SecondaryKey != _ContainerPrimaryKey {
+		t.Fatalf(fmt.Sprintf("Updated URL Key 2 does not match. Wanted: %s Recieved: %s", _ContainerPrimaryKey, container.SecondaryKey))
 	}
 	if !reflect.DeepEqual(container.AllowedOrigins, updatedAllowedOrigins) {
 		t.Fatalf(fmt.Sprintf("Updated AllowedOrigins do not match Wanted: %+v Recieved: %+v", updatedAllowedOrigins, container.AllowedOrigins))

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/url"
-	"regexp"
 	"strings"
 	"time"
 
@@ -109,10 +108,4 @@ func (c *StorageClient) unqualify(names ...*string) {
 	for _, name := range names {
 		*name = c.getUnqualifiedName(*name)
 	}
-}
-
-func (c *StorageClient) unqualifyUrl(url *string) {
-	var validID = regexp.MustCompile(`(\/(Compute[^\/\s]+))(\/[^\/\s]+)(\/[^\/\s]+)`)
-	name := validID.FindString(*url)
-	*url = c.getUnqualifiedName(name)
 }
