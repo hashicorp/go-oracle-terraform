@@ -17,8 +17,8 @@ func (c *StorageClient) getAuthenticationToken() error {
 		return err
 	}
 
-	var authToken string
-	if authToken = rsp.Header.Get("X-Auth-Token"); authToken == "" {
+	authToken := rsp.Header.Get("X-Auth-Token")
+	if authToken == "" {
 		return fmt.Errorf("No authentication token found in response %#v", rsp)
 	}
 

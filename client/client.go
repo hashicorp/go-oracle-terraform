@@ -21,8 +21,6 @@ type Client struct {
 	Password       *string
 	APIEndpoint    *url.URL
 	httpClient     *http.Client
-	authCookie     *http.Cookie
-	cookieIssued   time.Time
 	maxRetries     *int
 	logger         opc.Logger
 	loglevel       opc.LogLevelType
