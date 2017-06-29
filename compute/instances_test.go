@@ -90,6 +90,78 @@ func TestInstanceClient_CreateInstance(t *testing.T) {
 }
 
 // Test that the client can create an instance.
+func TestInstanceClient_CreateInstanceError(t *testing.T) {
+	server := newAuthenticatingServer(func(w http.ResponseWriter, r *http.Request) {
+		if r.Method != "POST" && r.Method != "GET" && r.Method != "DELETE" {
+			t.Errorf("Wrong HTTP method %s, expected POST or GET", r.Method)
+		}
+
+		if r.Method == "POST" {
+			expectedPath := "/launchplan/"
+			if r.URL.Path != expectedPath {
+				t.Errorf("Wrong HTTP URL %v, expected %v", r.URL.Path, expectedPath)
+			}
+
+			plan := &LaunchPlanInput{}
+			unmarshalRequestBody(t, r, plan)
+
+			spec := plan.Instances[0]
+
+			if spec.Name != "/Compute-test/test/name" {
+				t.Errorf("Expected name 'name', was %s", spec.Name)
+			}
+
+			if spec.Label != "label" {
+				t.Errorf("Expected label 'label', was %s", spec.Label)
+			}
+
+			if spec.Shape != "shape" {
+				t.Errorf("Expected shape 'shape', was %s", spec.Shape)
+			}
+
+			if spec.ImageList != "imagelist" {
+				t.Errorf("Expected imagelist 'imagelist', was %s", spec.ImageList)
+			}
+
+			if !reflect.DeepEqual(spec.SSHKeys, []string{"/Compute-test/test/foo", "/Compute-test/test/bar"}) {
+				t.Errorf("Expected sshkeys ['/Compute-test/test/foo', '/Compute-test/test/bar'], was %s", spec.SSHKeys)
+			}
+
+			w.Write([]byte(exampleCreateResponse))
+		} else if r.Method == "GET" {
+			w.Write([]byte(exampleErrorRetrieveResponse))
+		}
+	})
+
+	defer server.Close()
+	iv, err := getStubInstancesClient(server)
+	if err != nil {
+		t.Fatalf("err getting stub client: %s", err)
+	}
+
+	input := &CreateInstanceInput{
+		Name:      "name",
+		Label:     "label",
+		Shape:     "shape",
+		ImageList: "imagelist",
+		Storage:   nil,
+		BootOrder: nil,
+		SSHKeys:   []string{"foo", "bar"},
+		Attributes: map[string]interface{}{
+			"attr1": 12,
+			"attr2": map[string]interface{}{
+				"inner_attr1": "foo",
+			},
+		},
+	}
+
+	_, err = iv.CreateInstance(input)
+	if err == nil {
+		t.Fatalf("Create instance request expected to fail: %s", err)
+	}
+}
+
+// Test that the client can create an instance.
 func TestInstanceClient_RetrieveInstance(t *testing.T) {
 	server := newAuthenticatingServer(func(w http.ResponseWriter, r *http.Request) {
 		if r.Method != "GET" {
@@ -283,6 +355,90 @@ var exampleRetrieveResponse = `
 "label": "Production instance 1",
 "priority": "/oracle/public/default",
 "state": "running",
+"vnc": "10...",
+"storage_attachments": [
+{
+"index": 1,
+"storage_volume_name": "/Compute-acme/jack.jones@example.com/prod-vol1",
+"name": "/Compute-acme/admin/dev1/f653a677-b566-4f92-8e93-71d47b364119/f1a67244-9abc-45d5-af69-8..."
+}
+],
+"start_time": "2014-06-24T17:51:35Z",
+"quota": "/acme",
+"fingerprint": "19:c4:3f:2d:dc:76:b1:06:e8:88:bd:7f:a3:3b:3c:93",
+"error_reason": "",
+"sshkeys": [
+"/Compute-acme/jack.jones@example.com/acme-prod-admin"
+],
+"tags": [
+"prod2"
+],
+"resolvers": null,
+"account": "/Compute-acme/default",
+"name": "/Compute-acme/jack.jones@example.com/name/016e75e7-e911-42d1-bfe1-6a7f1b3f7908",
+"vcable_id": "/Compute-acme/jack.jones@example.com/016e75e7-e911-42d1-bfe1-6a7f1b3f7908",
+"uri": "http://10....",
+"reverse_dns": true,
+"entry": 1,
+"boot_order": []
+}
+`
+
+var exampleErrorRetrieveResponse = `
+{
+"domain": "acme...",
+"placement_requirements": [
+"/system/compute/placement/default",
+"/system/compute/allow_instances"
+],
+"ip": "10...",
+"site": "",
+"shape": "oc5",
+"imagelist": "/oracle/public/oel_6.4_60GB",
+"attributes": {
+"network": {
+"nimbula_vcable-eth0": {
+"vethernet_id": "0",
+"vethernet": "/oracle/public/default",
+"address": [
+"c6:b0:09:f4:bc:c0",
+"0.0.0.0"
+],
+"model": "",
+"vethernet_type": "vlan",
+"id": "/Compute-acme/jack.jones@example.com/016e75e7-e911-42d1-bfe1-6a7f1b3f7908",
+"dhcp_options": []
+}
+},
+"dns": {
+"domain": "acme...",
+"hostname": "d06886.compute-acme...",
+"nimbula_vcable-eth0": "d06886.acme..."
+},
+"sshkeys": [
+"ssh-rsa AAAAB3NzaC1yc2EAAA..."
+]
+},
+"networking": {
+"eth0": {
+"model": "",
+"dns": [
+"d06886.acme..."
+],
+"seclists": [
+"/Compute-acme/default/default",
+"/Compute-acme/jack.jones@example.com/prod-ng"
+],
+"vethernet": "/oracle/public/default",
+"nat": ["ipreservation:/Compute-acme/jack.jones@example.com/prod-vm1"]
+}
+},
+"hostname": "d06886.acme...",
+"quota_reservation": "/Compute-acme/ffc8e6d4-8f93-41f3-a062-bdbb042c3191",
+"disk_attach": "",
+"label": "Production instance 1",
+"priority": "/oracle/public/default",
+"state": "error",
 "vnc": "10...",
 "storage_attachments": [
 {
