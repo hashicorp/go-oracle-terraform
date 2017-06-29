@@ -54,7 +54,7 @@ func TestAccContainerLifeCycle(t *testing.T) {
 		t.Fatalf(fmt.Sprintf("ReadACL diff (-got +want)\n%s", diff))
 	}
 	if diff := pretty.Compare(container.WriteACLs, writeACLs); diff != "" {
-		t.Fatalf(fmt.Sprintf("WriteACL diff (-got +want)\n%s", diff)
+		t.Fatalf(fmt.Sprintf("WriteACL diff (-got +want)\n%s", diff))
 	}
 	if container.PrimaryKey != _ContainerPrimaryKey {
 		t.Fatalf(fmt.Sprintf("URLKeys don't match. Wanted: %s Recieved: %s", _ContainerPrimaryKey, container.PrimaryKey))
