@@ -1,5 +1,19 @@
-## 0.1.2 (Unreleased)
+## 0.1.2 (June 30, 2017)
 
+
+FEATURES:
+
+  * opc: Add image snapshots [GH-67]
+  
+  * storage: Storage containers have been added [GH-70]
+
+
+IMPROVEMENTS: 
+  
+  * opc: Refactored client to be generic for multiple Oracle api endpoints [GH-68]
+  
+  * opc: Instance creation retries when an instance enters a deleted state [GH-71]
+  
 ## 0.1.1 (May 31, 2017)
 
 IMPROVEMENTS:
