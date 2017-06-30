@@ -1,11 +1,11 @@
 package client
 
 import (
-	"gopkg.in/jarcoal/httpmock.v1"
-	"net/url"
-	"net/http"
-	"testing"
 	"github.com/hashicorp/go-oracle-terraform/opc"
+	"gopkg.in/jarcoal/httpmock.v1"
+	"net/http"
+	"net/url"
+	"testing"
 )
 
 func TestClient_retryHTTP(t *testing.T) {
