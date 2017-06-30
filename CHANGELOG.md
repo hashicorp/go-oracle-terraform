@@ -1,3 +1,11 @@
+## 0.1.4 (Unreleased)
+
+## 0.1.3 (June 30, 2017)
+
+  * opc: Add additional logs instance logs [GH-72]
+  
+  * opc: Increase instance creation and deletion timeout [GH-72]
+
 ## 0.1.2 (June 30, 2017)
 
 
