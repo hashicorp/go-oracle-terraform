@@ -1,4 +1,10 @@
-## 0.1.4 (Unreleased)
+## 0.1.5 (July 5, 2017
+
+ * storage: User must pass in Storage URL to CRUD resources [GH-74]
+
+## 0.1.4 (June 30, 2017)
+
+ * opc: Fix infinite loop around auth token exceeding it's 25 minute duration. [GH-73]
 
 ## 0.1.3 (June 30, 2017)
 
