@@ -7,8 +7,9 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/client"
 )
 
-const WaitForServiceInstanceReadyTimeout = 3600
-const WaitForServiceInstanceDeleteTimeout = 3600
+const WaitForServiceInstanceReadyTimeout = time.Duration(3600 * time.Second)
+const WaitForServiceInstanceDeleteTimeout = time.Duration(3600 * time.Second)
+const ServiceInstanceDeleteRetry = 5
 
 var (
 	ServiceInstanceContainerPath = "/paas/service/dbcs/api/v1.1/instances/%s"
@@ -18,6 +19,7 @@ var (
 // ServiceInstanceClient is a client for the Service functions of the Database API.
 type ServiceInstanceClient struct {
 	ResourceClient
+	Timeout time.Duration
 }
 
 // ServiceInstanceClient obtains an ServiceInstanceClient which can be used to access to the
@@ -424,6 +426,9 @@ func (c *ServiceInstanceClient) CreateServiceInstance(input *CreateServiceInstan
 		serviceInstance      *ServiceInstance
 		serviceInstanceError error
 	)
+	if c.Timeout == 0 {
+		c.Timeout = WaitForServiceInstanceReadyTimeout
+	}
 	// return nil, fmt.Errorf("%+v", input)
 	for i := 0; i < *c.DatabaseClient.client.MaxRetries; i++ {
 		c.client.DebugLogString(fmt.Sprintf("(Iteration: %d of %d) Creating service instance with name %s\n Input: %+v", i, *c.DatabaseClient.client.MaxRetries, input.Name, input))
@@ -449,7 +454,7 @@ func (c *ServiceInstanceClient) startServiceInstance(name string, input *CreateS
 
 	// Wait for the service instance to be running and return the result
 	// Don't have to unqualify any objects, as the GetServiceInstance method will handle that
-	serviceInstance, serviceInstanceError := c.WaitForServiceInstanceRunning(getInput, WaitForServiceInstanceReadyTimeout)
+	serviceInstance, serviceInstanceError := c.WaitForServiceInstanceRunning(getInput, c.Timeout)
 	// If the service instance enters an error state we need to delete the instance and retry
 	if serviceInstanceError != nil {
 		deleteInput := &DeleteServiceInstanceInput{
@@ -465,7 +470,7 @@ func (c *ServiceInstanceClient) startServiceInstance(name string, input *CreateS
 }
 
 // WaitForServiceInstanceRunning waits for a service instance to be completely initialized and available.
-func (c *ServiceInstanceClient) WaitForServiceInstanceRunning(input *GetServiceInstanceInput, timeoutSeconds int) (*ServiceInstance, error) {
+func (c *ServiceInstanceClient) WaitForServiceInstanceRunning(input *GetServiceInstanceInput, timeoutSeconds time.Duration) (*ServiceInstance, error) {
 	var info *ServiceInstance
 	var getErr error
 	err := c.client.WaitFor("service instance to be ready", timeoutSeconds, func() (bool, error) {
@@ -515,11 +520,14 @@ type DeleteServiceInstanceInput struct {
 }
 
 func (c *ServiceInstanceClient) DeleteServiceInstance(deleteInput *DeleteServiceInstanceInput) error {
+	if c.Timeout == 0 {
+		c.Timeout = WaitForServiceInstanceDeleteTimeout
+	}
 	// Call to delete the service instance
 	// If delete fails, rerun it in case the instance still has not been setup correctly.
 	// An instance takes additional time to setup after it's configured.
 	var deleteErr error
-	for i := 0; i < 5; i++ {
+	for i := 0; i < ServiceInstanceDeleteRetry; i++ {
 		if deleteErr = c.deleteResource(deleteInput.Name); deleteErr != nil {
 			time.Sleep(30 * time.Second)
 			continue
@@ -536,11 +544,11 @@ func (c *ServiceInstanceClient) DeleteServiceInstance(deleteInput *DeleteService
 	}
 
 	// Wait for instance to be deleted
-	return c.WaitForServiceInstanceDeleted(getInput, WaitForServiceInstanceDeleteTimeout)
+	return c.WaitForServiceInstanceDeleted(getInput, c.Timeout)
 }
 
 // WaitForServiceInstanceDeleted waits for a service instance to be fully deleted.
-func (c *ServiceInstanceClient) WaitForServiceInstanceDeleted(input *GetServiceInstanceInput, timeoutSeconds int) error {
+func (c *ServiceInstanceClient) WaitForServiceInstanceDeleted(input *GetServiceInstanceInput, timeoutSeconds time.Duration) error {
 	return c.client.WaitFor("service instance to be deleted", timeoutSeconds, func() (bool, error) {
 		info, err := c.GetServiceInstance(input)
 		if err != nil {
