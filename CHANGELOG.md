@@ -1,4 +1,7 @@
-## 0.1.5 (July 5, 2017
+## 0.1.6 (July 18, 2017)
+ * opc: Add timeouts to instance and storage inputs [GH-75]
+
+## 0.1.5 (July 5, 2017)
 
  * storage: User must pass in Storage URL to CRUD resources [GH-74]
 
