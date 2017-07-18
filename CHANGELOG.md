@@ -1,41 +1,41 @@
 ## 0.1.6 (July 18, 2017)
- * opc: Add timeouts to instance and storage inputs [GH-75]
+ * opc: Add timeouts to instance and storage inputs ([#75](https://github.com/hashicorp/go-oracle-terraform/issues/75))
 
 ## 0.1.5 (July 5, 2017)
 
- * storage: User must pass in Storage URL to CRUD resources [GH-74]
+ * storage: User must pass in Storage URL to CRUD resources ([#74](https://github.com/hashicorp/go-oracle-terraform/issues/74))
 
 ## 0.1.4 (June 30, 2017)
 
- * opc: Fix infinite loop around auth token exceeding it's 25 minute duration. [GH-73]
+ * opc: Fix infinite loop around auth token exceeding it's 25 minute duration. ([#73](https://github.com/hashicorp/go-oracle-terraform/issues/73))
 
 ## 0.1.3 (June 30, 2017)
 
-  * opc: Add additional logs instance logs [GH-72]
+  * opc: Add additional logs instance logs ([#72](https://github.com/hashicorp/go-oracle-terraform/issues/72))
   
-  * opc: Increase instance creation and deletion timeout [GH-72]
+  * opc: Increase instance creation and deletion timeout ([#72](https://github.com/hashicorp/go-oracle-terraform/issues/72))
 
 ## 0.1.2 (June 30, 2017)
 
 
 FEATURES:
 
-  * opc: Add image snapshots [GH-67]
+  * opc: Add image snapshots ([#67](https://github.com/hashicorp/go-oracle-terraform/issues/67))
   
-  * storage: Storage containers have been added [GH-70]
+  * storage: Storage containers have been added ([#70](https://github.com/hashicorp/go-oracle-terraform/issues/70))
 
 
 IMPROVEMENTS: 
   
-  * opc: Refactored client to be generic for multiple Oracle api endpoints [GH-68]
+  * opc: Refactored client to be generic for multiple Oracle api endpoints ([#68](https://github.com/hashicorp/go-oracle-terraform/issues/68))
   
-  * opc: Instance creation retries when an instance enters a deleted state [GH-71]
+  * opc: Instance creation retries when an instance enters a deleted state ([#71](https://github.com/hashicorp/go-oracle-terraform/issues/71))
   
 ## 0.1.1 (May 31, 2017)
 
 IMPROVEMENTS:
 
- * opc: Add max_retries capabilities [GH-66]
+ * opc: Add max_retries capabilities ([#66](https://github.com/hashicorp/go-oracle-terraform/issues/66))
  
 ## 0.1.0 (May 25, 2017)
 
