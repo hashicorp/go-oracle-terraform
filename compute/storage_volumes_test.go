@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 )
@@ -22,7 +23,7 @@ func TestAccStorageVolumeClient_WaitForStorageVolumeToBeDeletedSuccessful(t *tes
 		t.Fatalf("error getting stub client: %s", err)
 	}
 
-	err = sv.waitForStorageVolumeToBeDeleted(name, 10)
+	err = sv.waitForStorageVolumeToBeDeleted(name, time.Duration(10*time.Second))
 	if err != nil {
 		t.Fatalf("Wait for storage volume deleted request failed: %s", err)
 	}
@@ -51,7 +52,7 @@ func TestAccStorageVolumeClient_WaitForStorageVolumeToBeDeletedTimeout(t *testin
 		t.Fatalf("error getting stub client: %s", err)
 	}
 
-	err = sv.waitForStorageVolumeToBeDeleted(name, 3)
+	err = sv.waitForStorageVolumeToBeDeleted(name, time.Duration(3*time.Second))
 	if err == nil {
 		t.Fatal("Expected timeout error")
 	}
@@ -67,7 +68,7 @@ func TestAccStorageVolumeClient_WaitForStorageVolumeToBecomeAvailableSuccessful(
 		t.Fatalf("error getting stub client: %s", err)
 	}
 
-	info, err := sv.waitForStorageVolumeToBecomeAvailable("test", 10)
+	info, err := sv.waitForStorageVolumeToBecomeAvailable("test", time.Duration(10*time.Second))
 	if err != nil {
 		t.Fatalf("Wait for storage volume online request failed: %s", err)
 	}
@@ -87,7 +88,7 @@ func TestAccStorageVolumeClient_WaitForStorageVolumeToBecomeAvailableTimeout(t *
 	if err != nil {
 		t.Fatalf("error getting stub client: %s", err)
 	}
-	_, err = sv.waitForStorageVolumeToBecomeAvailable("test", 3)
+	_, err = sv.waitForStorageVolumeToBecomeAvailable("test", time.Duration(3*time.Second))
 	if err == nil {
 		t.Fatal("Expected timeout error")
 	}

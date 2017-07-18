@@ -6,6 +6,7 @@ import (
 	"net/http/httptest"
 	"net/url"
 	"testing"
+	"time"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 )
@@ -22,7 +23,7 @@ func TestAccStorageAttachmentsClient_WaitForStorageDetachmentSuccessful(t *testi
 		t.Fatalf("error getting stub client: %s", err)
 	}
 
-	err = sv.waitForStorageAttachmentToBeDeleted(name, 10)
+	err = sv.waitForStorageAttachmentToBeDeleted(name, time.Duration(10*time.Second))
 	if err != nil {
 		t.Fatalf("Wait for storage attachment to become detach request failed: %s", err)
 	}
@@ -41,7 +42,7 @@ func TestAccStorageAttachmentsClient_WaitForStorageDetachmentTimeout(t *testing.
 		t.Fatalf("error getting stub client: %s", err)
 	}
 
-	err = sv.waitForStorageAttachmentToBeDeleted(name, 3)
+	err = sv.waitForStorageAttachmentToBeDeleted(name, time.Duration(3*time.Second))
 	if err == nil {
 		t.Fatal("Expected timeout error")
 	}
@@ -59,7 +60,7 @@ func TestAccStorageAttachmentsClient_WaitForStorageAttachmentToBeFullyAttachedSu
 		t.Fatalf("error getting stub client: %s", err)
 	}
 
-	info, err := sv.waitForStorageAttachmentToFullyAttach(name, 10)
+	info, err := sv.waitForStorageAttachmentToFullyAttach(name, time.Duration(10*time.Second))
 	if err != nil {
 		t.Fatalf("Wait for storage attachment to become available request failed: %s", err)
 	}
@@ -83,7 +84,7 @@ func TestAccStorageAttachmentsClient_WaitForStorageAttachmentToBeFullyAttachedTi
 		t.Fatalf("error getting stub client: %s", err)
 	}
 
-	_, err = sv.waitForStorageAttachmentToFullyAttach(name, 3)
+	_, err = sv.waitForStorageAttachmentToFullyAttach(name, time.Duration(3*time.Second))
 	if err == nil {
 		t.Fatal("Expected timeout error")
 	}
