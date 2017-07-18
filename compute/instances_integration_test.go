@@ -3,6 +3,7 @@ package compute
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"testing"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
@@ -149,6 +150,8 @@ func TestAccInstanceLifeCycle(t *testing.T) {
 
 // Test that we can shutdown and startup an instance
 func TestAccInstanceStopStart(t *testing.T) {
+	rInt := rand.Int()
+
 	helper.Test(t, helper.TestCase{})
 
 	// Setup Instance Client
@@ -183,7 +186,7 @@ func TestAccInstanceStopStart(t *testing.T) {
 	defer destroyImageListEntry(t, eClient, createdListEntry)
 
 	// Create the bootable storage volume
-	volumeName := fmt.Sprintf("%s-volume", _InstanceTestName)
+	volumeName := fmt.Sprintf("%s-volume-%d", _InstanceTestName, rInt)
 	volumeInput := &CreateStorageVolumeInput{
 		Name:           volumeName,
 		Size:           "20",
