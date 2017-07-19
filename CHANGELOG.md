@@ -1,3 +1,9 @@
+## 0.1.7 (July 19, 2017)
+
+  * database: Adds the Oracle Database Cloud to the available sdks. ([#77](https://github.com/hashicorp/go-oracle-terraform/issues/77))
+  
+  * database: Adds Service Instances to the database sdk ([#77](https://github.com/hashicorp/go-oracle-terraform/issues/77))
+
 ## 0.1.6 (July 18, 2017)
  * opc: Add timeouts to instance and storage inputs ([#75](https://github.com/hashicorp/go-oracle-terraform/issues/75))
 
