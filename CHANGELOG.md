@@ -1,3 +1,7 @@
+## 0.1.8 (July 19, 2017)
+
+ * storage_volumes: Add SSD support ([#78](https://github.com/hashicorp/go-oracle-terraform/issues/78))
+
 ## 0.1.7 (July 19, 2017)
 
   * database: Adds the Oracle Database Cloud to the available sdks. ([#77](https://github.com/hashicorp/go-oracle-terraform/issues/77))
