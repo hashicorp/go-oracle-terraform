@@ -9,7 +9,7 @@ import (
 
 const WaitForServiceInstanceReadyTimeout = time.Duration(3600 * time.Second)
 const WaitForServiceInstanceDeleteTimeout = time.Duration(3600 * time.Second)
-const ServiceInstanceDeleteRetry = 5
+const ServiceInstanceDeleteRetry = 30
 
 var (
 	ServiceInstanceContainerPath = "/paas/service/dbcs/api/v1.1/instances/%s"
@@ -120,7 +120,7 @@ const (
 	// 12.2.0.1
 	ServiceInstanceVersion12201 ServiceInstanceVersion = "12.2.0.1"
 	// 12.1.0.2
-	ServieInstanceVersion12102 ServiceInstanceVersion = "12.1.0.2"
+	ServiceInstanceVersion12102 ServiceInstanceVersion = "12.1.0.2"
 	// 11.2.0.4
 	ServiceInstanceVersion11204 ServiceInstanceVersion = "11.2.0.4"
 )
@@ -151,10 +151,16 @@ type ServiceInstance struct {
 	BackupSupportedVersion string `backup_supported_version`
 	// The database character set of the database.
 	CharSet string `json:"charset"`
+	// The Oracle Storage Cloud container for backups.
+	CloudStorageContainer string `json:"cloud_storage_container"`
+	// The Oracle Cloud location housing the service instance.
+	ComputeSiteName string `json:"compute_site_name"`
+	// The connection descriptor for Oracle Net Services (SQL*Net).
+	ConnectDescriptor string `json:"connect_descriptor"`
 	// The connection descriptor for Oracle Net Services (SQL*Net) with IP addresses instead of host names.
 	ConnectorDescriptorWithPublicIP string `json:"connect_descriptor_with_public_ip"`
 	// The user name of the Oracle Cloud user who created the service instance.
-	CreateBy string `json:"created_by"`
+	CreatedBy string `json:"created_by"`
 	// The job id of the job that created the service instance.
 	CreationJobID string `json:"creation_job_id"`
 	// The date-and-time stamp when the service instance was created.
@@ -173,8 +179,20 @@ type ServiceInstance struct {
 	FailoverDatabase bool `json:"failover_database"`
 	// The URL to use to connect to the Oracle GlassFish Server Administration Console on the service instance.
 	GlassFishURL string `json:"glassfish_url"`
+	// Data Guard Role of the on-premise instance in Oracle Hybrid Disaster Recovery configuration.
+	HDGPremIP string `json:"hdgPremIP"`
+	// Indicates whether the service instance hosts an Oracle Hybrid Disaster Recovery configuration.
+	HybridDG string `json:"hybrid_db"`
 	// The identity domain housing the service instance.
 	IdentityDomain string `json:"identity_domain"`
+	// This attribute is only applicable to accounts where regions are supported.
+	// The three-part name of an IP network to which the service instance is added.
+	// For example: /Compute-identity_domain/user/object
+	IPNetwork string `json:"ipNetwork"`
+	// Groups one or more IP reservations in use on this service instance.
+	// This attribute is only applicable to accounts where regions are supported.
+	// This attribute is returned when you set the ?outputLevel=verbose query parameter.
+	IPReservations string `json:"ipReservations"`
 	// The Oracle Java Cloud Service instances using this Database Cloud Service instance.
 	JAASInstancesUsingService string `json:"jaas_instances_using_service"`
 	// The date-and-time stamp when the service instance was last modified.
@@ -193,6 +211,9 @@ type ServiceInstance struct {
 	PDBName string `json:"pdbName"`
 	// Indicates whether the service instance hosts an Oracle RAC database.
 	RACDatabase bool `json:"rac_database"`
+	// This attribute is only applicable to accounts where regions are supported.
+	// Location where the service instance is provisioned (only for accounts where regions are supported).
+	Region string `json:"region"`
 	// The name of the service instance.
 	Name string `json:"service_name"`
 	// The REST endpoint URI of the service instance.
