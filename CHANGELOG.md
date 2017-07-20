@@ -1,3 +1,9 @@
+## 0.1.9 (July 20, 2017)
+
+ * service_instance: Update delete retry count ([#79](https://github.com/hashicorp/go-oracle-terraform/issues/79))
+ 
+ * service_instance: Add additional fields ([#79](https://github.com/hashicorp/go-oracle-terraform/issues/79))
+
 ## 0.1.8 (July 19, 2017)
 
  * storage_volumes: Add SSD support ([#78](https://github.com/hashicorp/go-oracle-terraform/issues/78))
@@ -9,6 +15,7 @@
   * database: Adds Service Instances to the database sdk ([#77](https://github.com/hashicorp/go-oracle-terraform/issues/77))
 
 ## 0.1.6 (July 18, 2017)
+
  * opc: Add timeouts to instance and storage inputs ([#75](https://github.com/hashicorp/go-oracle-terraform/issues/75))
 
 ## 0.1.5 (July 5, 2017)
