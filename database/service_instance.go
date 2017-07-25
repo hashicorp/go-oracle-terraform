@@ -450,7 +450,7 @@ func (c *ServiceInstanceClient) CreateServiceInstance(input *CreateServiceInstan
 	if c.Timeout == 0 {
 		c.Timeout = WaitForServiceInstanceReadyTimeout
 	}
-	// return nil, fmt.Errorf("%+v", input)
+
 	for i := 0; i < *c.DatabaseClient.client.MaxRetries; i++ {
 		c.client.DebugLogString(fmt.Sprintf("(Iteration: %d of %d) Creating service instance with name %s\n Input: %+v", i, *c.DatabaseClient.client.MaxRetries, input.Name, input))
 
