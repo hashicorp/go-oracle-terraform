@@ -1,3 +1,7 @@
+## 0.2.0 (July 27, 2017)
+
+ * service_instance: Switches yes/no strings to bool in input struct and then converts back to strings for ease of use on user end ([#80](https://github.com/hashicorp/go-oracle-terraform/issues/80))
+
 ## 0.1.9 (July 20, 2017)
 
  * service_instance: Update delete retry count ([#79](https://github.com/hashicorp/go-oracle-terraform/issues/79))
