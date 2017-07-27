@@ -23,7 +23,15 @@ func (c *StorageClient) updateResource(name string, requestHeaders interface{}) 
 }
 
 func (c *StorageClient) getResource(name string, responseBody interface{}) (*http.Response, error) {
-	rsp, err := c.executeRequest("GET", name, nil)
+	return c.getResourceHeaders(name, responseBody, nil)
+}
+
+func (c *StorageClient) getResourceHeaders(
+	name string,
+	responseBody interface{},
+	requestHeaders interface{},
+) (*http.Response, error) {
+	rsp, err := c.executeRequest("GET", name, requestHeaders)
 	if err != nil {
 		return nil, err
 	}
