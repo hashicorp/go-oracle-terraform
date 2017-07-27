@@ -55,13 +55,6 @@ const (
 	ServiceInstanceLevelBasic ServiceInstanceLevel = "BASIC"
 )
 
-type ServiceInstanceBool string
-
-const (
-	ServiceInstanceYes ServiceInstanceBool = "yes"
-	ServiceInstanceNo  ServiceInstanceBool = "no"
-)
-
 type ServiceInstanceBackupDestination string
 
 const (
@@ -284,7 +277,7 @@ type CreateServiceInstanceInput struct {
 }
 
 type Parameter struct {
-	AdditonalParameters AdditionalParameters `json:"additionalParams,omitempty"`
+	AdditionalParameters AdditionalParameters `json:"additionalParams,omitempty"`
 	// Password for Oracle Database administrator users sys and system. The password must meet the following requirements:
 	// Starts with a letter
 	// Is between 8 and 30 characters long
@@ -344,22 +337,22 @@ type Parameter struct {
 	// Default value is no.
 	// This option is applicable only when failoverDatabase is set to yes.
 	// Optional
-	DisasterRecovery ServiceInstanceBool `json:"disasterRecovery,omitempty"`
+	DisasterRecovery string `json:"disasterRecovery,omitempty"`
 	// Specify if an Oracle Data Guard configuration comprising a primary database and a
 	// standby database is created. Valid values are yes and no. Default value is no.
 	// You cannot set both failoverDatabase and isRac to yes.
 	// Optional
-	FailoverDatabase ServiceInstanceBool `json:"failoverDatabase,omitempty"`
+	FailoverDatabase string `json:"failoverDatabase,omitempty"`
 	// Specify if the database should be configured for use as the replication database of an
 	// Oracle GoldenGate Cloud Service instance. Valid values are yes and no. Default value is no.
 	// You cannot set goldenGate to yes if either isRac or failoverDatabase is set to yes.
 	// Optional
-	GoldenGate ServiceInstanceBool `json:"goldenGate,omitempty"`
+	GoldenGate string `json:"goldenGate,omitempty"`
 	// Specify if the service instance's database should, after the instance is created, be replaced
 	// by a database stored in an existing cloud backup that was created using Oracle Database Backup
 	// Cloud Service. Valid values are yes and no. Default value is no.
 	// Optional
-	IBKUP ServiceInstanceBool `json:"ibkup,omitempty"`
+	IBKUP string `json:"ibkup,omitempty"`
 	// Name of the Oracle Storage Cloud Service container where the existing cloud backup is stored.
 	// This parameter is required if ibkup is set to yes.
 	IBKUPCloudStoragePassword string `json:"ibkupCloudStoragePassword,omitempty"`
@@ -380,7 +373,7 @@ type Parameter struct {
 	// Specify if a cluster database using Oracle Real Application Clusters should be configured.
 	// Valid values are yes and no. Default value is no.
 	// Optional
-	IsRAC ServiceInstanceBool `json:"isRac,omitempty"`
+	IsRAC string `json:"isRac,omitempty"`
 	// National Character Set for the Database Cloud Service instance.
 	// Default value is AL16UTF16.
 	// Optional.
@@ -438,7 +431,7 @@ type Parameter struct {
 type AdditionalParameters struct {
 	// Indicates whether to include the Demos PDB
 	// Optional
-	DBDemo ServiceInstanceBool `json:"db_demo,omitempty"`
+	DBDemo string `json:"db_demo,omitempty"`
 }
 
 // CreateServiceInstance creates a new ServiceInstace.
@@ -589,4 +582,11 @@ func (c *ServiceInstanceClient) WaitForServiceInstanceDeleted(input *GetServiceI
 			return false, nil
 		}
 	})
+}
+
+func (c *ServiceInstanceClient) SwapBoolToString(val bool) string {
+	if val == true {
+		return "yes"
+	}
+	return "no"
 }
