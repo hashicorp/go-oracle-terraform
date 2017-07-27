@@ -212,8 +212,8 @@ const (
 type ServiceInstanceStatus string
 
 const (
-	// 	Configured: the service instance has failed.
-	ServiceInstanceConfigured ServiceInstanceStatus = "Failed"
+	// 	Failed: the service instance has failed.
+	ServiceInstanceFailed ServiceInstanceStatus = "Failed"
 	//	In Progress: the service instance is being created.
 	ServiceInstanceInProgress ServiceInstanceStatus = "In Progress"
 	//	Maintenance: the service instance is being stopped, started, restarted or scaled.
@@ -1236,10 +1236,10 @@ func (c *ServiceInstanceClient) WaitForServiceInstanceRunning(input *GetServiceI
 		switch s := info.Status; s {
 		case ServiceInstanceRunning: // Target State
 			c.client.DebugLogString("Service Instance Running")
-			return false, nil
-		case ServiceInstanceConfigured:
-			c.client.DebugLogString("Service Instance Configured")
 			return true, nil
+		case ServiceInstanceFailed:
+			c.client.DebugLogString("Service Instance Failed")
+			return false, fmt.Errorf("Service Instance Creation Failed")
 		case ServiceInstanceInProgress:
 			c.client.DebugLogString("Service Instance is being created")
 			return false, nil
@@ -1277,17 +1277,8 @@ func (c *ServiceInstanceClient) DeleteServiceInstance(deleteInput *DeleteService
 	if c.Timeout == 0 {
 		c.Timeout = WaitForServiceInstanceDeleteTimeout
 	}
-	// Call to delete the service instance
-	// If delete fails, rerun it in case the instance still has not been setup correctly.
-	// An instance takes additional time to setup after it's configured.
-	var deleteErr error
-	for i := 0; i < ServiceInstanceDeleteRetry; i++ {
-		if deleteErr = c.deleteResource(deleteInput.Name); deleteErr != nil {
-			time.Sleep(30 * time.Second)
-			continue
-		}
-		break
-	}
+
+	deleteErr := c.deleteResource(deleteInput.Name); deleteErr != nil {
 	if deleteErr != nil {
 		return deleteErr
 	}
