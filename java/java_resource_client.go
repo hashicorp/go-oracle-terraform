@@ -65,6 +65,23 @@ func (c *ResourceClient) deleteResource(name string) error {
 	return nil
 }
 
+// ServiceInstance needs a PUT and a body to be destroyed
+func (c *ResourceClient) deleteInstanceResource(name string, requestBody interface{}) error {
+	var objectPath string
+	if name != "" {
+		objectPath = c.getObjectPath(c.ResourceRootPath, name)
+	} else {
+		objectPath = c.ResourceRootPath
+	}
+	_, err := c.executeRequest("PUT", objectPath, requestBody)
+	if err != nil {
+		return err
+	}
+
+	// No errors and no response body to write
+	return nil
+}
+
 func (c *ResourceClient) unmarshalResponseBody(resp *http.Response, iface interface{}) error {
 	buf := new(bytes.Buffer)
 	buf.ReadFrom(resp.Body)

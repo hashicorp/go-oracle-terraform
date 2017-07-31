@@ -2,6 +2,7 @@ package java
 
 import (
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/hashicorp/go-oracle-terraform/client"
@@ -12,8 +13,8 @@ const WaitForServiceInstanceDeleteTimeout = time.Duration(3600 * time.Second)
 const ServiceInstanceDeleteRetry = 30
 
 var (
-	ServiceInstanceContainerPath = "/paas/service/dbcs/api/v1.1/instances/%s"
-	ServiceInstanceResourcePath  = "/paas/service/dbcs/api/v1.1/instances/%s/%s"
+	ServiceInstanceContainerPath = "/paas/service/jcs/api/v1.1/instances/%s"
+	ServiceInstanceResourcePath  = "/paas/service/jcs/api/v1.1/instances/%s/%s"
 )
 
 // ServiceInstanceClient is a client for the Service functions of the Java API.
@@ -44,13 +45,6 @@ const (
 	// BASIC: Development-level service. Supports Oracle Java Cloud Service instance creation and monitoring
 	// but does not support backup and restoration, patching, or scaling.
 	ServiceInstanceLevelBasic ServiceInstanceLevel = "BASIC"
-)
-
-type ServiceInstanceBool string
-
-const (
-	ServiceInstanceYes ServiceInstanceBool = "yes"
-	ServiceInstanceNo  ServiceInstanceBool = "no"
 )
 
 type ServiceInstanceBackupDestination string
@@ -537,7 +531,7 @@ type CreateServiceInstanceInput struct {
 	CloudStorageContainer string `json:"cloudStorageContainer,omitempty"`
 	// Password for the Oracle Storage Cloud Service administrator.
 	// Must be specified if cloudStorageContainer is set.
-	CloudStoragePassword string `json:"cloudStoragePwd,omitempty"`
+	CloudStoragePassword string `json:"cloudStoragePassword,omitempty"`
 	// Username for the Oracle Storage Cloud Service administrator.
 	// Must be specified if cloudStorageContainer is set.
 	CloudStorageUsername string `json:"cloudStorageUser,omitempty"`
@@ -700,7 +694,7 @@ type Parameter struct {
 	// host:port/serviceName
 	// For example, foo.bar.com:1521:orcl or foo.bar.com:1521/mydbservice
 	// Note the difference between Oracle Public Cloud and Oracle Cloud Machine.
-	// // On Oracle Public Cloud, this attribute is required only when you specify a
+	// On Oracle Public Cloud, this attribute is required only when you specify a
 	// Virtual Image service level of Database Cloud Service in dbServiceName. It is used to
 	//  connect to the database deployment on Database Cloud Service - Virtual Image.
 	// On Oracle Cloud machine, this is the string that is used to connect to the database.
@@ -948,7 +942,7 @@ type Parameter struct {
 	// For example, you can express 10 GBs as bytes or GBs. For example: 100000000000 or 10G.
 	//  This value defaults to the system configured volume size.
 	// Optional.
-	MWVolumeSize string `json:"mwVolumeSize"`
+	MWVolumeSize string `json:"mwVolumeSize,omitempty"`
 	// Note: This attribute is valid when component type is set to weblogic only;
 	// it is not valid for otd or datagrid.
 	// Password for Node Manager. This value defaults to the WebLogic administrator password
@@ -1019,8 +1013,8 @@ type Parameter struct {
 	PrivilegedSecuredListenerPort int `json:"privilegedSecuredListenerPort,omitempty"`
 	// Note: This attribute is valid when component type is set to datagrid only; it is not valid for weblogic or otd.
 	// Required when using a custom capacity unit only. Groups attributes for a custom capacity unit.
-	// Required.
-	ScalingUnit ScalingUnit `json:"scalingUnit"`
+	// Optional.
+	ScalingUnit ScalingUnit `json:"scalingUnit,omitempty"`
 	// Note: This attribute is valid when component type is set to datagrid only;
 	// it is not valid for weblogic or otd.
 	// The number of capacity units to add.
@@ -1028,8 +1022,8 @@ type Parameter struct {
 	// for Coherence, based on the capacity unit's predefined properties for number of
 	// VMs, number of JVMs per VM, and heap size for each JVM.
 	// This value cannot be 0 (zero).
-	// Required.
-	ScalingUnitCount int `json:"scalingUnitCount"`
+	// Optional.
+	ScalingUnitCount int `json:"scalingUnitCount,omitempty"`
 	// Note: This attribute is valid when component type is set to datagrid only;
 	// it is not valid for weblogic or otd.
 	// Each default capacity unit is one or three VMs with a predefined compute shape
@@ -1039,7 +1033,7 @@ type Parameter struct {
 	// JVM heap size into thirds: using 1/3 for primary cache storage, 1/3 for backup storage,
 	// and 1/3 for scratch space.
 	// Required when using a default capacity unit only.
-	ScalingUnitName ServiceInstanceScalingUnitName `json:"scalingUnitName"`
+	ScalingUnitName ServiceInstanceScalingUnitName `json:"scalingUnitName,omitempty"`
 	// Note: This attribute is valid when component type is set to weblogic only;
 	// it is not valid for otd or datagrid.
 	// Port for accessing the Administration Server using HTTPS.
@@ -1065,7 +1059,7 @@ type Parameter struct {
 	// This value has no effect if the load balanced is disabled.
 	// The default value is 8081.
 	// Optional.
-	SecuredListenerPort int `json:"securedListenerPort"`
+	SecuredListenerPort int `json:"securedListenerPort,omitempty"`
 	// Desired compute shape. A shape defines the number of Oracle Compute Units (OCPUs)
 	// and amount of memory (RAM).
 	// Required.
@@ -1120,7 +1114,7 @@ type Parameter struct {
 	// Specify only one of the public key attributes for weblogic and otd:
 	// VMsPublicKey or VMsPublicKeyName
 	// Optional.
-	VMsPublicKeyName string `json:"VMsPublicKeyName"`
+	VMsPublicKeyName string `json:"VMsPublicKeyName,omitempty"`
 }
 
 type AppDB struct {
@@ -1183,13 +1177,20 @@ func (c *ServiceInstanceClient) CreateServiceInstance(input *CreateServiceInstan
 	if c.Timeout == 0 {
 		c.Timeout = WaitForServiceInstanceReadyTimeout
 	}
-	// return nil, fmt.Errorf("%+v", input)
-	for i := 0; i < *c.JavaClient.client.MaxRetries; i++ {
-		c.client.DebugLogString(fmt.Sprintf("(Iteration: %d of %d) Creating service instance with name %s\n Input: %+v", i, *c.JavaClient.client.MaxRetries, input.Name, input))
 
-		serviceInstance, serviceInstanceError = c.startServiceInstance(input.Name, input)
+	// Since these CloudStorageUsername and CloudStoragePassword are sensitive we'll read them
+	// from the environment if they aren't passed in.
+	if input.CloudStorageContainer != "" && input.CloudStorageUsername == "" && input.CloudStoragePassword == "" {
+		input.CloudStorageUsername = os.Getenv("OPC_USERNAME")
+		input.CloudStoragePassword = os.Getenv("OPC_PASSWORD")
+	}
+
+	for i := 0; i < *c.JavaClient.client.MaxRetries; i++ {
+		c.client.DebugLogString(fmt.Sprintf("(Iteration: %d of %d) Creating service instance with name %s\n Input: %+v", i, *c.JavaClient.client.MaxRetries, input.ServiceName, input))
+
+		serviceInstance, serviceInstanceError = c.startServiceInstance(input.ServiceName, input)
 		if serviceInstanceError == nil {
-			c.client.DebugLogString(fmt.Sprintf("(Iteration: %d of %d) Finished creating service instance with name %s\n Info: %+v", i, *c.JavaClient.client.MaxRetries, input.Name, serviceInstance))
+			c.client.DebugLogString(fmt.Sprintf("(Iteration: %d of %d) Finished creating service instance with name %s\n Info: %+v", i, *c.JavaClient.client.MaxRetries, input.ServiceName, serviceInstance))
 			return serviceInstance, nil
 		}
 	}
@@ -1232,7 +1233,7 @@ func (c *ServiceInstanceClient) WaitForServiceInstanceRunning(input *GetServiceI
 		if getErr != nil {
 			return false, getErr
 		}
-		c.client.DebugLogString(fmt.Sprintf("Service instance name is %v, Service instance info is %+v", info.Name, info))
+		c.client.DebugLogString(fmt.Sprintf("Service instance name is %v, Service instance info is %+v", info.ServiceName, info))
 		switch s := info.Status; s {
 		case ServiceInstanceRunning: // Target State
 			c.client.DebugLogString("Service Instance Running")
@@ -1270,7 +1271,25 @@ func (c *ServiceInstanceClient) GetServiceInstance(getInput *GetServiceInstanceI
 type DeleteServiceInstanceInput struct {
 	// Name of the Java Cloud Service instance.
 	// Required.
-	Name string `json:"serviceId"`
+	Name string `json:"-"`
+	// User name for the database administrator.
+	// Required.
+	DBAUsername string `json:"dbaName"`
+	// The database administrator password that was specified when the Database Cloud Service database deployment
+	// was created or the password for the database administrator.
+	// Required.
+	DBAPassword string `json:"dbaPassword"`
+	// Flag that specifies whether you want to force the removal of the service instance even if the database
+	// instance cannot be reached to delete the database schemas. If set to true, you may need to delete the associated
+	// database schemas manually on the database instance if they are not deleted as part of the service instance
+	// delete operation.
+	// The default value is false.
+	// Optional.
+	ForceDelete bool `json:"forceDelete,omitempty"`
+	// Flag that specifies whether you want to back up the service instance or skip backing up the instance before deleting it.
+	// The default value is true (that is, skip backing up).
+	// Optional.
+	SkipBackupOnTerminate bool `json:"skipBackupOnTerminate,omitempty"`
 }
 
 func (c *ServiceInstanceClient) DeleteServiceInstance(deleteInput *DeleteServiceInstanceInput) error {
@@ -1278,7 +1297,7 @@ func (c *ServiceInstanceClient) DeleteServiceInstance(deleteInput *DeleteService
 		c.Timeout = WaitForServiceInstanceDeleteTimeout
 	}
 
-	deleteErr := c.deleteResource(deleteInput.Name); deleteErr != nil {
+	deleteErr := c.deleteInstanceResource(deleteInput.Name, deleteInput)
 	if deleteErr != nil {
 		return deleteErr
 	}
