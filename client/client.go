@@ -85,7 +85,6 @@ func (c *Client) BuildRequest(method, path string, body interface{}) (*http.Requ
 		}
 		requestBody = bytes.NewReader(marshaled)
 	}
-	// return nil, fmt.Errorf("%s", marshaled)
 
 	// Create request
 	req, err := http.NewRequest(method, c.formatURL(urlPath), requestBody)
