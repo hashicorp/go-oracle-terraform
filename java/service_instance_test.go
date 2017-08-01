@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/hashicorp/go-oracle-terraform/database"
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
 )
@@ -15,7 +16,6 @@ const (
 	_ServiceInstanceType                        = "weblogic"
 	_ServiceInstanceDBAUser                     = "sys"
 	_ServiceInstanceDBAPassword                 = "Test_String7"
-	_ServiceInstanceDBServiceName               = "test-service-instance-matthew"
 	_ServiceInstanceShape                       = "oc1m"
 	_ServiceInstanceVersion                     = "12.2.1"
 	_ServiceInstanceAdminUsername               = "sdk-user"
@@ -28,10 +28,37 @@ const (
 func TestAccServiceInstanceLifeCycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
-	siClient, err := getServiceInstanceTestClients()
+	siClient, dClient, err := getServiceInstanceTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	databaseParameter := &Parameter{
+		AdminPassword:                   _ServiceInstancePassword,
+		BackupDestination:               _ServiceInstanceBackupDestinationBoth,
+		SID:                             _ServiceInstanceDBSID,
+		Type:                            _ServiceInstanceType,
+		UsableStorage:                   _ServiceInstanceUsableStorage,
+		CloudStorageContainer:           _ServiceInstanceCloudStorageContainer,
+		CreateStorageContainerIfMissing: _ServiceInstanceCloudStorageCreateIfMissing,
+	}
+
+	createDatabaseServiceInstance := &CreateServiceInstanceInput{
+		Name:             _ServiceInstanceName,
+		Edition:          _ServiceInstanceEdition,
+		Level:            _ServiceInstanceLevel,
+		Shape:            _ServiceInstanceShape,
+		SubscriptionType: _ServiceInstanceSubscription,
+		Version:          _ServiceInstanceVersion,
+		VMPublicKey:      _ServiceInstancePubKey,
+		Parameters:       []Parameter{*parameter},
+	}
+
+	_, err = dClient.CreateServiceInstance(createDatabaseServiceInstance)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer destroyServiceInstance(t, dClient, _ServiceInstanceName)
 
 	parameter := Parameter{
 		Type:          _ServiceInstanceType,
@@ -74,13 +101,18 @@ func TestAccServiceInstanceLifeCycle(t *testing.T) {
 	}
 }
 
-func getServiceInstanceTestClients() (*ServiceInstanceClient, error) {
+func getServiceInstanceTestClients() (*ServiceInstanceClient, *database.ServiceInstanceClient, error) {
 	client, err := getJavaTestClient(&opc.Config{})
 	if err != nil {
-		return &ServiceInstanceClient{}, err
+		return &ServiceInstanceClient{}, &database.ServiceInstanceClient, err
 	}
 
-	return client.ServiceInstanceClient(), nil
+	dClient, err := database.getDatabaseTestClient(&opc.Config{})
+	if err != nil {
+		return &ServiceInstanceClient{}, &database.ServiceInstanceClient, err
+	}
+
+	return client.ServiceInstanceClient(), dClient.ServiceInstanceClient(), nil
 }
 
 func destroyServiceInstance(t *testing.T, client *ServiceInstanceClient, name string) {
