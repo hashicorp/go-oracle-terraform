@@ -2,6 +2,7 @@ package storage
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 	"time"
@@ -39,7 +40,12 @@ func NewStorageClient(c *opc.Config) (*StorageClient, error) {
 }
 
 func (c *StorageClient) executeRequest(method, path string, headers interface{}) (*http.Response, error) {
-	req, err := c.client.BuildRequest(method, path, nil)
+	return c.executeRequestBody(method, path, headers, nil)
+}
+
+// Breaking API's is bad.
+func (c *StorageClient) executeRequestBody(method, path string, headers interface{}, body io.ReadSeeker) (*http.Response, error) {
+	req, err := c.client.BuildNonJSONRequest(method, path, body)
 	if err != nil {
 		return nil, err
 	}

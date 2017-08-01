@@ -8,6 +8,7 @@ package storage
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"strconv"
 )
@@ -93,6 +94,10 @@ type CreateObjectInput struct {
 	// Name of the object.
 	// Required
 	Name string
+	// Body of the request to use. Accepts an io.ReadSeeker, so options are open to
+	// the downstream consumer
+	// Required
+	Body io.ReadSeeker
 	// Name of the container to place the object
 	// Required
 	Container string
@@ -102,23 +107,9 @@ type CreateObjectInput struct {
 	// Set the content-encoding metadata
 	// Optional
 	ContentEncoding string
-	// Set the length of the object content.
-	// Do not set if chunked transfer encoding is being used.
-	// Optional
-	ContentLength int
 	// Changes the MIME type for the object
-	// Optional
+	// Optional - Defaults to 'text/plain'
 	ContentType string
-	// MD5 checksum value of the request body. Unquoted
-	// Strongly recommended, not required.
-	ETag string
-
-	// TODO: If-None-Match.
-
-	// Sets the transfer encoding. Can only be "chunked" or nil.
-	// Requires content-length to be 0 if set.
-	// Optional
-	TransferEncoding string
 	// Specify the `container/object` to copy from. Must be UTF-8 encoded
 	// and the name of the container and object must be URL-encoded
 	// Optional
@@ -127,6 +118,15 @@ type CreateObjectInput struct {
 	// Optional
 	DeleteAt int
 
+	// MD5 checksum value of the request body. Unquoted
+	// Strongly recommended, not required.
+	ETag string
+	// TODO: If-None-Match.
+
+	// Sets the transfer encoding. Can only be "chunked" or nil.
+	// Requires content-length to be 0 if set.
+	// Optional
+	TransferEncoding string
 	// TODO: X-Object-Meta-{name}
 }
 
@@ -135,9 +135,6 @@ func (c *ObjectClient) CreateObject(input *CreateObjectInput) (*ObjectInfo, erro
 	headers := make(map[string]string)
 
 	name := c.getQualifiedName(fmt.Sprintf("%s/%s", input.Container, input.Name))
-
-	// Build headers for request
-	headers[h_ContentLength] = fmt.Sprintf("%d", input.ContentLength)
 
 	if input.ContentDisposition != "" {
 		headers[h_ContentDisposition] = input.ContentDisposition
@@ -161,7 +158,11 @@ func (c *ObjectClient) CreateObject(input *CreateObjectInput) (*ObjectInfo, erro
 		headers[h_DeleteAt] = fmt.Sprintf("%d", input.DeleteAt)
 	}
 
-	if err := c.createResource(name, headers); err != nil {
+	if input.Body == nil {
+		return nil, fmt.Errorf("Body cannot be nil")
+	}
+
+	if err := c.createResourceBody(name, headers, input.Body); err != nil {
 		return nil, err
 	}
 
@@ -234,7 +235,7 @@ type DeleteObjectInput struct {
 
 func (c *ObjectClient) DeleteObject(input *DeleteObjectInput) error {
 	name := fmt.Sprintf("%s/%s", input.Container, input.Name)
-	return c.deleteResource(name)
+	return c.deleteResource(c.getQualifiedName(name))
 }
 
 func (c *ObjectClient) success(resp *http.Response, object *ObjectInfo) (*ObjectInfo, error) {
