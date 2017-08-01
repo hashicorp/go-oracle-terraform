@@ -1,3 +1,7 @@
+## 0.3.0 (August 1, 2017)
+
+ * Add snapshots to storage cloud ([#81](https://github.com/hashicorp/go-oracle-terraform/issues/81))
+ 
 ## 0.2.0 (July 27, 2017)
 
  * service_instance: Switches yes/no strings to bool in input struct and then converts back to strings for ease of use on user end ([#80](https://github.com/hashicorp/go-oracle-terraform/issues/80))
