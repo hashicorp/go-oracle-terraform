@@ -39,11 +39,13 @@ func NewStorageClient(c *opc.Config) (*StorageClient, error) {
 	return sClient, nil
 }
 
+// Execute a request with a nil body
 func (c *StorageClient) executeRequest(method, path string, headers interface{}) (*http.Response, error) {
 	return c.executeRequestBody(method, path, headers, nil)
 }
 
-// Breaking API's is bad.
+// Execute a request with a body supplied. The body can be nil for the request.
+// Does not marshal the body into json to create the request
 func (c *StorageClient) executeRequestBody(method, path string, headers interface{}, body io.ReadSeeker) (*http.Response, error) {
 	req, err := c.client.BuildNonJSONRequest(method, path, body)
 	if err != nil {
