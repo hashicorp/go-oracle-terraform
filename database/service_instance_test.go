@@ -125,7 +125,7 @@ func TestAccServiceInstanceCloudStorage(t *testing.T) {
 }
 
 func getServiceInstanceTestClients() (*ServiceInstanceClient, error) {
-	client, err := getDatabaseTestClient(&opc.Config{})
+	client, err := GetDatabaseTestClient(&opc.Config{})
 	if err != nil {
 		return &ServiceInstanceClient{}, err
 	}

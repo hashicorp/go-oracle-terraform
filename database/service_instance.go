@@ -494,6 +494,7 @@ func (c *ServiceInstanceClient) startServiceInstance(name string, input *CreateS
 		}
 		return nil, serviceInstanceError
 	}
+	time.Sleep(10 * time.Minute)
 	return serviceInstance, nil
 }
 
