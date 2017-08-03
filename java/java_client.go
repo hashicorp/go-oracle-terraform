@@ -3,13 +3,11 @@ package java
 import (
 	"fmt"
 	"net/http"
-	"strings"
 
 	"github.com/hashicorp/go-oracle-terraform/client"
 	"github.com/hashicorp/go-oracle-terraform/opc"
 )
 
-const JAVA_ACCOUNT = "/Java-%s"
 const AUTH_HEADER = "Authorization"
 const TENANT_HEADER = "X-ID-TENANT-NAME"
 const JAVA_QUALIFIED_NAME = "%s%s/%s"
@@ -55,40 +53,6 @@ func (c *JavaClient) executeRequest(method, path string, body interface{}) (*htt
 		return nil, err
 	}
 	return resp, nil
-}
-
-func (c *JavaClient) getAccount() string {
-	return fmt.Sprintf(JAVA_ACCOUNT, *c.client.IdentityDomain)
-}
-
-// GetQualifiedName returns the fully-qualified name of a java object, e.g. /v1/{account}/{name}
-func (c *JavaClient) getQualifiedName(version string, name string) string {
-	if name == "" {
-		return ""
-	}
-	if strings.HasPrefix(name, "/Java-") || strings.HasPrefix(name, "v1/") {
-		return name
-	}
-	return fmt.Sprintf(JAVA_QUALIFIED_NAME, version, c.getAccount(), name)
-}
-
-// GetUnqualifiedName returns the unqualified name of a Java object, e.g. the {name} part of /v1/{account}/{name}
-func (c *JavaClient) getUnqualifiedName(name string) string {
-	if name == "" {
-		return name
-	}
-	if !strings.Contains(name, "/") {
-		return name
-	}
-
-	nameParts := strings.Split(name, "/")
-	return strings.Join(nameParts[len(nameParts)-1:], "/")
-}
-
-func (c *JavaClient) unqualify(names ...*string) {
-	for _, name := range names {
-		*name = c.getUnqualifiedName(*name)
-	}
 }
 
 func (c *JavaClient) getContainerPath(root string) string {

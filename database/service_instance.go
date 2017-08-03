@@ -494,6 +494,8 @@ func (c *ServiceInstanceClient) startServiceInstance(name string, input *CreateS
 		}
 		return nil, serviceInstanceError
 	}
+	// Jobs are still running on  the instance after it's configured and we need to sleep until they are done.
+	//It doesn't take more than ten minutes however there isn't a way to check for completion
 	time.Sleep(10 * time.Minute)
 	return serviceInstance, nil
 }
