@@ -34,7 +34,7 @@ func TestAccServiceInstanceLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	parameter := &Parameter{
+	parameter := ParameterInput{
 		AdminPassword:     _ServiceInstancePassword,
 		BackupDestination: _ServiceInstanceBackupDestination,
 		SID:               _ServiceInstanceDBSID,
@@ -50,7 +50,7 @@ func TestAccServiceInstanceLifeCycle(t *testing.T) {
 		SubscriptionType: _ServiceInstanceSubscription,
 		Version:          _ServiceInstanceVersion,
 		VMPublicKey:      _ServiceInstancePubKey,
-		Parameters:       []Parameter{*parameter},
+		Parameter:        parameter,
 	}
 
 	_, err = siClient.CreateServiceInstance(createServiceInstance)
