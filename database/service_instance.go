@@ -547,7 +547,13 @@ func (c *ServiceInstanceClient) GetServiceInstance(getInput *GetServiceInstanceI
 type DeleteServiceInstanceInput struct {
 	// Name of the Database Cloud Service instance.
 	// Required.
-	Name string `json:"serviceId"`
+	Name string `json:"-"`
+	// Flag that when set to true deletes all backups of the service instance from Oracle Cloud Storage container.
+	// Use caution in specifying this option. If this option is specified, instance can not be recovered as all backups
+	// will be deleted. This option is not currently supported for Cluster Databases.
+	// Default value is false.
+	// Optional
+	DeleteBackup bool `json:"deleteBackup"`
 }
 
 func (c *ServiceInstanceClient) DeleteServiceInstance(deleteInput *DeleteServiceInstanceInput) error {
@@ -559,7 +565,7 @@ func (c *ServiceInstanceClient) DeleteServiceInstance(deleteInput *DeleteService
 	// An instance takes additional time to setup after it's configured.
 	var deleteErr error
 	for i := 0; i < ServiceInstanceDeleteRetry; i++ {
-		if deleteErr = c.deleteResource(deleteInput.Name); deleteErr != nil {
+		if deleteErr = c.deleteResource(deleteInput.Name, deleteInput); deleteErr != nil {
 			time.Sleep(30 * time.Second)
 			continue
 		}

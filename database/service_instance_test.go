@@ -24,6 +24,7 @@ const (
 	_ServiceInstanceCloudStorageContainer       = "Storage-canonical/test-database-instance"
 	_ServiceInstanceCloudStorageCreateIfMissing = true
 	_ServiceInstanceBackupDestinationBoth       = "BOTH"
+	_ServiceInstanceDeleteBackup                = true
 )
 
 func TestAccServiceInstanceLifeCycle(t *testing.T) {
@@ -135,7 +136,8 @@ func getServiceInstanceTestClients() (*ServiceInstanceClient, error) {
 
 func destroyServiceInstance(t *testing.T, client *ServiceInstanceClient, name string) {
 	input := &DeleteServiceInstanceInput{
-		Name: name,
+		Name:         name,
+		DeleteBackup: _ServiceInstanceDeleteBackup,
 	}
 
 	if err := client.DeleteServiceInstance(input); err != nil {
