@@ -82,7 +82,7 @@ func TestAccServiceInstanceCloudStorage(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	parameter := &Parameter{
+	parameter := ParameterInput{
 		AdminPassword:                   _ServiceInstancePassword,
 		BackupDestination:               _ServiceInstanceBackupDestinationBoth,
 		SID:                             _ServiceInstanceDBSID,
@@ -100,7 +100,7 @@ func TestAccServiceInstanceCloudStorage(t *testing.T) {
 		SubscriptionType: _ServiceInstanceSubscription,
 		Version:          _ServiceInstanceVersion,
 		VMPublicKey:      _ServiceInstancePubKey,
-		Parameters:       []Parameter{*parameter},
+		Parameter:        parameter,
 	}
 
 	_, err = siClient.CreateServiceInstance(createServiceInstance)

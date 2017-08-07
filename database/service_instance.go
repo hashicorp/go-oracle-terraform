@@ -459,9 +459,9 @@ func (c *ServiceInstanceClient) CreateServiceInstance(input *CreateServiceInstan
 	}
 	// Since these CloudStorageUsername and CloudStoragePassword are sensitive we'll read them
 	// from the client if they haven't specified in the config.
-	if input.Parameters[0].CloudStorageContainer != "" && input.Parameters[0].CloudStorageUsername == "" && input.Parameters[0].CloudStoragePassword == "" {
-		input.Parameters[0].CloudStorageUsername = *c.ResourceClient.DatabaseClient.client.UserName
-		input.Parameters[0].CloudStoragePassword = *c.ResourceClient.DatabaseClient.client.Password
+	if input.Parameter.CloudStorageContainer != "" && input.Parameter.CloudStorageUsername == "" && input.Parameter.CloudStoragePassword == "" {
+		input.Parameter.CloudStorageUsername = *c.ResourceClient.DatabaseClient.client.UserName
+		input.Parameter.CloudStoragePassword = *c.ResourceClient.DatabaseClient.client.Password
 	}
 
 	// Create request where bools(true/false) are switched to strings(yes/no).
