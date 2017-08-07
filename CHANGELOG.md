@@ -1,3 +1,7 @@
+## 0.3.2 (August 7, 2017)
+
+* Add `id` for storage objects ([#84](https://github.com/hashicorp/go-oracle-terraform/issues/84))
+
 ## 0.3.1 (August 7, 2017)
 
 * Update tests for Database parameter changes ([#83](https://github.com/hashicorp/go-oracle-terraform/issues/83))
