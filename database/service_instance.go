@@ -2,7 +2,6 @@ package database
 
 import (
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/hashicorp/go-oracle-terraform/client"
@@ -452,10 +451,10 @@ func (c *ServiceInstanceClient) CreateServiceInstance(input *CreateServiceInstan
 		c.Timeout = WaitForServiceInstanceReadyTimeout
 	}
 	// Since these CloudStorageUsername and CloudStoragePassword are sensitive we'll read them
-	// from the environment if they aren't passed in.
+	// from the client if they haven't specified in the config.
 	if input.Parameters[0].CloudStorageContainer != "" && input.Parameters[0].CloudStorageUsername == "" && input.Parameters[0].CloudStoragePassword == "" {
-		input.Parameters[0].CloudStorageUsername = os.Getenv("OPC_USERNAME")
-		input.Parameters[0].CloudStoragePassword = os.Getenv("OPC_PASSWORD")
+		input.Parameters[0].CloudStorageUsername = *c.ResourceClient.DatabaseClient.client.UserName
+		input.Parameters[0].CloudStoragePassword = *c.ResourceClient.DatabaseClient.client.Password
 	}
 
 	for i := 0; i < *c.DatabaseClient.client.MaxRetries; i++ {

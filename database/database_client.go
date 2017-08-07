@@ -10,6 +10,7 @@ import (
 )
 
 const DB_ACCOUNT = "/Database-%s"
+const DB_USERNAME = "/Database-%s:%s"
 const AUTH_HEADER = "Authorization"
 const TENANT_HEADER = "X-ID-TENANT-NAME"
 const DB_QUALIFIED_NAME = "%s%s/%s"
@@ -55,6 +56,10 @@ func (c *DatabaseClient) executeRequest(method, path string, body interface{}) (
 		return nil, err
 	}
 	return resp, nil
+}
+
+func (c *DatabaseClient) getUserName() string {
+	return fmt.Sprintf(DB_USERNAME, *c.client.IdentityDomain, *c.client.UserName)
 }
 
 func (c *DatabaseClient) getAccount() string {

@@ -2,7 +2,6 @@ package java
 
 import (
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/hashicorp/go-oracle-terraform/client"
@@ -1181,8 +1180,8 @@ func (c *ServiceInstanceClient) CreateServiceInstance(input *CreateServiceInstan
 	// Since these CloudStorageUsername and CloudStoragePassword are sensitive we'll read them
 	// from the environment if they aren't passed in.
 	if input.CloudStorageContainer != "" && input.CloudStorageUsername == "" && input.CloudStoragePassword == "" {
-		input.CloudStorageUsername = os.Getenv("OPC_USERNAME")
-		input.CloudStoragePassword = os.Getenv("OPC_PASSWORD")
+		input.CloudStorageUsername = *c.ResourceClient.JavaClient.client.UserName
+		input.CloudStoragePassword = *c.ResourceClient.JavaClient.client.UserName
 	}
 
 	for i := 0; i < *c.JavaClient.client.MaxRetries; i++ {
