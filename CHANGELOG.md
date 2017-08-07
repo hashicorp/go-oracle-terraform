@@ -1,3 +1,7 @@
+## 0.3.1 (August 7, 2017)
+
+* Update tests for Database parameter changes ([#83](https://github.com/hashicorp/go-oracle-terraform/issues/83))
+
 ## 0.3.0 (August 7, 2017)
  
  * Add JaaS Service Instances ([#82](https://github.com/hashicorp/go-oracle-terraform/issues/82))
