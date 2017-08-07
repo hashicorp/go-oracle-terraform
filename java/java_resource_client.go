@@ -1,4 +1,4 @@
-package database
+package java
 
 import (
 	"bytes"
@@ -11,7 +11,7 @@ import (
 
 // ResourceClient is an AuthenticatedClient with some additional information about the resources to be addressed.
 type ResourceClient struct {
-	*DatabaseClient
+	*JavaClient
 	ContainerPath    string
 	ResourceRootPath string
 }
@@ -49,14 +49,31 @@ func (c *ResourceClient) getResource(name string, responseBody interface{}) erro
 	return c.unmarshalResponseBody(resp, responseBody)
 }
 
-func (c *ResourceClient) deleteResource(name string, body interface{}) error {
+func (c *ResourceClient) deleteResource(name string) error {
 	var objectPath string
 	if name != "" {
 		objectPath = c.getObjectPath(c.ResourceRootPath, name)
 	} else {
 		objectPath = c.ResourceRootPath
 	}
-	_, err := c.executeRequest("DELETE", objectPath, body)
+	_, err := c.executeRequest("DELETE", objectPath, nil)
+	if err != nil {
+		return err
+	}
+
+	// No errors and no response body to write
+	return nil
+}
+
+// ServiceInstance needs a PUT and a body to be destroyed
+func (c *ResourceClient) deleteInstanceResource(name string, requestBody interface{}) error {
+	var objectPath string
+	if name != "" {
+		objectPath = c.getObjectPath(c.ResourceRootPath, name)
+	} else {
+		objectPath = c.ResourceRootPath
+	}
+	_, err := c.executeRequest("PUT", objectPath, requestBody)
 	if err != nil {
 		return err
 	}

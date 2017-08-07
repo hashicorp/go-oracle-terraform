@@ -1,4 +1,4 @@
-package database
+package java
 
 import (
 	"net/http"
@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/opc"
 )
 
-func GetDatabaseTestClient(c *opc.Config) (*DatabaseClient, error) {
+func getJavaTestClient(c *opc.Config) (*JavaClient, error) {
 	// Build up config with default values if omitted
 
 	if c.IdentityDomain == nil {
@@ -28,7 +28,7 @@ func GetDatabaseTestClient(c *opc.Config) (*DatabaseClient, error) {
 	}
 
 	if c.APIEndpoint == nil {
-		apiEndpoint, err := url.Parse(os.Getenv("OPC_DATABASE_ENDPOINT"))
+		apiEndpoint, err := url.Parse(os.Getenv("OPC_JAVA_ENDPOINT"))
 		if err != nil {
 			return nil, err
 		}
@@ -43,5 +43,5 @@ func GetDatabaseTestClient(c *opc.Config) (*DatabaseClient, error) {
 		}
 	}
 
-	return NewDatabaseClient(c)
+	return NewJavaClient(c)
 }
