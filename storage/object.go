@@ -211,14 +211,9 @@ func (c *ObjectClient) GetObject(input *GetObjectInput) (*ObjectInfo, error) {
 	var object ObjectInfo
 	headers := make(map[string]string)
 
-	var name string
-	if input.ID != "" {
-		name = c.getQualifiedName(input.ID)
-	} else {
-		if input.Container == "" && input.Name == "" {
-			return nil, fmt.Errorf("Either ID or Name and Container must be set during READ")
-		}
-		name = c.getQualifiedName(fmt.Sprintf("%s/%s", input.Container, input.Name))
+	name, err := c.getIdentifier(input.ID, input.Container, input.Name)
+	if err != nil {
+		return nil, err
 	}
 
 	// Build request headers
@@ -265,14 +260,9 @@ type DeleteObjectInput struct {
 
 // DeleteObject will delete the supplied object
 func (c *ObjectClient) DeleteObject(input *DeleteObjectInput) error {
-	var name string
-	if input.ID != "" {
-		name = input.ID
-	} else {
-		if input.Container == "" && input.Name == "" {
-			return fmt.Errorf("Either ID or Name and Container must be set during DELETE")
-		}
-		name = fmt.Sprintf("%s/%s", input.Container, input.Name)
+	name, err := c.getIdentifier(input.ID, input.Container, input.Name)
+	if err != nil {
+		return err
 	}
 
 	return c.deleteResource(c.getQualifiedName(name))
@@ -307,4 +297,18 @@ func (c *ObjectClient) success(resp *http.Response, object *ObjectInfo) (*Object
 	}
 
 	return object, nil
+}
+
+func (c *ObjectClient) getIdentifier(id, container, name string) (string, error) {
+	var result string
+	if id != "" {
+		result = id
+	} else {
+		if container == "" && name == "" {
+			return "", fmt.Errorf("Either ID or Name and Container must be set during DELETE")
+		}
+		result = fmt.Sprintf("%s/%s", container, name)
+	}
+
+	return c.getQualifiedName(result), nil
 }

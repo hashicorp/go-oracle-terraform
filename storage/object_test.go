@@ -14,8 +14,9 @@ import (
 
 const (
 	_TestObjectName          = "testing-acc-object"
-	_TestFileFixturesPath    = "./test-fixtures"
+	_TestFileFixturesPath    = "test-fixtures"
 	_TestSourceContentLength = 2351
+	_TestFileContentLength   = 2350
 	_TestContentType         = "text/plain;charset=UTF-8"
 	_TestAcceptRanges        = "bytes"
 )
@@ -62,6 +63,7 @@ func TestAccObjectLifeCycle_contentSource(t *testing.T) {
 		ContentLength:      _TestSourceContentLength,
 		ContentType:        _TestContentType,
 		DeleteAt:           0,
+		ID:                 fmt.Sprintf("%s/%s", _ContainerName, _TestObjectName),
 		ObjectManifest:     "",
 	}
 
@@ -87,7 +89,11 @@ func TestAccObjectLifeCycle_fileSource(t *testing.T) {
 	log.Printf("[DEBUG] Container created: %+v", container)
 
 	// Create body seeker
-	body, err := os.Open(_TestFileFixturesPath + "input.txt")
+	body, err := os.Open(_TestFileFixturesPath + "/input.txt")
+	if err != nil {
+		t.Fatalf("Error reading file: %v", err)
+	}
+
 	input := &CreateObjectInput{
 		Name:        _TestObjectName,
 		Container:   container.Name,
@@ -109,9 +115,10 @@ func TestAccObjectLifeCycle_fileSource(t *testing.T) {
 		Container:          _ContainerName,
 		ContentDisposition: "",
 		ContentEncoding:    "",
-		ContentLength:      _TestSourceContentLength,
+		ContentLength:      _TestFileContentLength,
 		ContentType:        _TestContentType,
 		DeleteAt:           0,
+		ID:                 fmt.Sprintf("%s/%s", _ContainerName, _TestObjectName),
 		ObjectManifest:     "",
 	}
 
@@ -223,7 +230,7 @@ func testAssertions(result, expected *ObjectInfo) error {
 	}
 	result.TransactionID = ""
 
-	if diff := pretty.Compare(expected, result); diff != "" {
+	if diff := pretty.Compare(result, expected); diff != "" {
 		return fmt.Errorf("Result Diff (-got +want)\n%s", diff)
 	}
 
