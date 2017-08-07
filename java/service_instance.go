@@ -1181,7 +1181,7 @@ func (c *ServiceInstanceClient) CreateServiceInstance(input *CreateServiceInstan
 	// from the environment if they aren't passed in.
 	if input.CloudStorageContainer != "" && input.CloudStorageUsername == "" && input.CloudStoragePassword == "" {
 		input.CloudStorageUsername = *c.ResourceClient.JavaClient.client.UserName
-		input.CloudStoragePassword = *c.ResourceClient.JavaClient.client.UserName
+		input.CloudStoragePassword = *c.ResourceClient.JavaClient.client.Password
 	}
 
 	for i := 0; i < *c.JavaClient.client.MaxRetries; i++ {
