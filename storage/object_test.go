@@ -14,8 +14,9 @@ import (
 
 const (
 	_TestObjectName          = "testing-acc-object"
-	_TestFileFixturesPath    = "./test-fixtures"
+	_TestFileFixturesPath    = "test-fixtures"
 	_TestSourceContentLength = 2351
+	_TestFileContentLength   = 2350
 	_TestContentType         = "text/plain;charset=UTF-8"
 	_TestAcceptRanges        = "bytes"
 )
@@ -62,6 +63,7 @@ func TestAccObjectLifeCycle_contentSource(t *testing.T) {
 		ContentLength:      _TestSourceContentLength,
 		ContentType:        _TestContentType,
 		DeleteAt:           0,
+		ID:                 fmt.Sprintf("%s/%s", _ContainerName, _TestObjectName),
 		ObjectManifest:     "",
 	}
 
@@ -87,7 +89,62 @@ func TestAccObjectLifeCycle_fileSource(t *testing.T) {
 	log.Printf("[DEBUG] Container created: %+v", container)
 
 	// Create body seeker
-	body, err := os.Open(_TestFileFixturesPath + "input.txt")
+	body, err := os.Open(_TestFileFixturesPath + "/input.txt")
+	if err != nil {
+		t.Fatalf("Error reading file: %v", err)
+	}
+
+	input := &CreateObjectInput{
+		Name:        _TestObjectName,
+		Container:   container.Name,
+		ContentType: _TestContentType,
+		Body:        body,
+	}
+
+	object, err := client.CreateObject(input)
+	if err != nil {
+		t.Fatalf("Error creating object: %s", err)
+	}
+	defer deleteObject(t, client, object)
+	log.Printf("[DEBUG] Created Object: %+v", object)
+
+	// Assert desired, with quantifiable fields
+	expected := &ObjectInfo{
+		Name:               _TestObjectName,
+		AcceptRanges:       _TestAcceptRanges,
+		Container:          _ContainerName,
+		ContentDisposition: "",
+		ContentEncoding:    "",
+		ContentLength:      _TestFileContentLength,
+		ContentType:        _TestContentType,
+		DeleteAt:           0,
+		ID:                 fmt.Sprintf("%s/%s", _ContainerName, _TestObjectName),
+		ObjectManifest:     "",
+	}
+
+	if err := testAssertions(object, expected); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestAccObjectLifeCycle_contentSourceID(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
+
+	sClient, err := getStorageTestClient(&opc.Config{})
+	if err != nil {
+		t.Fatalf("Error creating storage client: %s", err)
+	}
+	client := sClient.Objects()
+
+	container, err := sClient.getTestContainer()
+	if err != nil {
+		t.Fatalf("Error creating test container: %s", err)
+	}
+	defer deleteContainer(t, sClient, container.Name)
+	log.Printf("[DEBUG] Container created: %+v", container)
+
+	// Create body seeker
+	body := bytes.NewReader([]byte(_SourceInput))
 	input := &CreateObjectInput{
 		Name:        _TestObjectName,
 		Container:   container.Name,
@@ -112,10 +169,24 @@ func TestAccObjectLifeCycle_fileSource(t *testing.T) {
 		ContentLength:      _TestSourceContentLength,
 		ContentType:        _TestContentType,
 		DeleteAt:           0,
+		ID:                 fmt.Sprintf("%s/%s", _ContainerName, _TestObjectName),
 		ObjectManifest:     "",
 	}
 
 	if err := testAssertions(object, expected); err != nil {
+		t.Fatal(err)
+	}
+
+	getInput := &GetObjectInput{
+		ID: object.ID,
+	}
+
+	result, err := client.GetObject(getInput)
+	if err != nil {
+		t.Fatalf("Error Reading Object: %s", err)
+	}
+
+	if err := testAssertions(result, expected); err != nil {
 		t.Fatal(err)
 	}
 }
@@ -159,7 +230,7 @@ func testAssertions(result, expected *ObjectInfo) error {
 	}
 	result.TransactionID = ""
 
-	if diff := pretty.Compare(expected, result); diff != "" {
+	if diff := pretty.Compare(result, expected); diff != "" {
 		return fmt.Errorf("Result Diff (-got +want)\n%s", diff)
 	}
 
