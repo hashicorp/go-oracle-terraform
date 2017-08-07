@@ -42,7 +42,7 @@ func TestAccServiceInstanceLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	databaseParameter := database.Parameter{
+	databaseParameter := database.ParameterInput{
 		AdminPassword:                   _ServiceInstanceDBAPassword,
 		BackupDestination:               _ServiceInstanceBackupDestinationBoth,
 		SID:                             _ServiceInstanceDBSID,
@@ -60,7 +60,7 @@ func TestAccServiceInstanceLifeCycle(t *testing.T) {
 		SubscriptionType: _ServiceInstanceSubscriptionType,
 		Version:          _ServiceInstanceDBVersion,
 		VMPublicKey:      _ServiceInstancePubKey,
-		Parameters:       []database.Parameter{databaseParameter},
+		Parameter:        databaseParameter,
 	}
 
 	_, err = dClient.CreateServiceInstance(createDatabaseServiceInstance)
