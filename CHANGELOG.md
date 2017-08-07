@@ -1,6 +1,4 @@
 ## 0.3.0 (August 7, 2017)
-
- * Add snapshots to storage cloud ([#81](https://github.com/hashicorp/go-oracle-terraform/issues/81))
  
  * Add JaaS Service Instances ([#82](https://github.com/hashicorp/go-oracle-terraform/issues/82))
  
