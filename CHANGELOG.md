@@ -1,3 +1,9 @@
+## 0.3.3 (August 10, 2017)
+
+* Add `ExposedHeaders` to storage containers
+
+* Fixed `AllowedOrigins` in storage containers
+
 ## 0.3.2 (August 7, 2017)
 
 * Add `id` for storage objects ([#84](https://github.com/hashicorp/go-oracle-terraform/issues/84))
