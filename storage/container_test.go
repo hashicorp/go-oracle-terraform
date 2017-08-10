@@ -26,6 +26,7 @@ func TestAccContainerLifeCycle(t *testing.T) {
 	readACLs := []string{"test-read-acl1", "test-read-acl2"}
 	writeACLs := []string{"test-write-acl1", "test-write-acl2"}
 	allowedOrigins := []string{"allowed-origin-1", "allowed-origin-2"}
+	exposedHeaders := []string{"exposed-header-1", "exposed-header-2"}
 
 	createContainerInput := CreateContainerInput{
 		Name:           _ContainerName,
@@ -34,6 +35,7 @@ func TestAccContainerLifeCycle(t *testing.T) {
 		PrimaryKey:     _ContainerPrimaryKey,
 		SecondaryKey:   _ContainerSecondaryKey,
 		AllowedOrigins: allowedOrigins,
+		ExposedHeaders: exposedHeaders,
 	}
 
 	createdContainer, err := client.CreateContainer(&createContainerInput)
@@ -65,18 +67,23 @@ func TestAccContainerLifeCycle(t *testing.T) {
 	if diff := pretty.Compare(container.AllowedOrigins, allowedOrigins); diff != "" {
 		t.Fatalf(fmt.Sprintf("AllowedOrigin diff (-got +want)\n%s", diff))
 	}
+	if diff := pretty.Compare(container.ExposedHeaders, exposedHeaders); diff != "" {
+		t.Fatalf(fmt.Sprintf("ExposedHeader diff (-got +want)\n%s", diff))
+	}
 
 	log.Print("Successfully retrieved Container")
 
 	updateReadACLs := []string{"test-read-acl3", "test-read-acl4"}
 	updateWriteACLs := []string{"test-write-acl3", "test-write-acl4"}
 	updatedAllowedOrigins := []string{"allowed-origin-3", "allowed-origin-4"}
+	updatedExposedHeaders := []string{"exposed-header-3", "exposed-header-4"}
 	updateContainerInput := UpdateContainerInput{
 		Name:           _ContainerName,
 		ReadACLs:       updateReadACLs,
 		WriteACLs:      updateWriteACLs,
 		SecondaryKey:   _ContainerPrimaryKey,
 		AllowedOrigins: updatedAllowedOrigins,
+		ExposedHeaders: updatedExposedHeaders,
 		MaxAge:         _ContainerMaxAge,
 	}
 
@@ -107,6 +114,9 @@ func TestAccContainerLifeCycle(t *testing.T) {
 	}
 	if diff := pretty.Compare(container.AllowedOrigins, updatedAllowedOrigins); diff != "" {
 		t.Fatalf(fmt.Sprintf("Updated AllowedOrigin diff (-got +want)\n%s", diff))
+	}
+	if diff := pretty.Compare(container.ExposedHeaders, updatedExposedHeaders); diff != "" {
+		t.Fatalf(fmt.Sprintf("Updated Exposed Headers diff (-got +want)\n%s", diff))
 	}
 	if container.MaxAge != _ContainerMaxAge {
 		t.Fatalf(fmt.Sprintf("Max Age do not match Wanted: %s Recieved: %s", _ContainerMaxAge, container.MaxAge))
