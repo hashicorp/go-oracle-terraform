@@ -69,7 +69,7 @@ type StorageVolumeInfo struct {
 	Name string `json:"name"`
 
 	// The OS platform this volume is compatible with.
-	Platform string `json:"platform,omitempty`
+	Platform string `json:"platform,omitempty"`
 
 	// The storage-pool property: /oracle/public/storage/latency or /oracle/public/storage/default.
 	Properties []string `json:"properties,omitempty"`
