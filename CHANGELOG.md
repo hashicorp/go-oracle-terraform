@@ -1,8 +1,8 @@
 ## 0.3.3 (August 10, 2017)
 
-* Add `ExposedHeaders` to storage containers ([#85]https://github.com/hashicorp/go-oracle-terraform/issues/85))
+* Add `ExposedHeaders` to storage containers ([#85](https://github.com/hashicorp/go-oracle-terraform/issues/85))
 
-* Fixed `AllowedOrigins` in storage containers ([#85]https://github.com/hashicorp/go-oracle-terraform/issues/85))
+* Fixed `AllowedOrigins` in storage containers ([#85](https://github.com/hashicorp/go-oracle-terraform/issues/85))
 
 ## 0.3.2 (August 7, 2017)
 
