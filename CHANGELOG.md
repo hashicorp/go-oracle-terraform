@@ -1,3 +1,7 @@
+## 0.3.4 (August 16, 2017)
+
+* storage_volumes: Actually capture errors during a storage volume create [GH-86]
+
 ## 0.3.3 (August 10, 2017)
 
 * Add `ExposedHeaders` to storage containers ([#85](https://github.com/hashicorp/go-oracle-terraform/issues/85))
