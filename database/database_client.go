@@ -43,6 +43,8 @@ func (c *DatabaseClient) executeRequest(method, path string, body interface{}) (
 	debugReqString := fmt.Sprintf("HTTP %s Req (%s)", method, path)
 	if body != nil {
 		req.Header.Set("Content-Type", "application/json")
+		// Debug the body for database services
+		debugReqString = fmt.Sprintf("%s:\n %+v", debugReqString, body)
 	}
 	// Log the request before the authentication header, so as not to leak credentials
 	c.client.DebugLogString(debugReqString)
@@ -50,10 +52,9 @@ func (c *DatabaseClient) executeRequest(method, path string, body interface{}) (
 	// Set the authentiation headers
 	req.Header.Add(AUTH_HEADER, *c.authHeader)
 	req.Header.Add(TENANT_HEADER, *c.client.IdentityDomain)
-	c.client.DebugLogString(fmt.Sprintf("Req (%+v)", req))
 	resp, err := c.client.ExecuteRequest(req)
 	if err != nil {
-		return nil, err
+		return resp, err
 	}
 	return resp, nil
 }

@@ -118,7 +118,7 @@ func (c *Client) ExecuteRequest(req *http.Request) (*http.Response, error) {
 	// Execute request with supplied client
 	resp, err := c.retryRequest(req)
 	if err != nil {
-		return nil, err
+		return resp, err
 	}
 
 	if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
@@ -138,7 +138,10 @@ func (c *Client) ExecuteRequest(req *http.Request) (*http.Response, error) {
 		oracleErr.Message = buf.String()
 	}
 
-	return nil, oracleErr
+	// Should return the response object regardless of error,
+	// some resources need to verify and check status code on errors to
+	// determine if an error actually occurs or not.
+	return resp, oracleErr
 }
 
 // Allow retrying the request until it either returns no error,
@@ -158,7 +161,7 @@ func (c *Client) retryRequest(req *http.Request) (*http.Response, error) {
 	for i := 0; i < retries; i++ {
 		resp, err := c.httpClient.Do(req)
 		if err != nil {
-			return nil, err
+			return resp, err
 		}
 
 		if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
