@@ -6,7 +6,6 @@ import (
 
 	"log"
 
-	"github.com/davecgh/go-spew/spew"
 	"github.com/hashicorp/go-oracle-terraform/client"
 )
 
@@ -594,7 +593,7 @@ func (c *ServiceInstanceClient) DeleteServiceInstance(input *DeleteServiceInstan
 	var deleteErr error
 	for i := 0; i < ServiceInstanceDeleteRetry; i++ {
 		if deleteErr = c.deleteResource(input.Name, input.DeleteBackup); deleteErr != nil {
-			log.Printf("Error during delete, waiting 30s: %s", spew.Sdump(deleteErr))
+			log.Printf("Error during delete, waiting 30s: %+v", deleteErr)
 			time.Sleep(30 * time.Second)
 			continue
 		}

@@ -68,6 +68,7 @@ func NewClient(c *opc.Config) (*Client, error) {
 // After calling this you need to add the authentication. Header/Cookie/etc
 // Then call ExecuteRequest and pass in the return value of this method
 // It is split up to add additional authentication that is Oracle API dependent.
+// DEPRECATED
 func (c *Client) BuildRequest(method, path string, body interface{}) (*http.Request, error) {
 	// Parse URL Path
 	urlPath, err := url.Parse(path)
@@ -87,6 +88,42 @@ func (c *Client) BuildRequest(method, path string, body interface{}) (*http.Requ
 	}
 
 	// Create request
+	req, err := http.NewRequest(method, c.formatURL(urlPath), requestBody)
+	if err != nil {
+		return nil, err
+	}
+
+	return req, nil
+}
+
+// Marshalls the request body and returns the resulting byte slice
+// This is split out of the BuildRequestBody method so as to allow
+// the developer to print a debug string of the request body if they
+// should so choose.
+func (c *Client) MarshallRequestBody(body interface{}) ([]byte, error) {
+	// Verify interface isnt' nil
+	if body == nil {
+		return nil, nil
+	}
+
+	return json.Marshal(body)
+}
+
+// Builds an HTTP Request that accepts a pre-marshaled body parameter as a raw byte array
+// Returns the raw HTTP Request and any error occured
+func (c *Client) BuildRequestBody(method, path string, body []byte) (*http.Request, error) {
+	// Parse URL Path
+	urlPath, err := url.Parse(path)
+	if err != nil {
+		return nil, err
+	}
+
+	var requestBody io.ReadSeeker
+	if len(body) != 0 {
+		requestBody = bytes.NewReader(body)
+	}
+
+	// Create Request
 	req, err := http.NewRequest(method, c.formatURL(urlPath), requestBody)
 	if err != nil {
 		return nil, err

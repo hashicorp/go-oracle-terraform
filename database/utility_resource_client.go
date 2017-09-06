@@ -9,6 +9,15 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
+// The UtilityClient which extends the UtilityResourceClient.
+// This is purely because utility resources (SSH Keys + Access Rules) include the service
+// instance name in the URL path for managing these resources, so we cannot use the same
+// resource client that the service instance uses. We're still using the same OPC client, just
+// abstracting the path helper functions to make life a little easier.
+type UtilityClient struct {
+	UtilityResourceClient
+}
+
 // UtilityResourceClient is a client to manage resources on an already created service instance
 type UtilityResourceClient struct {
 	*DatabaseClient

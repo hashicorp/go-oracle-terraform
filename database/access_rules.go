@@ -23,15 +23,6 @@ const (
 // Default Timeout value for Create
 const WaitForAccessRuleTimeout = time.Duration(10 * time.Second)
 
-// The UtilityClient which extends the UtilityResourceClient.
-// This is purely because utility resources (SSH Keys + Access Rules) include the service
-// instance name in the URL path for managing these resources, so we cannot use the same
-// resource client that the service instance uses. We're still using the same OPC client, just
-// abstracting the path helper functions to make life a little easier.
-type UtilityClient struct {
-	UtilityResourceClient
-}
-
 // AccessRules returns a UtilityClient for managing SSH Keys and Access Rules for a DBaaS Service Instance
 func (c *DatabaseClient) AccessRules() *UtilityClient {
 	return &UtilityClient{
@@ -216,7 +207,8 @@ type UpdateAccessRuleInput struct {
 
 // Updates an AccessRule with the provided input struct. Returns a fully populated Info struct
 // and any errors encountered
-func (c *UtilityClient) UpdateAccessRule(input *UpdateAccessRuleInput) (*AccessRuleInfo, error) {
+func (c *UtilityClient) UpdateAccessRule(input *UpdateAccessRuleInput,
+) (*AccessRuleInfo, error) {
 	if input.ServiceInstanceID != "" {
 		c.ServiceInstanceID = input.ServiceInstanceID
 	}
