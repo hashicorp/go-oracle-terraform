@@ -158,14 +158,9 @@ func (c *UtilityClient) WaitForSSHKeyReady(input *GetSSHKeyInput, timeout time.D
 			return false, getErr
 		}
 		if info != nil {
-			if strings.ToLower(info.LastUpdateStatus) == "success" {
-				// SSH Key found, and completed, return. Desired case.
-				return true, nil
-			} else {
-				c.client.DebugLogString(fmt.Sprintf("SSH Key Status: %s",
-					strings.ToLower(info.LastUpdateStatus)))
-				return false, nil
-			}
+			c.client.DebugLogString(fmt.Sprintf("SSH Key Status: %s", strings.ToLower(info.LastUpdateStatus)))
+			success := strings.ToLower(info.LastUpdateStatus) == "success"
+			return success, nil
 		}
 		// Not found, wait
 		c.client.DebugLogString(fmt.Sprintf("SSH Key not found, waiting"))

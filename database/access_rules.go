@@ -62,6 +62,14 @@ type AccessRules struct {
 	Rules []AccessRuleInfo `json:"accessRules"`
 }
 
+type AccessRuleType string
+
+const (
+	AccessRuleTypeDefault AccessRuleType = "DEFAULT"
+	AccessRuleTypeSystem  AccessRuleType = "SYSTEM"
+	AccessRuleTypeUser    AccessRuleType = "USER"
+)
+
 // AccessRuleInfo holds all of the known information for a single AccessRule
 type AccessRuleInfo struct {
 	// The Description of the Access Rule
@@ -74,7 +82,7 @@ type AccessRuleInfo struct {
 	Name string `json:"ruleName"`
 	// The Type of the rule. One of: "DEFAULT", "SYSTEM", or "USER".
 	// Computed Value
-	RuleType string `json:"ruleType"`
+	RuleType AccessRuleType `json:"ruleType"`
 	// The IP Addresses and subnets from which traffic is allowed
 	Source string `json:"source"`
 	// The current status of the Access Rule

@@ -62,7 +62,7 @@ func TestAccAccessRulesLifeCycle(t *testing.T) {
 		Name:        _TestAccessRuleName,
 		Source:      _TestAccessRuleSource,
 		Status:      AccessRuleDisabled,
-		RuleType:    "USER",
+		RuleType:    AccessRuleTypeUser,
 	}
 
 	// Create Access Rule

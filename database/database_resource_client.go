@@ -70,9 +70,8 @@ func (c *ResourceClient) deleteResource(name string, backups bool) error {
 			if v.StatusCode == 404 {
 				// Object can't be found, doesn't exist, no error
 				return nil
-			} else {
-				return fmt.Errorf("Error on delete (%d): %s", v.StatusCode, v.Message)
 			}
+			return fmt.Errorf("Error on delete (%d): %s", v.StatusCode, v.Message)
 		}
 
 		// Otherwise, something went wrong.
