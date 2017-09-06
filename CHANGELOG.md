@@ -1,3 +1,7 @@
+## 0.4.0 (Unreleased)
+
+* database: Add utility resources [GH-87]
+
 ## 0.3.4 (August 16, 2017)
 
 * storage_volumes: Actually capture errors during a storage volume create ([#86](https://github.com/hashicorp/go-oracle-terraform/issues/86))
