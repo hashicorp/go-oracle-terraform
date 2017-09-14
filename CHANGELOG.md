@@ -1,4 +1,6 @@
-## 0.4.0 (Unreleased)
+## 0.4.1 (Unreleased)
+
+## 0.4.0 (September 14, 2017)
 
 * database: Add utility resources [GH-87]
 
