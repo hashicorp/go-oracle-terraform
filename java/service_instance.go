@@ -1013,7 +1013,7 @@ type Parameter struct {
 	// Note: This attribute is valid when component type is set to datagrid only; it is not valid for weblogic or otd.
 	// Required when using a custom capacity unit only. Groups attributes for a custom capacity unit.
 	// Optional.
-	ScalingUnit ScalingUnit `json:"scalingUnit,omitempty"`
+	ScalingUnits []ScalingUnit `json:"scalingUnit,omitempty"`
 	// Note: This attribute is valid when component type is set to datagrid only;
 	// it is not valid for weblogic or otd.
 	// The number of capacity units to add.
@@ -1152,7 +1152,7 @@ type ScalingUnit struct {
 	// copy of the Coherence data, so the actual data available might be more than 1/3 of the JVM heap size.
 	// Use a number from 1 GB to 16 GB.
 	// Required.
-	HeapSize int `json:"heapSize"`
+	HeapSize string `json:"heapSize"`
 	// Number of JVMs to start on each VM.
 	// Use a number from 1 to 8.
 	// Required.
