@@ -1,0 +1,15 @@
+{
+  "memory": "2G",
+  "instances": "1",
+  "environment": {
+    "NO_OF_CONNECTIONS":"25",
+    "TWITTER_ID":"JAVA"
+  },
+  "services": [{
+    "identifier": "ProdService",
+    "name": "Jaas Service",
+    "type": "JAAS",
+    "username": "username",
+    "password": "password"
+  }]
+}
