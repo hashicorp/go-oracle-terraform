@@ -113,46 +113,43 @@ func TestAccServiceInstanceLifeCycle(t *testing.T) {
 func TestAccServiceInstanceLifeCycle_typeOTD(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
-	// siClient, dClient, err := getServiceInstanceTestClients()
-	siClient, _, err := getServiceInstanceTestClients()
-
+	siClient, dClient, err := getServiceInstanceTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	/*
-		databaseParameter := database.ParameterInput{
-			AdminPassword:                   _ServiceInstanceDBAPassword,
-			BackupDestination:               _ServiceInstanceBackupDestinationBoth,
-			SID:                             _ServiceInstanceDBSID,
-			Type:                            _ServiceInstanceDBType,
-			UsableStorage:                   _ServiceInstanceUsableStorage,
-			CloudStorageContainer:           _ServiceInstanceDBCloudStorageContainer,
-			CreateStorageContainerIfMissing: _ServiceInstanceCloudStorageCreateIfMissing,
-		}
+	databaseParameter := database.ParameterInput{
+		AdminPassword:                   _ServiceInstanceDBAPassword,
+		BackupDestination:               _ServiceInstanceBackupDestinationBoth,
+		SID:                             _ServiceInstanceDBSID,
+		Type:                            _ServiceInstanceDBType,
+		UsableStorage:                   _ServiceInstanceUsableStorage,
+		CloudStorageContainer:           _ServiceInstanceDBCloudStorageContainer,
+		CreateStorageContainerIfMissing: _ServiceInstanceCloudStorageCreateIfMissing,
+	}
 
-		createDatabaseServiceInstance := &database.CreateServiceInstanceInput{
-			Name:             _ServiceInstanceDatabaseName,
-			Edition:          _ServiceInstanceEdition,
-			Level:            _ServiceInstanceLevel,
-			Shape:            _ServiceInstanceShape,
-			SubscriptionType: _ServiceInstanceSubscriptionType,
-			Version:          _ServiceInstanceDBVersion,
-			VMPublicKey:      _ServiceInstancePubKey,
-			Parameter:        databaseParameter,
-		}
+	createDatabaseServiceInstance := &database.CreateServiceInstanceInput{
+		Name:             _ServiceInstanceDatabaseName,
+		Edition:          _ServiceInstanceEdition,
+		Level:            _ServiceInstanceLevel,
+		Shape:            _ServiceInstanceShape,
+		SubscriptionType: _ServiceInstanceSubscriptionType,
+		Version:          _ServiceInstanceDBVersion,
+		VMPublicKey:      _ServiceInstancePubKey,
+		Parameter:        databaseParameter,
+	}
 
-		_, err = dClient.CreateServiceInstance(createDatabaseServiceInstance)
-		if err != nil {
-			t.Fatal(err)
-		}
-		defer destroyDatabaseServiceInstance(t, dClient, _ServiceInstanceDatabaseName) */
+	_, err = dClient.CreateServiceInstance(createDatabaseServiceInstance)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer destroyDatabaseServiceInstance(t, dClient, _ServiceInstanceDatabaseName)
 
 	webLogicParameter := Parameter{
 		Type:          ServiceInstanceTypeWebLogic,
 		DBAName:       _ServiceInstanceDBAUser,
 		DBAPassword:   _ServiceInstanceDBAPassword,
-		DBServiceName: "test-service-instance-matthew",
+		DBServiceName: _ServiceInstanceDatabaseName,
 		Shape:         _ServiceInstanceShape,
 		Version:       _ServiceInstanceVersion,
 		AdminUsername: _ServiceInstanceAdminUsername,
@@ -205,55 +202,43 @@ func TestAccServiceInstanceLifeCycle_typeOTD(t *testing.T) {
 func TestAccServiceInstanceLifeCycle_typeDatagrid(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
-	// siClient, dClient, err := getServiceInstanceTestClients()
-	siClient, _, err := getServiceInstanceTestClients()
-
+	siClient, dClient, err := getServiceInstanceTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	/*
-		databaseParameter := database.ParameterInput{
-			AdminPassword:                   _ServiceInstanceDBAPassword,
-			BackupDestination:               _ServiceInstanceBackupDestinationBoth,
-			SID:                             _ServiceInstanceDBSID,
-			Type:                            _ServiceInstanceDBType,
-			UsableStorage:                   _ServiceInstanceUsableStorage,
-			CloudStorageContainer:           _ServiceInstanceDBCloudStorageContainer,
-			CreateStorageContainerIfMissing: _ServiceInstanceCloudStorageCreateIfMissing,
-		}
+	databaseParameter := database.ParameterInput{
+		AdminPassword:                   _ServiceInstanceDBAPassword,
+		BackupDestination:               _ServiceInstanceBackupDestinationBoth,
+		SID:                             _ServiceInstanceDBSID,
+		Type:                            _ServiceInstanceDBType,
+		UsableStorage:                   _ServiceInstanceUsableStorage,
+		CloudStorageContainer:           _ServiceInstanceDBCloudStorageContainer,
+		CreateStorageContainerIfMissing: _ServiceInstanceCloudStorageCreateIfMissing,
+	}
 
-		createDatabaseServiceInstance := &database.CreateServiceInstanceInput{
-			Name:             _ServiceInstanceDatabaseName,
-			Edition:          _ServiceInstanceEdition,
-			Level:            _ServiceInstanceLevel,
-			Shape:            _ServiceInstanceShape,
-			SubscriptionType: _ServiceInstanceSubscriptionType,
-			Version:          _ServiceInstanceDBVersion,
-			VMPublicKey:      _ServiceInstancePubKey,
-			Parameter:        databaseParameter,
-		}
+	createDatabaseServiceInstance := &database.CreateServiceInstanceInput{
+		Name:             _ServiceInstanceDatabaseName,
+		Edition:          _ServiceInstanceEdition,
+		Level:            _ServiceInstanceLevel,
+		Shape:            _ServiceInstanceShape,
+		SubscriptionType: _ServiceInstanceSubscriptionType,
+		Version:          _ServiceInstanceDBVersion,
+		VMPublicKey:      _ServiceInstancePubKey,
+		Parameter:        databaseParameter,
+	}
 
-		_, err = dClient.CreateServiceInstance(createDatabaseServiceInstance)
-		if err != nil {
-			t.Fatal(err)
-		}
-		defer destroyDatabaseServiceInstance(t, dClient, _ServiceInstanceDatabaseName) */
-
-	/*
-		scalingUnit := ScalingUnit{
-			Shape:    "oc3",
-			VMCount:  1,
-			HeapSize: "4G",
-			JVMCount: 2,
-		} */
+	_, err = dClient.CreateServiceInstance(createDatabaseServiceInstance)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer destroyDatabaseServiceInstance(t, dClient, _ServiceInstanceDatabaseName)
 
 	datagridParameter := Parameter{
 		Type:             ServiceInstanceTypeDataGrid,
 		ScalingUnitCount: 1,
 		ClusterName:      "testDataGrid",
 		ScalingUnitName:  "SMALL",
-		// ScalingUnits:     []ScalingUnit{scalingUnit},
 	}
 
 	webLogicParameter := Parameter{
@@ -261,7 +246,7 @@ func TestAccServiceInstanceLifeCycle_typeDatagrid(t *testing.T) {
 		Edition:       ServiceInstanceEditionSuite,
 		DBAName:       _ServiceInstanceDBAUser,
 		DBAPassword:   _ServiceInstanceDBAPassword,
-		DBServiceName: "test-service-instance-matthew",
+		DBServiceName: _ServiceInstanceDatabaseName,
 		Shape:         _ServiceInstanceShape,
 		Version:       _ServiceInstanceVersion,
 		AdminUsername: _ServiceInstanceAdminUsername,
