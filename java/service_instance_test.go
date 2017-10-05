@@ -192,7 +192,7 @@ func TestAccServiceInstanceLifeCycle_typeOTD(t *testing.T) {
 		t.Fatal(err)
 	}
 	if receivedRes.ServiceName != siName {
-		t.Fatal(fmt.Errorf("Names do not match. Wanted: %s Received: %s", siName, receivedRes.ServiceName))
+		t.Fatal(fmt.Errorf("Names do not match. Wanted: %q Received: %q", siName, receivedRes.ServiceName))
 	}
 	if receivedRes.OTDAdminURL == "" {
 		t.Fatal(fmt.Errorf("OTD was unsuccessfully provisioned: %+v", receivedRes))
@@ -280,7 +280,7 @@ func TestAccServiceInstanceLifeCycle_typeDatagrid(t *testing.T) {
 		t.Fatal(err)
 	}
 	if receivedRes.ServiceName != siName {
-		t.Fatal(fmt.Errorf("Names do not match. Wanted: %s Received: %s", siName, receivedRes.ServiceName))
+		t.Fatal(fmt.Errorf("Names do not match. Wanted: %q Received: %q", siName, receivedRes.ServiceName))
 	}
 
 	if len(receivedRes.Options) > 0 {
