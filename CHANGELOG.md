@@ -1,4 +1,14 @@
-## 0.4.1 (Unreleased)
+## 0.5.2 (Unreleased)
+
+* compute: Added is_default_gateway to network attributes for instances [GH-90]
+
+## 0.5.1 (October 5, 2017)
+
+* java: Fixed subscription_type field
+
+## 0.5.0 (October 5, 2017)
+
+* java: Added more fields to java service instance [GH-89]
 
 ## 0.4.0 (September 14, 2017)
 
