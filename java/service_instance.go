@@ -380,7 +380,7 @@ type ServiceInstance struct {
 	// Billing frequency. Valid values include:
 	// HOURLY: Pay only for the number of hours used during your billing period.
 	// MONTHLY: Pay one price for the full month irrespective of the number of hours used.
-	SubscriptionType ServiceInstanceSubscriptionType `json:"subscriptionType"`
+	SubscriptionType ServiceInstanceSubscriptionType `json:"subscription_type"`
 	// This attribute is not available on Oracle Cloud Machine.
 	// The Oracle Fusion Middleware product installer added to this service instance.
 	// For example: WCP
