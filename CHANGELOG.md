@@ -1,6 +1,10 @@
-## 0.5.2 (Unreleased)
+## 0.6.1 (Unreleased
+
+## 0.6.0 (November 10, 2017)
 
 * compute: Added is_default_gateway to network attributes for instances [GH-90]
+
+* compute: Added the orchestration resource, specifically for instance creation [GH-91]
 
 ## 0.5.1 (October 5, 2017)
 
