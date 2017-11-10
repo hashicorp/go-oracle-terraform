@@ -61,7 +61,7 @@ func TestAccOrchestrationLifeCycle(t *testing.T) {
 	}
 	log.Printf("orchestration Retrieved: %+v", orchestration)
 	if orchestration.Name != createdOrchestration.Name || orchestration.Name == "" {
-		t.Fatal("orchestration Name mismatch! Got: %s Expected: %s", orchestration.Name, createdOrchestration)
+		t.Fatal("orchestration Name mismatch! Got: %q Expected: %q", orchestration.Name, createdOrchestration)
 	}
 }
 
@@ -110,7 +110,7 @@ func TestAccOrchestrationLifeCycle_active(t *testing.T) {
 	}
 	log.Printf("orchestration Retrieved: %+v", orchestration)
 	if orchestration.Name != createdOrchestration.Name || orchestration.Name == "" {
-		t.Fatal("orchestration Name mismatch! Got: %s Expected: %s", orchestration.Name, createdOrchestration)
+		t.Fatal("orchestration Name mismatch! Got: %q Expected: %q", orchestration.Name, createdOrchestration)
 	}
 }
 
@@ -159,7 +159,7 @@ func TestAccOrchestrationLifeCycle_update(t *testing.T) {
 	}
 	log.Printf("orchestration Retrieved: %+v", orchestration)
 	if orchestration.DesiredState != OrchestrationDesiredStateActive {
-		t.Fatal("orchestration state mismatch! Got: %s Expected: %s", orchestration.DesiredState, OrchestrationDesiredStateActive)
+		t.Fatal("orchestration state mismatch! Got: %q Expected: %q", orchestration.DesiredState, OrchestrationDesiredStateActive)
 	}
 
 	updateOrchestrationInput := &UpdateOrchestrationInput{
@@ -181,7 +181,7 @@ func TestAccOrchestrationLifeCycle_update(t *testing.T) {
 	// Don't need to tear down the orchestration, it's attached to the instance
 	log.Printf("orchestration Retrieved: %+v", orchestration)
 	if orchestration.DesiredState != OrchestrationDesiredStateInactive {
-		t.Fatal("orchestration state mismatch! Got: %s Expected: %s", orchestration.DesiredState, OrchestrationDesiredStateInactive)
+		t.Fatal("orchestration state mismatch! Got: %q Expected: %q", orchestration.DesiredState, OrchestrationDesiredStateInactive)
 	}
 }
 

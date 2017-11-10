@@ -48,6 +48,8 @@ const (
 	OrchestrationStatusDeleting   OrchestrationStatus = "deleting"
 	OrchestrationStatusError      OrchestrationStatus = "terminal_error"
 	OrchestrationStatusStopping   OrchestrationStatus = "stopping"
+	OrchestrationStatusSuspending OrchestrationStatus = "suspending"
+	OrchestrationStatusStarting   OrchestrationStatus = "starting"
 )
 
 type OrchestrationType string
@@ -379,9 +381,14 @@ func (c *OrchestrationsClient) WaitForOrchestrationState(input *GetOrchestration
 		case OrchestrationStatusActivating:
 			c.client.DebugLogString("Orchestration activating")
 			return false, nil
-		default:
-			c.client.DebugLogString(fmt.Sprintf("Unknown orchestration state: %s, waiting", s))
+		case OrchestrationStatusStopping:
+			c.client.DebugLogString("Orchestration stopping")
 			return false, nil
+		case OrchestrationStatusSuspending:
+			c.client.DebugLogString("Orchestration suspending")
+			return false, nil
+		default:
+			return false, fmt.Errorf("Unknown orchestration state: %s, erroring", s)
 		}
 	})
 	return *info, err
@@ -406,8 +413,7 @@ func (c *OrchestrationsClient) WaitForOrchestrationDeleted(input *DeleteOrchestr
 			c.client.DebugLogString("Orchestration stopping")
 			return false, nil
 		default:
-			c.client.DebugLogString(fmt.Sprintf("Unknown orchestration state: %s, waiting", s))
-			return false, nil
+			return false, fmt.Errorf("Unknown orchestration state: %s, erroring", s))
 		}
 	})
 }

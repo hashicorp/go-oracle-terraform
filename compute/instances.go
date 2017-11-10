@@ -487,7 +487,7 @@ func (c *InstancesClient) GetInstanceFromName(input *GetInstanceIdInput) (*Insta
 		}
 	}
 
-	return nil, fmt.Errorf("Unable to find instance: %s", input.Name)
+	return nil, fmt.Errorf("Unable to find instance: %q", input.Name)
 }
 
 type UpdateInstanceInput struct {
