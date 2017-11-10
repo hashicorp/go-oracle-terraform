@@ -41,15 +41,16 @@ const (
 type OrchestrationStatus string
 
 const (
-	OrchestrationStatusActive     OrchestrationStatus = "active"
-	OrchestrationStatusInactive   OrchestrationStatus = "inactive"
-	OrchestrationStatusSuspend    OrchestrationStatus = "suspend"
-	OrchestrationStatusActivating OrchestrationStatus = "activating"
-	OrchestrationStatusDeleting   OrchestrationStatus = "deleting"
-	OrchestrationStatusError      OrchestrationStatus = "terminal_error"
-	OrchestrationStatusStopping   OrchestrationStatus = "stopping"
-	OrchestrationStatusSuspending OrchestrationStatus = "suspending"
-	OrchestrationStatusStarting   OrchestrationStatus = "starting"
+	OrchestrationStatusActive       OrchestrationStatus = "active"
+	OrchestrationStatusInactive     OrchestrationStatus = "inactive"
+	OrchestrationStatusSuspend      OrchestrationStatus = "suspend"
+	OrchestrationStatusActivating   OrchestrationStatus = "activating"
+	OrchestrationStatusDeleting     OrchestrationStatus = "deleting"
+	OrchestrationStatusError        OrchestrationStatus = "terminal_error"
+	OrchestrationStatusStopping     OrchestrationStatus = "stopping"
+	OrchestrationStatusSuspending   OrchestrationStatus = "suspending"
+	OrchestrationStatusStarting     OrchestrationStatus = "starting"
+	OrchestrationStatusDeactivating OrchestrationStatus = "deactivating"
 )
 
 type OrchestrationType string
@@ -315,13 +316,7 @@ func (c *OrchestrationsClient) UpdateOrchestration(input *UpdateOrchestrationInp
 	// Don't have to unqualify any objects, as the GetOrchestration method will handle that
 	orchestrationInfo, orchestrationError := c.WaitForOrchestrationState(getInput, input.Timeout)
 	if orchestrationError != nil {
-		deleteInput := &DeleteOrchestrationInput{
-			Name: updatedOrchestration.Name,
-		}
-		err := c.DeleteOrchestration(deleteInput)
-		if err != nil {
-			return nil, fmt.Errorf("Error deleting orchestration %s: %s", getInput.Name, err)
-		}
+		return nil, orchestrationError
 	}
 
 	return &orchestrationInfo, nil
@@ -387,6 +382,9 @@ func (c *OrchestrationsClient) WaitForOrchestrationState(input *GetOrchestration
 		case OrchestrationStatusSuspending:
 			c.client.DebugLogString("Orchestration suspending")
 			return false, nil
+		case OrchestrationStatusDeactivating:
+			c.client.DebugLogString("Orchestration deactivating")
+			return false, nil
 		default:
 			return false, fmt.Errorf("Unknown orchestration state: %s, erroring", s)
 		}
@@ -412,8 +410,14 @@ func (c *OrchestrationsClient) WaitForOrchestrationDeleted(input *DeleteOrchestr
 		case OrchestrationStatusStopping:
 			c.client.DebugLogString("Orchestration stopping")
 			return false, nil
+		case OrchestrationStatusDeleting:
+			c.client.DebugLogString("Orchestration deleting")
+			return false, nil
+		case OrchestrationStatusActive:
+			c.client.DebugLogString("Orchestration active")
+			return false, nil
 		default:
-			return false, fmt.Errorf("Unknown orchestration state: %s, erroring", s))
+			return false, fmt.Errorf("Unknown orchestration state: %s, erroring", s)
 		}
 	})
 }
