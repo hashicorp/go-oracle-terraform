@@ -56,12 +56,6 @@ const (
 	OrchestrationTypeInstance OrchestrationType = "Instance"
 )
 
-type OrchestrationTerminate string
-
-const (
-	OrchestrationTerminateTrue OrchestrationTerminate = "True"
-)
-
 // OrchestrationInfo describes an existing Orchestration.
 type Orchestration struct {
 	// The default Oracle Compute Cloud Service account, such as /Compute-acme/default.
@@ -336,15 +330,13 @@ type DeleteOrchestrationInput struct {
 	// The three-part name of the Orchestration (/Compute-identity_domain/user/object).
 	// Required
 	Name string `json:name`
-	// For ease, we are using a bool to represent terminate
-	Terminate bool `json:"-"`
 	// Timeout for delete request
 	Timeout time.Duration `json:"-"`
 }
 
 // DeleteOrchestration deletes the Orchestration with the given name.
 func (c *OrchestrationsClient) DeleteOrchestration(input *DeleteOrchestrationInput) error {
-	if err := c.deleteOrchestration(input.Name, input.Terminate); err != nil {
+	if err := c.deleteOrchestration(input.Name); err != nil {
 		return err
 	}
 

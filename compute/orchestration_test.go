@@ -195,8 +195,7 @@ func getOrchestrationsTestClients() (*OrchestrationsClient, error) {
 
 func deleteOrchestration(t *testing.T, orcClient *OrchestrationsClient, name string) {
 	input := &DeleteOrchestrationInput{
-		Name:      name,
-		Terminate: true,
+		Name: name,
 	}
 	if err := orcClient.DeleteOrchestration(input); err != nil {
 		t.Fatalf("Error deleting orchestration: %v", err)
