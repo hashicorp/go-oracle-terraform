@@ -190,8 +190,27 @@ func (c *OrchestrationsClient) CreateOrchestration(input *CreateOrchestrationInp
 	for _, i := range input.Objects {
 		i.Orchestration = c.getQualifiedName(i.Orchestration)
 		if i.Type == OrchestrationTypeInstance {
+			instanceClient := c.ComputeClient.Instances()
 			instanceInput := i.Template.(*CreateInstanceInput)
 			instanceInput.Name = c.getQualifiedName(instanceInput.Name)
+
+			qualifiedSSHKeys := []string{}
+			for _, key := range instanceInput.SSHKeys {
+				qualifiedSSHKeys = append(qualifiedSSHKeys, c.getQualifiedName(key))
+			}
+
+			instanceInput.SSHKeys = qualifiedSSHKeys
+
+			qualifiedStorageAttachments := []StorageAttachmentInput{}
+			for _, attachment := range instanceInput.Storage {
+				qualifiedStorageAttachments = append(qualifiedStorageAttachments, StorageAttachmentInput{
+					Index:  attachment.Index,
+					Volume: c.getQualifiedName(attachment.Volume),
+				})
+			}
+			instanceInput.Storage = qualifiedStorageAttachments
+
+			instanceInput.Networking = instanceClient.qualifyNetworking(instanceInput.Networking)
 		}
 	}
 
