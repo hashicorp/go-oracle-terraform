@@ -42,6 +42,7 @@ const (
 	h_LastModified       = "Last-Modified"
 	h_Newest             = "X-Newest"
 	h_ObjectManifest     = "X-Object-Manifest"
+	h_ObjectMetadata     = "X-Object-Meta-"
 	h_Range              = "Range"
 	h_Timestamp          = "X-Timestamp"
 	h_TransactionID      = "X-Trans-Id"
@@ -82,7 +83,8 @@ type ObjectInfo struct {
 	// Optional: The dynamic large object manifest object.
 	ObjectManifest string
 
-	// TODO: X-Object-Meta-{name}
+	// Optional: The map of object metadata name values pairs for X-Object-Meta-{name}
+	ObjectMetadata map[string]string
 
 	// Date and time in UNIX EPOCH when the account, container, _or_ object
 	// was initially created as a current version.
@@ -120,6 +122,9 @@ type CreateObjectInput struct {
 	// Specify the date and time in UNIX Epoch time stamp format when the system
 	// removes the object
 	DeleteAt int
+
+	// Specify the map of object metadata name values pairs for X-Object-Meta-{name}
+	ObjectMetadata map[string]string
 
 	// MD5 checksum value of the request body. Unquoted
 	// Strongly recommended, not required.
@@ -159,6 +164,13 @@ func (c *ObjectClient) CreateObject(input *CreateObjectInput) (*ObjectInfo, erro
 	}
 	if input.DeleteAt != 0 {
 		headers[h_DeleteAt] = fmt.Sprintf("%d", input.DeleteAt)
+	}
+	if len(input.ObjectMetadata) > 0 {
+		// add a header entry for each metadata item
+		// X-Object-Meta-{name}: value
+		for k, v := range input.ObjectMetadata {
+			headers[fmt.Sprintf("%s%s", h_ObjectMetadata, k)] = fmt.Sprintf("%s", v)
+		}
 	}
 
 	if input.Body == nil {
@@ -293,6 +305,13 @@ func (c *ObjectClient) success(resp *http.Response, object *ObjectInfo) (*Object
 		object.DeleteAt, err = strconv.Atoi(v)
 		if err != nil {
 			return nil, err
+		}
+	}
+
+	object.ObjectMetadata = make(map[string]string)
+	for k, v := range resp.Header {
+		if strings.HasPrefix(k, h_ObjectMetadata) {
+			object.ObjectMetadata[strings.TrimPrefix(k, h_ObjectMetadata)] = fmt.Sprintf("%s", v)
 		}
 	}
 
