@@ -117,8 +117,8 @@ type CreateObjectInput struct {
 	// and the name of the container and object must be URL-encoded
 	// Optional
 	CopyFrom string
-	// Specify the number of seconds after which the system deletes the object.
-	// Optional
+	// Specify the date and time in UNIX Epoch time stamp format when the system
+	// removes the object
 	DeleteAt int
 
 	// MD5 checksum value of the request body. Unquoted
