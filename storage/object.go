@@ -42,11 +42,12 @@ const (
 	h_LastModified       = "Last-Modified"
 	h_Newest             = "X-Newest"
 	h_ObjectManifest     = "X-Object-Manifest"
-	h_ObjectMetadata     = "X-Object-Meta-"
 	h_Range              = "Range"
 	h_Timestamp          = "X-Timestamp"
 	h_TransactionID      = "X-Trans-Id"
 	h_TransferEncoding   = "Transfer-Encoding"
+
+	h_MetadataPrefix = "X-Object-Meta-"
 )
 
 // ObjectInfo describes an existing object
@@ -82,10 +83,8 @@ type ObjectInfo struct {
 	DeleteAt int
 	// Optional: The dynamic large object manifest object.
 	ObjectManifest string
-
 	// Optional: The map of object metadata name values pairs for X-Object-Meta-{name}
 	ObjectMetadata map[string]string
-
 	// Date and time in UNIX EPOCH when the account, container, _or_ object
 	// was initially created as a current version.
 	Timestamp string
@@ -122,10 +121,8 @@ type CreateObjectInput struct {
 	// Specify the date and time in UNIX Epoch time stamp format when the system
 	// removes the object
 	DeleteAt int
-
 	// Specify the map of object metadata name values pairs for X-Object-Meta-{name}
 	ObjectMetadata map[string]string
-
 	// MD5 checksum value of the request body. Unquoted
 	// Strongly recommended, not required.
 	ETag string
@@ -168,8 +165,9 @@ func (c *ObjectClient) CreateObject(input *CreateObjectInput) (*ObjectInfo, erro
 	if len(input.ObjectMetadata) > 0 {
 		// add a header entry for each metadata item
 		// X-Object-Meta-{name}: value
-		for k, v := range input.ObjectMetadata {
-			headers[fmt.Sprintf("%s%s", h_ObjectMetadata, k)] = fmt.Sprintf("%s", v)
+		for name, value := range input.ObjectMetadata {
+			header := fmt.Sprintf("%s%s", h_MetadataPrefix, name)
+			headers[header] = fmt.Sprintf("%s", value)
 		}
 	}
 
@@ -309,9 +307,10 @@ func (c *ObjectClient) success(resp *http.Response, object *ObjectInfo) (*Object
 	}
 
 	object.ObjectMetadata = make(map[string]string)
-	for k, v := range resp.Header {
-		if strings.HasPrefix(k, h_ObjectMetadata) {
-			object.ObjectMetadata[strings.TrimPrefix(k, h_ObjectMetadata)] = fmt.Sprintf("%s", v)
+	for header, value := range resp.Header {
+		if strings.HasPrefix(header, h_MetadataPrefix) {
+			name := strings.TrimPrefix(header, h_MetadataPrefix)
+			object.ObjectMetadata[name] = strings.Join(value, " ")
 		}
 	}
 
