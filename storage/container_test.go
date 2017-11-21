@@ -3,6 +3,7 @@ package storage
 import (
 	"fmt"
 	"log"
+	"reflect"
 	"testing"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
@@ -14,6 +15,10 @@ const _ContainerName = "test-str-container"
 const _ContainerPrimaryKey = "test-url-key"
 const _ContainerSecondaryKey = "test-url-key2"
 const _ContainerMaxAge = 50
+const _ContainerQuotaBytes = 1000000000
+const _ContainerQuotaCount = 1000
+
+var _ContainerCustomMetadata = map[string]string{"Abc-Def": "xyz", "Foo": "bar"}
 
 func TestAccContainerLifeCycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
@@ -36,6 +41,10 @@ func TestAccContainerLifeCycle(t *testing.T) {
 		SecondaryKey:   _ContainerSecondaryKey,
 		AllowedOrigins: allowedOrigins,
 		ExposedHeaders: exposedHeaders,
+		MaxAge:         _ContainerMaxAge,
+		QuotaBytes:     _ContainerQuotaBytes,
+		QuotaCount:     _ContainerQuotaCount,
+		CustomMetadata: _ContainerCustomMetadata,
 	}
 
 	createdContainer, err := client.CreateContainer(&createContainerInput)
@@ -70,6 +79,18 @@ func TestAccContainerLifeCycle(t *testing.T) {
 	if diff := pretty.Compare(container.ExposedHeaders, exposedHeaders); diff != "" {
 		t.Fatalf(fmt.Sprintf("ExposedHeader diff (-got +want)\n%s", diff))
 	}
+	if container.MaxAge != _ContainerMaxAge {
+		t.Fatalf(fmt.Sprintf("Max Age do not match Wanted: %d Recieved: %d", _ContainerMaxAge, container.MaxAge))
+	}
+	if container.QuotaBytes != _ContainerQuotaBytes {
+		t.Fatalf(fmt.Sprintf("Quota Bytes do not match Wanted: %d Recieved: %d", _ContainerQuotaBytes, container.QuotaBytes))
+	}
+	if container.QuotaCount != _ContainerQuotaCount {
+		t.Fatalf(fmt.Sprintf("Quota Count do not match Wanted: %d Recieved: %d", _ContainerQuotaCount, container.QuotaCount))
+	}
+	if reflect.DeepEqual(container.CustomMetadata, _ContainerCustomMetadata) != true {
+		t.Fatalf(fmt.Sprintf("CustomMetadata do not match Wanted: %d Recieved: %d", _ContainerCustomMetadata, container.CustomMetadata))
+	}
 
 	log.Print("Successfully retrieved Container")
 
@@ -77,6 +98,9 @@ func TestAccContainerLifeCycle(t *testing.T) {
 	updateWriteACLs := []string{"test-write-acl3", "test-write-acl4"}
 	updatedAllowedOrigins := []string{"allowed-origin-3", "allowed-origin-4"}
 	updatedExposedHeaders := []string{"exposed-header-3", "exposed-header-4"}
+	updatedMaxAge := _ContainerMaxAge + 1
+	updatedQuotaBytes := _ContainerQuotaBytes + 1
+	updatedQuotaCount := _ContainerQuotaCount + 1
 	updateContainerInput := UpdateContainerInput{
 		Name:           _ContainerName,
 		ReadACLs:       updateReadACLs,
@@ -84,7 +108,10 @@ func TestAccContainerLifeCycle(t *testing.T) {
 		SecondaryKey:   _ContainerPrimaryKey,
 		AllowedOrigins: updatedAllowedOrigins,
 		ExposedHeaders: updatedExposedHeaders,
-		MaxAge:         _ContainerMaxAge,
+		MaxAge:         updatedMaxAge,
+		QuotaBytes:     updatedQuotaBytes,
+		QuotaCount:     updatedQuotaCount,
+		CustomMetadata: _ContainerCustomMetadata,
 	}
 
 	_, err = client.UpdateContainer(&updateContainerInput)
@@ -118,8 +145,17 @@ func TestAccContainerLifeCycle(t *testing.T) {
 	if diff := pretty.Compare(container.ExposedHeaders, updatedExposedHeaders); diff != "" {
 		t.Fatalf(fmt.Sprintf("Updated Exposed Headers diff (-got +want)\n%s", diff))
 	}
-	if container.MaxAge != _ContainerMaxAge {
-		t.Fatalf(fmt.Sprintf("Max Age do not match Wanted: %s Recieved: %s", _ContainerMaxAge, container.MaxAge))
+	if container.MaxAge != updatedMaxAge {
+		t.Fatalf(fmt.Sprintf("Max Age do not match Wanted: %d Recieved: %d", updatedMaxAge, container.MaxAge))
+	}
+	if container.QuotaBytes != updatedQuotaBytes {
+		t.Fatalf(fmt.Sprintf("Quota Bytes do not match Wanted: %d Recieved: %d", updatedQuotaBytes, container.QuotaBytes))
+	}
+	if container.QuotaCount != updatedQuotaCount {
+		t.Fatalf(fmt.Sprintf("Quota Count do not match Wanted: %d Recieved: %d", updatedQuotaCount, container.QuotaCount))
+	}
+	if diff := pretty.Compare(container.CustomMetadata, _ContainerCustomMetadata); diff != "" {
+		t.Fatalf(fmt.Sprintf("CustomMetadata diff (-got +want)\n%s", diff))
 	}
 
 	log.Print("Successfully retrieved Container")
@@ -134,4 +170,21 @@ func deleteContainer(t *testing.T, client *StorageClient, name string) {
 	}
 
 	log.Print("Successfully deleted Container")
+}
+
+func Test_isCustomHeader(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
+
+	client, err := getStorageTestClient(&opc.Config{})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if client.isCustomHeader("X-Container-Meta-Access-Control-Allow-Origin") {
+		t.Fatalf("X-Container-Meta-Access-Control-Allow-Origin shoud be a identified as a standard header")
+	}
+	if client.isCustomHeader("X-Container-Meta-Some-Other-Header") != true {
+		t.Fatalf("X-Container-Meta-Some-Other-Header shoud be a identified as a custom header")
+	}
+
 }
