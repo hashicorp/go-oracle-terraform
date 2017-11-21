@@ -19,7 +19,9 @@ const (
 	hQuotaBytes                 = "X-Container-Meta-Quota-Bytes"
 	hQuotaCount                 = "X-Container-Meta-Quota-Count"
 	hPolicyGeoreplication       = "X-Container-Meta-Policy-Georeplication"
-	hMetaPrefix                 = "X-Container-Meta-"
+
+	hMetaPrefix       = "X-Container-Meta-"
+	hRemoveMetaPrefix = "X-Remove-Container-Meta-"
 )
 
 // All X-Container-Meta-* attributes that are explictly declared in the
@@ -240,6 +242,26 @@ type UpdateContainerInput struct {
 	// GeoreplicationPolicy []string
 }
 
+// Set an X-Container-Meta-{name} header with the value provided
+// or if the value is empty set the X-Remove-Container-Meta-{name} header
+func (c *StorageClient) updateOrRemoveStringValue(headers map[string]string, header, value string) {
+	if value == "" {
+		headers[strings.Replace(header, hMetaPrefix, hRemoveMetaPrefix, 1)] = ""
+	} else {
+		headers[header] = value
+	}
+}
+
+// Set an X-Container-Meta-{name} header with the value provided
+// or if the value is 0 set the X-Remove-Container-Meta-{name} header
+func (c *StorageClient) updateOrRemoveIntValue(headers map[string]string, header string, value int) {
+	if value == 0 {
+		headers[strings.Replace(header, hMetaPrefix, hRemoveMetaPrefix, 1)] = ""
+	} else {
+		headers[header] = strconv.Itoa(value)
+	}
+}
+
 // UpdateContainer updates the key and enabled flag of the Container with the given name.
 func (c *StorageClient) UpdateContainer(input *UpdateContainerInput) (*Container, error) {
 	headers := make(map[string]string)
@@ -252,15 +274,14 @@ func (c *StorageClient) UpdateContainer(input *UpdateContainerInput) (*Container
 		headers[hContainerWrite] = strings.Join(input.WriteACLs, ",")
 	}
 
-	headers[hTempURLKey] = input.PrimaryKey
-	headers[hTempURLKey2] = input.SecondaryKey
-	headers[hAccessControlAllowOrigin] = strings.Join(input.AllowedOrigins, " ")
-	headers[hAccessControlExposeHeaders] = strings.Join(input.ExposedHeaders, " ")
-	// headers[hPolicyGeoreplication] = strings.Join(input.GeoreplicationPolicy, " ")
-
-	headers[hAccessControlMaxAge] = strconv.Itoa(input.MaxAge)
-	headers[hQuotaBytes] = strconv.Itoa(input.QuotaBytes)
-	headers[hQuotaCount] = strconv.Itoa(input.QuotaCount)
+	c.updateOrRemoveStringValue(headers, hTempURLKey, input.PrimaryKey)
+	c.updateOrRemoveStringValue(headers, hTempURLKey2, input.SecondaryKey)
+	c.updateOrRemoveStringValue(headers, hAccessControlAllowOrigin, strings.Join(input.AllowedOrigins, " "))
+	c.updateOrRemoveStringValue(headers, hAccessControlExposeHeaders, strings.Join(input.ExposedHeaders, " "))
+	c.updateOrRemoveIntValue(headers, hAccessControlMaxAge, input.MaxAge)
+	c.updateOrRemoveIntValue(headers, hQuotaBytes, input.QuotaBytes)
+	c.updateOrRemoveIntValue(headers, hQuotaCount, input.QuotaCount)
+	// c.updateOrRemove(headers, hPolicyGeoreplication, strings.Join(input.GeoreplicationPolicy, " "))
 
 	if len(input.CustomMetadata) > 0 {
 		// add a header entry for each custom metadata item
@@ -268,6 +289,10 @@ func (c *StorageClient) UpdateContainer(input *UpdateContainerInput) (*Container
 		for name, value := range input.CustomMetadata {
 			header := fmt.Sprintf("%s%s", hMetaPrefix, name)
 			if c.isCustomHeader(header) {
+				if name == "" {
+					// change to remove header
+					header = fmt.Sprintf("%s%s", hRemoveMetaPrefix, name)
+				}
 				headers[header] = fmt.Sprintf("%s", value)
 			}
 		}

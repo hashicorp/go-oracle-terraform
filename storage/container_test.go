@@ -89,7 +89,7 @@ func TestAccContainerLifeCycle(t *testing.T) {
 		t.Fatalf(fmt.Sprintf("Quota Count do not match Wanted: %d Recieved: %d", _ContainerQuotaCount, container.QuotaCount))
 	}
 	if reflect.DeepEqual(container.CustomMetadata, _ContainerCustomMetadata) != true {
-		t.Fatalf(fmt.Sprintf("CustomMetadata do not match Wanted: %d Recieved: %d", _ContainerCustomMetadata, container.CustomMetadata))
+		t.Fatalf(fmt.Sprintf("CustomMetadata do not match Wanted: %v Recieved: %v", _ContainerCustomMetadata, container.CustomMetadata))
 	}
 
 	log.Print("Successfully retrieved Container")
@@ -101,6 +101,7 @@ func TestAccContainerLifeCycle(t *testing.T) {
 	updatedMaxAge := _ContainerMaxAge + 1
 	updatedQuotaBytes := _ContainerQuotaBytes + 1
 	updatedQuotaCount := _ContainerQuotaCount + 1
+	updatedCustomMetaData := map[string]string{"Abc-Def": "123", "Bar": "foo"}
 	updateContainerInput := UpdateContainerInput{
 		Name:           _ContainerName,
 		ReadACLs:       updateReadACLs,
@@ -111,7 +112,7 @@ func TestAccContainerLifeCycle(t *testing.T) {
 		MaxAge:         updatedMaxAge,
 		QuotaBytes:     updatedQuotaBytes,
 		QuotaCount:     updatedQuotaCount,
-		CustomMetadata: _ContainerCustomMetadata,
+		CustomMetadata: updatedCustomMetaData,
 	}
 
 	_, err = client.UpdateContainer(&updateContainerInput)
@@ -154,7 +155,7 @@ func TestAccContainerLifeCycle(t *testing.T) {
 	if container.QuotaCount != updatedQuotaCount {
 		t.Fatalf(fmt.Sprintf("Quota Count do not match Wanted: %d Recieved: %d", updatedQuotaCount, container.QuotaCount))
 	}
-	if diff := pretty.Compare(container.CustomMetadata, _ContainerCustomMetadata); diff != "" {
+	if diff := pretty.Compare(container.CustomMetadata, updatedCustomMetaData); diff != "" {
 		t.Fatalf(fmt.Sprintf("CustomMetadata diff (-got +want)\n%s", diff))
 	}
 
@@ -187,4 +188,50 @@ func Test_isCustomHeader(t *testing.T) {
 		t.Fatalf("X-Container-Meta-Some-Other-Header shoud be a identified as a custom header")
 	}
 
+}
+
+func Test_updateOrRemoveHeadersStringValue(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
+
+	client, err := getStorageTestClient(&opc.Config{})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	headers := make(map[string]string)
+
+	client.updateOrRemoveStringValue(headers, "X-Container-Meta-RemoveString", "")
+	client.updateOrRemoveStringValue(headers, "X-Container-Meta-UpdateString", "updated")
+
+	// test remove
+	if _, ok := headers["X-Remove-Container-Meta-RemoveString"]; !(ok) {
+		t.Fatalf("X-Container-Meta-RemoveString was not set")
+	}
+	// test update
+	if val, ok := headers["X-Container-Meta-UpdateString"]; !(ok) || val != "updated" {
+		t.Fatalf("X-Container-Meta-UpdateString was not set to 'updated'")
+	}
+}
+
+func Test_updateOrRemoveHeadersIntValue(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
+
+	client, err := getStorageTestClient(&opc.Config{})
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	headers := make(map[string]string)
+
+	client.updateOrRemoveIntValue(headers, "X-Container-Meta-RemoveInt", 0)
+	client.updateOrRemoveIntValue(headers, "X-Container-Meta-UpdateInt", 1)
+
+	// test remove
+	if _, ok := headers["X-Remove-Container-Meta-RemoveInt"]; !(ok) {
+		t.Fatalf("X-Remove-Container-Meta-RemoveInt was not set")
+	}
+	//test update
+	if val, ok := headers["X-Container-Meta-UpdateInt"]; !(ok) || val != "1" {
+		t.Fatalf("X-Container-Meta-UpdateInt was not set to 1")
+	}
 }
