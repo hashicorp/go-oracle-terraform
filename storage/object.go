@@ -171,7 +171,7 @@ func (c *ObjectClient) CreateObject(input *CreateObjectInput) (*ObjectInfo, erro
 		}
 	}
 
-	if input.Body == nil {
+	if input.Body == nil && input.CopyFrom == "" {
 		return nil, fmt.Errorf("Body cannot be nil")
 	}
 
