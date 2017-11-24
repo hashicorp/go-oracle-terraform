@@ -12,7 +12,7 @@ const (
 	hContainerRead              = "X-Container-Read"
 	hContainerWrite             = "X-Container-Write"
 	hTempURLKey                 = "X-Container-Meta-Temp-Url-Key"
-	hTempURLKey2                = "X-Container-Meta-Temp-Url-Key2"
+	hTempURLKey2                = "X-Container-Meta-Temp-Url-Key-2"
 	hAccessControlAllowOrigin   = "X-Container-Meta-Access-Control-Allow-Origin"
 	hAccessControlExposeHeaders = "X-Container-Meta-Access-Control-Expose-Headers"
 	hAccessControlMaxAge        = "X-Container-Meta-Access-Control-Max-Age"
