@@ -1,4 +1,9 @@
-## 0.6.1 (Unreleased
+## 0.6.2 (Unreleased)
+
+## 0.6.1 (Novemeber 26, 2017)
+
+* compute: Added is_default_gateway to network attributes for instances [GH-97]
+
 
 ## 0.6.0 (November 10, 2017)
 
