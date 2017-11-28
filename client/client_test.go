@@ -45,3 +45,39 @@ func TestClient_retryHTTP(t *testing.T) {
 		t.Fatalf("Expected 5 retries, got: %d", httpmock.GetTotalCallCount())
 	}
 }
+
+func TestClient_userAgent(t *testing.T) {
+	httpmock.Activate()
+	defer httpmock.DeactivateAndReset()
+
+	endpoint, err := url.Parse("http://foo.bar")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var userAgentString = "TestUserAgent"
+
+	client := Client{}
+	client.MaxRetries = opc.Int(5)
+	// Can't use a custom transport, otherwise httpmock won't catch request
+	client.httpClient = http.DefaultClient
+	client.APIEndpoint = endpoint
+	client.logger = opc.NewDefaultLogger()
+	client.loglevel = opc.LogLevel()
+	client.UserAgent = &userAgentString
+
+	httpmock.RegisterResponder("GET", "http://foo.bar/",
+		func(req *http.Request) (*http.Response, error) {
+			return httpmock.NewStringResponse(404, "mocked error message"), nil
+		},
+	)
+
+	req, err := client.BuildRequestBody("GET", "http://foo.bar/", nil)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if req.Header.Get(USER_AGENT_HEADER) != userAgentString {
+		t.Fatalf("Expected UserAgent to be: %s Got: %s", userAgentString, req.Header.Get(USER_AGENT_HEADER))
+	}
+
+}
