@@ -1,4 +1,8 @@
-## 0.6.2 (Unreleased)
+## 0.6.3 (Unreleased)
+
+## 0.6.2 (November 28, 2017)
+
+* client: Added a UserAgent to the Client [GH-98]
 
 ## 0.6.1 (Novemeber 26, 2017)
 
