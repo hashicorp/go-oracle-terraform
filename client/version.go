@@ -10,7 +10,7 @@ import (
 const (
 	major = 0
 	minor = 6
-	patch = 1
+	patch = 2
 	tag   = ""
 )
 
