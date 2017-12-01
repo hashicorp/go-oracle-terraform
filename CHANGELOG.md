@@ -1,4 +1,13 @@
-## 0.6.1 (Unreleased
+## 0.6.3 (Unreleased)
+
+## 0.6.2 (November 28, 2017)
+
+* client: Added a UserAgent to the Client [GH-98]
+
+## 0.6.1 (Novemeber 26, 2017)
+
+* compute: Added is_default_gateway to network attributes for instances [GH-97]
+
 
 ## 0.6.0 (November 10, 2017)
 
