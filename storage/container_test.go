@@ -102,17 +102,19 @@ func TestAccContainerLifeCycle(t *testing.T) {
 	updatedQuotaBytes := _ContainerQuotaBytes + 1
 	updatedQuotaCount := _ContainerQuotaCount + 1
 	updatedCustomMetaData := map[string]string{"Abc-Def": "123", "Bar": "foo"}
+	updatedRemoveCustomMetaData := []string{"Foo"}
 	updateContainerInput := UpdateContainerInput{
-		Name:           _ContainerName,
-		ReadACLs:       updateReadACLs,
-		WriteACLs:      updateWriteACLs,
-		SecondaryKey:   _ContainerPrimaryKey,
-		AllowedOrigins: updatedAllowedOrigins,
-		ExposedHeaders: updatedExposedHeaders,
-		MaxAge:         updatedMaxAge,
-		QuotaBytes:     updatedQuotaBytes,
-		QuotaCount:     updatedQuotaCount,
-		CustomMetadata: updatedCustomMetaData,
+		Name:                 _ContainerName,
+		ReadACLs:             updateReadACLs,
+		WriteACLs:            updateWriteACLs,
+		SecondaryKey:         _ContainerPrimaryKey,
+		AllowedOrigins:       updatedAllowedOrigins,
+		ExposedHeaders:       updatedExposedHeaders,
+		MaxAge:               updatedMaxAge,
+		QuotaBytes:           updatedQuotaBytes,
+		QuotaCount:           updatedQuotaCount,
+		CustomMetadata:       updatedCustomMetaData,
+		RemoveCustomMetadata: updatedRemoveCustomMetaData,
 	}
 
 	_, err = client.UpdateContainer(&updateContainerInput)

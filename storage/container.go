@@ -238,6 +238,9 @@ type UpdateContainerInput struct {
 	// Updates custom Container X-Container-Meta-{name} name value pairs
 	// Optional
 	CustomMetadata map[string]string
+	// Remove custom Container X-Container-Meta-{name} headers
+	// Optional
+	RemoveCustomMetadata []string
 	// Georeplication Policy (undocumented)
 	// GeoreplicationPolicy []string
 }
@@ -289,11 +292,20 @@ func (c *StorageClient) UpdateContainer(input *UpdateContainerInput) (*Container
 		for name, value := range input.CustomMetadata {
 			header := fmt.Sprintf("%s%s", hMetaPrefix, name)
 			if c.isCustomHeader(header) {
-				if name == "" {
-					// change to remove header
-					header = fmt.Sprintf("%s%s", hRemoveMetaPrefix, name)
-				}
 				headers[header] = fmt.Sprintf("%s", value)
+			}
+		}
+	}
+
+	if len(input.RemoveCustomMetadata) > 0 {
+		// add a special header entry for each custom metadata item to be removed
+		// X-Remove-Container-Meta-{name}: value
+		for _, name := range input.RemoveCustomMetadata {
+			header := fmt.Sprintf("%s%s", hMetaPrefix, name)
+			if c.isCustomHeader(header) {
+				// change to remove header
+				header = fmt.Sprintf("%s%s", hRemoveMetaPrefix, name)
+				headers[header] = ""
 			}
 		}
 	}
