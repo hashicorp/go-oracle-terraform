@@ -1,4 +1,6 @@
-## 0.6.3 (Unreleased)
+## 0.6.3 (December 13, 2017)
+
+* storage: Added remove header option to storage objects and containers [GH-96]
 
 ## 0.6.2 (November 28, 2017)
 
