@@ -185,6 +185,77 @@ func TestAccOrchestrationLifeCycle_update(t *testing.T) {
 	}
 }
 
+func TestAccOrchestrationLifeCycle_suspend(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
+
+	orcClient, err := getOrchestrationsTestClients()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	instanceInput := &CreateInstanceInput{
+		Name:      _OrchestrationTestName,
+		Label:     _OrchestrationInstanceTestLabel,
+		Shape:     _OrchestrationInstanceTestShape,
+		ImageList: _OrchestrationInstanceTestImage,
+	}
+
+	object := Object{
+		Label:         _OrchestrationTestLabel,
+		Orchestration: _OrchestrationTestName,
+		Template:      instanceInput,
+		Type:          OrchestrationTypeInstance,
+	}
+
+	input := &CreateOrchestrationInput{
+		Name:         _OrchestrationTestName,
+		DesiredState: OrchestrationDesiredStateActive,
+		Objects:      []Object{object},
+	}
+
+	createdOrchestration, err := orcClient.CreateOrchestration(input)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer deleteOrchestration(t, orcClient, createdOrchestration.Name)
+	log.Printf("Created NIC Set: %#v", createdOrchestration)
+
+	getInput := &GetOrchestrationInput{
+		Name: createdOrchestration.Name,
+	}
+
+	orchestration, err := orcClient.GetOrchestration(getInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	log.Printf("orchestration Retrieved: %+v", orchestration)
+	if orchestration.DesiredState != OrchestrationDesiredStateActive {
+		t.Fatal("orchestration state mismatch! Got: %q Expected: %q", orchestration.DesiredState, OrchestrationDesiredStateActive)
+	}
+
+	updateOrchestrationInput := &UpdateOrchestrationInput{
+		Name:         _OrchestrationTestName,
+		DesiredState: OrchestrationDesiredStateSuspend,
+		Objects:      orchestration.Objects,
+		Version:      orchestration.Version,
+	}
+
+	_, err = orcClient.UpdateOrchestration(updateOrchestrationInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	orchestration, err = orcClient.GetOrchestration(getInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Don't need to tear down the orchestration, it's attached to the instance
+	log.Printf("orchestration Retrieved: %+v", orchestration)
+	if orchestration.DesiredState != OrchestrationDesiredStateSuspend {
+		t.Fatal("orchestration state mismatch! Got: %q Expected: %q", orchestration.DesiredState, OrchestrationDesiredStateInactive)
+	}
+}
+
 func getOrchestrationsTestClients() (*OrchestrationsClient, error) {
 	client, err := getTestClient(&opc.Config{})
 	if err != nil {
