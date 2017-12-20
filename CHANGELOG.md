@@ -1,3 +1,9 @@
+## 0.6.5 (Unreleased)
+
+## 0.6.4 (Decemeber 20, 2017) 
+
+* compute: Added suspend functionality to orchestrated instances [GH-99]
+
 ## 0.6.3 (December 13, 2017)
 
 * storage: Added remove header option to storage objects and containers [GH-96]
