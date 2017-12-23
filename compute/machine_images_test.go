@@ -1,9 +1,11 @@
 package compute
 
 import (
+	"net/http"
 	"net/url"
 	"os"
 	"testing"
+	"time"
 
 	"fmt"
 
@@ -86,6 +88,11 @@ func destroyMachineImage(t *testing.T, client *MachineImagesClient, name string)
 
 func getStorageClient(t *testing.T) *storage.StorageClient {
 	config := &opc.Config{}
+	tr := &http.Transport{
+		Proxy:               http.ProxyFromEnvironment,
+		TLSHandshakeTimeout: 120 * time.Second,
+	}
+	config.HTTPClient = &http.Client{Transport: tr}
 
 	apiEndpoint, _ := url.Parse(os.Getenv("OPC_STORAGE_ENDPOINT"))
 	domain := os.Getenv("OPC_IDENTITY_DOMAIN")
