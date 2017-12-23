@@ -1,8 +1,6 @@
 package compute
 
 import (
-	"crypto/tls"
-	"net/http"
 	"net/url"
 	"os"
 	"testing"
@@ -98,14 +96,6 @@ func getStorageClient(t *testing.T) *storage.StorageClient {
 	config.IdentityDomain = &domain
 	config.Username = &username
 	config.Password = &password
-
-	// XXX USE INSECURE FOR TESTING
-	proxyURL, _ := url.Parse("http://localhost:8080")
-	tr := &http.Transport{
-		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
-		Proxy:           http.ProxyURL(proxyURL),
-	}
-	config.HTTPClient = &http.Client{Transport: tr}
 
 	sClient, _ := storage.NewStorageClient(config)
 	return sClient
