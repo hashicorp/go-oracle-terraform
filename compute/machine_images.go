@@ -89,6 +89,15 @@ type CreateMachineImageInput struct {
 // CreateMachineImage creates a new Machine Image with the given parameters.
 func (c *MachineImagesClient) CreateMachineImage(createInput *CreateMachineImageInput) (*MachineImage, error) {
 	var machineImage MachineImage
+
+	// If `sizes` is not set then is mst be defaulted to {"total": 0}
+	if createInput.Sizes == nil {
+		createInput.Sizes = map[string]interface{}{"total": 0}
+	}
+
+	// `no_upload` must always be true
+	createInput.NoUpload = true
+
 	createInput.Name = c.getQualifiedName(createInput.Name)
 	if err := c.createResource(createInput, &machineImage); err != nil {
 		return nil, err

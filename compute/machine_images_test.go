@@ -39,11 +39,9 @@ func TestAccMachineImageLifeCycle(t *testing.T) {
 	account := fmt.Sprintf("/Compute-%s/cloud_storage", *client.ComputeClient.client.IdentityDomain)
 
 	createMachineImage := &CreateMachineImageInput{
-		Account:  account,
-		Name:     machineImageName,
-		File:     machineImageFile,
-		NoUpload: true,
-		Sizes:    map[string]interface{}{"total": 0},
+		Account: account,
+		Name:    machineImageName,
+		File:    machineImageFile,
 	}
 
 	machineImage, err := client.CreateMachineImage(createMachineImage)
