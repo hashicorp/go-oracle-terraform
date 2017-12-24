@@ -52,7 +52,8 @@ func TestAccMachineImageLifeCycle(t *testing.T) {
 	defer destroyMachineImage(t, client, machineImage.Name)
 
 	getInput := &GetMachineImageInput{
-		Name: machineImageName,
+		Account: account,
+		Name:    machineImageName,
 	}
 
 	receivedMachineImage, err := client.GetMachineImage(getInput)

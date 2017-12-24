@@ -119,6 +119,8 @@ func (c *MachineImagesClient) DeleteMachineImage(deleteInput *DeleteMachineImage
 
 // GetMachineList describes the MachineImage to get
 type GetMachineImageInput struct {
+	// account of the associated Object Storage Classic instance
+	Account string `json:"account"`
 	// The name of the Machine Image
 	Name string `json:name`
 }
