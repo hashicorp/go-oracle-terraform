@@ -1,3 +1,5 @@
+## 0.6.6 (Unreleased)
+
 ## 0.6.5 (January 8, 2018)
 
 * compute: Orchestration failures should explicitly tell the user why it failed [GH-100]
