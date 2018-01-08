@@ -9,11 +9,12 @@ import (
 )
 
 const (
-	_OrchestrationTestName          = "test-acc-orchestration2"
-	_OrchestrationTestLabel         = "test-acc-orchestration-lbl"
-	_OrchestrationInstanceTestLabel = "test"
-	_OrchestrationInstanceTestShape = "oc3"
-	_OrchestrationInstanceTestImage = "/oracle/public/Oracle_Solaris_11.3"
+	_OrchestrationTestName             = "test-acc-orchestration-6"
+	_OrchestrationTestLabel            = "test-acc-orchestration-lbl"
+	_OrchestrationInstanceTestLabel    = "test"
+	_OrchestrationInstanceTestShape    = "oc3"
+	_OrchestrationInstanceTestImage    = "/oracle/public/Oracle_Solaris_11.3"
+	_OrchestrationInstanceTestBadImage = "/oracle/public/Oracle_Solaris_11.3_bad"
 )
 
 func TestAccOrchestrationLifeCycle(t *testing.T) {
@@ -253,6 +254,40 @@ func TestAccOrchestrationLifeCycle_suspend(t *testing.T) {
 	log.Printf("orchestration Retrieved: %+v", orchestration)
 	if orchestration.DesiredState != OrchestrationDesiredStateSuspend {
 		t.Fatal("orchestration state mismatch! Got: %q Expected: %q", orchestration.DesiredState, OrchestrationDesiredStateInactive)
+	}
+}
+
+func TestAccOrchestrationLifeCycle_badInstance(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
+
+	orcClient, err := getOrchestrationsTestClients()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	instanceInput := &CreateInstanceInput{
+		Name:      _OrchestrationTestName,
+		Label:     _OrchestrationInstanceTestLabel,
+		Shape:     _OrchestrationInstanceTestShape,
+		ImageList: _OrchestrationInstanceTestBadImage,
+	}
+
+	object := Object{
+		Label:         _OrchestrationTestLabel,
+		Orchestration: _OrchestrationTestName,
+		Template:      instanceInput,
+		Type:          OrchestrationTypeInstance,
+	}
+
+	input := &CreateOrchestrationInput{
+		Name:         _OrchestrationTestName,
+		DesiredState: OrchestrationDesiredStateActive,
+		Objects:      []Object{object},
+	}
+
+	createdOrchestration, err := orcClient.CreateOrchestration(input)
+	if err == nil {
+		t.Fatal("Orchestration succeded when attempting to create a bad Orchestration %+v", createdOrchestration)
 	}
 }
 
