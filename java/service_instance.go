@@ -12,8 +12,8 @@ const WaitForServiceInstanceDeleteTimeout = time.Duration(3600 * time.Second)
 const ServiceInstanceDeleteRetry = 30
 
 var (
-	ServiceInstanceContainerPath = "/paas/service/jcs/api/v1.1/instances/%s"
-	ServiceInstanceResourcePath  = "/paas/service/jcs/api/v1.1/instances/%s/%s"
+	ServiceInstanceContainerPath = "/paas/api/v1.1/instancemgmt/%s/services/jaas/instances"
+	ServiceInstanceResourcePath  = "/paas/api/v1.1/instancemgmt/%s/services/jaas/instances/%s"
 )
 
 // ServiceInstanceClient is a client for the Service functions of the Java API.
@@ -226,6 +226,12 @@ const (
 	ServiceInstanceMiddlewareVersion12c2   ServiceInstanceMiddlewareVersion = "12cRelease2"
 	ServiceInstanceMiddlewareVersion12cR3  ServiceInstanceMiddlewareVersion = "12cR3"
 	ServiceInstanceMiddlewareVersion11g    ServiceInstanceMiddlewareVersion = "11g"
+)
+
+type ClusterType string
+
+const (
+	
 )
 
 type ServiceInstance struct {
@@ -500,44 +506,67 @@ type ServiceComponent struct {
 }
 
 type CreateServiceInstanceInput struct {
-	// This attribute is not available on Oracle Cloud Machine.
-	// This attribute is only applicable when level is set to PAAS. Specifies whether to
-	// enable backups for this Oracle Java Cloud Service instance.
+	// This attribute is available only on Oracle Cloud Infrastructure. It is required along with region and subnet.
+  // Name of a data center location in the Oracle Cloud Infrastructure region that is specified in region.
+	// A region is a localized geographic area, composed of one or more availability domains (data centers).
+  // The availability domain value format is an account-specific prefix followed by <region>-<ad>.
+	// For example, FQCn:US-ASHBURN-AD1 where FQCn is the account-specific prefix.
+  // The Oracle Database Cloud Service database deployment on Oracle Cloud Infrastructure must be in the same
+	// region and virtual cloud network as the Oracle Java Cloud Service instance you are creating on Oracle Cloud Infrastructure.
+	// The service instances do not need to be on the same subnet or availability domain.
+	// See Regions and Availability Domains in Oracle Cloud Infrastructure Services.
+	// Optional.
+	AvailabilityDomain string `json:"availabilityDomain,omitempty"`
+	// This attribute is applicable only when serviceLevel is set to PAAS.
+	// Specifies whether to enable backups for this Oracle Java Cloud Service instance.
 	// Optional.
 	BackupDestination ServiceInstanceBackupDestination `json:"backupDestination,omitempty"`
-	// Where to store your service instance backups.
-	// Note the difference between Oracle Public Cloud and Oracle Cloud Machine.
-	// On Oracle Public Cloud, this is the name of a Oracle Storage Cloud Service container. For
-	// example, you can specify:
+	// URI of the object storage container or bucket for storing Oracle Java Cloud Service instance backups.
+	// This attribute is not required if backupDestination is set to NONE. It is also not required when provisioning an
+	// Oracle Java Cloud Service service instance with the BASIC service level.
+  // Note:
+	// Do not use a container or bucket that you use to back up Oracle Java Cloud Service instances for any other purpose.
+	// For example, do not also use the same container or bucket to back up Oracle Database Cloud Service database deployments.
+	// Using one container or bucket for multiple purposes can result in billing errors.
+  // You do not have to specify a container or bucket if you provision the service instance without enabling backups.
+  // On Oracle Cloud Infrastructure Classic, the object storage container does not have to be created ahead of provisioning
+	// your Oracle Java Cloud Service instance.
+  // To specify the container (existing or new), use one of the following formats:
 	// Storage-<identitydomainid>/<containername>
-	// <storageservicename>-<identitydomainid>/<containername>
-	// https://foo.storage.oraclecloud.com/v1/MyService-bar/MyContainer
-	// The format to use to specify the Storage container name depends on the URL of your Oracle
-	// Storage Cloud Service account. To identify the URL of your storage account, see About REST URLs for Oracle Storage Cloud Service Resources in Using Oracle Storage Cloud Service.
-	// Note:
-	// Do not use an Oracle Storage Cloud container that you use to back up Oracle Java Cloud Service
-	// instances for any other purpose. For example, do not also use the same container to back up Oracle
-	// Database Cloud Service database deployments. Using one container for multiple purposes can result in
-	// billing errors.
-	// You do not have to specify a storage container if you provision the service instance without enabling
-	// backups.
-	// On Oracle Cloud Machine, this is the NFS URI of the remote storage disk used to store service instance
-	// backups. Get from your Cloud or Tenant administrator the filer ip address and export path that is
-	// designated to store Oracle Java Cloud Service instance backups. Specify the NFS URI in the format:
-	// ip-address:export-path
-	// This is not required when provisioning an Oracle Java Cloud Service - Virtual Image instance (BASIC level).
+  // <storageservicename>-<identitydomainid>/<containername>
+  // https://foo.storage.oraclecloud.com/v1/MyService-bar/MyContainer
+  // The format to use to specify the container name depends on the URL of your Oracle Cloud Infrastructure Object Storage
+	// Classic account. To identify the URL of your account, see Finding the REST Endpoint URL for Your Service Instance in
+	// Using Oracle Cloud Infrastructure Object Storage Classic.
+  // On Oracle Cloud Infrastructure, the object storage bucket must be created ahead of provisioning your Oracle Java Cloud
+	// Service instance. Do not use the same bucket for each service instance. Certain prerequisites must be satisfied when
+	// you create the bucket. See Prerequisites for Oracle Platform Services on Oracle Cloud Infrastructure in Oracle Cloud
+	// Infrastructure Services. Then use the following URL form to specify the bucket:
+	// https://swiftobjectstorage.<region>.oraclecloud.com/v1/<account>/<container>
+	// For example:
+	// https://swiftobjectstorage.us-phoenix-1.oraclecloud.com/v1/acme/mycontainer
 	// Optional.
 	CloudStorageContainer string `json:"cloudStorageContainer,omitempty"`
-	// Password for the Oracle Storage Cloud Service administrator.
-	// Must be specified if cloudStorageContainer is set.
-	CloudStoragePassword string `json:"cloudStoragePassword,omitempty"`
-	// Username for the Oracle Storage Cloud Service administrator.
-	// Must be specified if cloudStorageContainer is set.
-	CloudStorageUsername string `json:"cloudStorageUser,omitempty"`
-	// Specify if the given cloudStorageContainer is to be created if it does not already exist.
-	// Default value is false.
+	// This attribute is not applicable when provisioning an Oracle Java Cloud Service instance in Oracle Cloud Infrastructure.
+	// Flag that specifies whether to create (true) or not create (false) the object storage container if the name specified in
+	// cloudStorageContainer does not exist. The default is false.
+	CloudStorageContainerAutoGenerate bool `json:"cloudStorageContainerAutoGenerate,omitempty"`
+	// On Oracle Cloud Infrastructure Classic, this is the password for the Oracle Cloud Infrastructure Object Storage
+	// Classic user who has read and write access to the container that is specified in cloudStorageContainer. This attribute
+	// is not required for the BASIC service level.
+  // On Oracle Cloud Infrastructure, this is the Swift password to use with the Object Storage service.
 	// Optional.
-	CreateStorageContainerIfMissing bool `json:"createStorageContainerIfMissing,omitempty"`
+	CloudStoragePassword string `json:"cloudStoragePassword,omitempty"`
+	// User name for the object storage user. The user name must be specified if cloudStorageContainer is set.
+  // On Oracle Cloud Infrastructure Classic, this is the user name for the Oracle Cloud Infrastructure Object Storage
+	// Classic user who has read and write access to the container that is specified in cloudStorageContainer.
+	// This attribute is not required for the BASIC service level.
+  // On Oracle Cloud Infrastructure, this is the user name for the Object Storage service user.
+	// Optional.
+	CloudStorageUsername string `json:"cloudStorageUser,omitempty"`
+	// Groups properties for the Oracle WebLogic Server component (WLS) and the optional Oracle Traffice Director (OTD) component.
+	// Optional
+	Components []Component `json:"components,omitempty"`
 	// Free-form text that provides additional information about the service instance.
 	// Optional.
 	Description string `json:"description,omitempty"`
@@ -614,6 +643,203 @@ type CreateServiceInstanceInput struct {
 	// MONTHLY - Pay one price for the full month irrespective of the number of hours used.
 	// Required.
 	SubscriptionType ServiceInstanceSubscriptionType `json:"subscriptionType"`
+}
+
+type Component struct {
+	// Properties for the Oracle Traffic Director (OTD) component.
+	// Optional
+	OTD OTD `json:"otd,omitempty"`
+	// Properties for the Oracle WebLogic Server (WLS) component.
+	// Required.
+	WLS WLS `json:"wls"`
+}
+
+type OTD struct {
+	// Password for the Oracle Traffic Director administrator. The password must meet the following requirements:
+	// Starts with a letter
+  // Is between 8 and 30 characters long
+  // Has one or more upper case letters
+  // Has one or more lower case letters
+  // Has one or more numbers
+  // Has one or more of the following special characters: hyphen (-), underscore (_), pound sign (#), dollar sign ($).
+	// If Exadata is the database for the service instance, the password cannot contain the dollar sign ($).
+  // If an administrator password is not explicitly set, the OTD administrator password defaults to the WebLogic Server
+	// (WLS) administrator password.
+	// Optional
+	AdminPassword string `json:"adminPassword,omitempty"`
+	// Port for accessing Oracle Traffic Director using HTTP. The default value is 8989.
+	AdminPort int `json:"adminPort,omitempty"`
+	// User name for the Oracle Traffic Director administrator. The name must be between 8 and 128 characters
+	// long and cannot contain any of the following characters:
+	// Tab
+	// Brackets
+  // Parentheses
+  // The following special characters: left angle bracket (<), right angle bracket (>), ampersand (&),
+	// pound sign (#), pipe symbol (|), and question mark (?).
+  // If a username is not explicitly set, the OTD user name defaults to the WebLogic Server (WLS) administrator
+	// user name.
+	// Optional
+	AdminUserName string `json:"adminUserName,omitempty"`
+	// Flag that specifies whether the local load balancer HA is enabled.
+	// This value defaults to false (that is, HA is not enabled).
+	// Optional
+	HAEnabled bool `json:"haEnabled,omitempty"`
+	// Additional Properties Allowed:
+  // This attribute is not applicable to Oracle Java Cloud Service instances in Oracle Cloud Infrastructure.
+  // Reserved or pre-allocated IP addresses can be assigned to local load balancer nodes.
+  // A single IP reservation name or two names separated by a comma.
+  // The number of names in ipReservations must match the number of load balancer nodes you are provisioning.
+  // Note the difference between accounts where regions are supported and not supported.
+  // Where regions are supported: A region name must be specified in order to use ipReservations.
+	// Only those reserved IPs created in the specified region can be used.
+  // See IP Reservations REST Endpoints for information about how to find unused IP reservations and,
+	// if needed, create new IP reservations.
+  // Where regions are not supported: If you are using an Oracle Database Exadata Cloud Service database deployment
+	// with your Oracle Java Cloud Service instance in an account where regions are not enabled, a region name
+	// is not required in order to use ipReservations. However, you must first submit a request to get the
+	// IP reservations. See the My Oracle Support document titled How to Request Authorized IPs for Provisioning
+	// a Java Cloud Service with Database Exadata Cloud Service (MOS Note 2163568.1).
+	// Optional.
+	IPReservations []string `json:"ipReservations,omitempty"`
+	// Listener port for the local load balancer for accessing deployed applications using HTTP.
+	// The default value is 8080.
+  // This value is overridden by privilegedListenerPort unless its value is set to 0.
+	// This value has no effect if the local load balancer is disabled.
+	// Optional.
+	ListenerPort int `json:"listenerPort,omitempty"`
+	// Flag that specifies whether the non-secure listener port is enabled on the local load balancer.
+	// The default value is true.
+	// Optional
+	ListenerPortEnabled bool `json:"listenerPortEnabled,omitempty"`
+	// Policy to use for routing requests to the load balancer. Valid policies include:
+	// Optional.
+	LoadBalancingPolicy ServiceInstanceLoadBalancingPolicy `json:"loadBalancingPolicy,omitempty"`
+  //Privileged listener port for accessing the deployed applications using HTTP. The default value is 80.
+  // This value has no effect if the local load balancer is disabled.
+  // To disable the privileged listener port, set the value to 0. In this case, if the local
+	// load balancer is provisioned, the listener port defaults to listenerPort, if specified, or 8080.
+	// Optional
+	PrivilegedListenerPort int `json:"privilegedListenerPort,omitempty"`
+	// Privileged listener port for accessing the deployed applications using HTTPS. The default value is 443.
+  // This value has no effect if the local load balancer is disabled.
+  // To disable the privileged listener port, set the value to 0. In this case, if the local
+	// load balancer is provisioned, the listener port defaults to securedListenerPort, if specified, or 8081.
+	// Optional.
+	PrivilegedSecuredListenerPort int `json:"privilegedSecuredListenerPort,omitempty"`
+	// Secured listener port for accessing the deployed applications using HTTPS. The default value is 8081.
+	// This value is overridden by privilegedSecuredContentPort unless its value is set to 0.
+	// This value has no effect if the local load balancer is disabled.
+	SecuredListenerPort int `json:"securedListenerPort,omitempty"`
+	// Desired compute shape. A shape defines the number of Oracle Compute Units (OCPUs)
+	// and amount of memory (RAM).
+	// Required.
+	Shape ServiceInstanceShape `json:"shape"`
+}
+
+type WLS struct {
+	// Password for the WebLogic Server administrator. The password must meet the following requirements:
+  // Starts with a letter
+  // Is between 8 and 30 characters long
+  // Has one or more upper case letters
+  // Has one or more lower case letters
+  // Has one or more numbers
+  // Has one or more of the following special characters: hyphen (-), underscore (_), pound sign (#),
+	// dollar sign ($). If you are using Exadata as the database for the service instance, the password
+	// cannot contain the dollar sign ($).
+	// Required
+	AdminPassword string `json:"adminPassword"`
+	// Port for accessing WebLogic Server using HTTP. The default value is 7001.
+  // Note that the adminPort, contentPort, securedAdminPort, securedContentPort, and nodeManagerPort
+	// values must be unique.
+	// Optional
+	AdminPort int `json:"adminPort,omitempty"`
+	// User name for the WebLogic Server administrator. The name must be between 8 and 128 characters long and cannot contain any of the following characters:
+  // Tab
+  // Brackets
+  // Parentheses
+  // The following special characters: left angle bracket (<), right angle bracket (>), ampersand (&),
+	// pound sign (#), pipe symbol (|), and question mark (?).
+	// Required
+	AdminUserName string `json:"adminUserName"`
+	// Groups details of Database Cloud Service database deployments that host application schemas, if used.
+	// You can specify up to four application schema database deployments.
+	// Optional.
+	AppDBs []AppDB `json:"addDbs,omitempty"`
+	// Size of the backup volume for the service. The value must be a multiple of GBs. You can specify this
+	// value in bytes or GBs. If specified in GBs, use the following format: nG, where n specifies the number of GBs.
+	// For example, you can express 10 GBs as bytes or GBs. For example: 100000000000 or 10G.
+	// This value defaults to the system configured volume size.
+	// Optional
+	BackupVolumeSize string `json:"backupVolumeSize,omitempty"`
+	// This attribute is ignored if clusters array is used.
+  // Name of the WebLogic Server application cluster that contains the Managed Servers for running the service applications.
+  // The cluster name:
+  // Must not exceed 50 characters.
+  // Must start with a letter.
+  // Must contain only alphabetical characters, underscores (_), or dashes (-).
+  // Must not contain any other special characters.
+  // Must be unique within the identity domain.
+  // If no value is specified, the name of the cluster will be generated from the first eight characters of the Oracle Java Cloud Service instance name (specified in serviceName), using the following format: first8charsOfServiceInstanceName_cluster
+	// Optional.
+	ClusterName string `json:"clusterName,omitempty"`
+	// Groups properties for one or more clusters.
+  // This attribute is optional for the WebLogic Server application cluster.
+	// You must, however, use the clusters array if you want to define a caching (data grid) cluster for
+	// the service instance.
+	// Optional.
+	Clusters []Cluster `json:"cluster,omitempty"`
+}
+
+type Cluster struct {
+	// Name of the cluster to create.
+  // The cluster name:
+  // Must not exceed 50 characters.
+  // Must start with a letter.
+  // Must contain only alphabetical characters, underscores (_), or dashes (-).
+  // Must not contain any other special characters.
+  // Must be unique within the identity domain.
+	// Optional.
+	ClusterName string `json:"clusterName,omitempty"`
+	// A single path prefix or multiple path prefixes separated by commas. A path prefix must be unique across clusters in the domain.
+  // This attribute is applicable only to service instances where Oracle Identity Cloud Service is enabled and a managed load balancer is configured. It is also applicable only to a cluster of type APPLICATION_CLUSTER.
+  // When path prefixes are specified, this means the load balancer can route to only those applications that have the context root matching one of the path prefixes.
+  // For example, if you specified the following path prefixes:
+  // ["/myapp1", "/myapp2"]
+  // ...then the load balancer can route to only those applications that have the context root matching these:
+  // /myapp1
+	// /myapp1/*
+  // /myapp2
+  // /myapp2/*
+	// Optional
+	PathPrefixes []string `json:"pathPrefixes,omitempty"`
+	// Number of servers to create in this cluster.
+  // For APPLICATION_CLUSTER - Valid values include: 1, 2, 4, and 8. The default value is 1.
+  // For CACHING_CLUSTER - Use a number from 1 to 32 only. The default value is 1.
+  // The serverCount limit is based on the VM (cluster size) limit of four and the serversPerNode limit of eight.
+  // Note: The actual server number is rounded up to fill the number of nodes required to create
+	// the caching cluster. For example, if serversPerNode is four and serverCount is three, the actual
+	// number of servers that will be created is four.
+	// Optional
+	ServerCount int `json:"serverCount,omitempty"`
+	// Number of JVMs to start on each VM (node). This attribute is applicable only to cluster type CACHING_CLUSTER.
+  // Use a number from 1 to 8 only. The default value is 1.
+	// Optional
+	ServerPerNode int `json:"serversPerNode,omitempty"`
+	// Desired compute shape for the nodes in this cluster. A shape defines the number of Oracle Compute Units
+	// (OCPUs) and amount of memory (RAM). Valid shapes on Oracle Cloud Infrastructure Classic include:
+	// On Oracle Cloud Infrastructure, only VM.Standard and BM.Standard shapes are supported.
+	// See the Bare Metal Shapes and VM Shapes tables of the topic Overview of the Compute Service in Oracle
+	// Cloud Infrastructure Services.
+	// Note: This shape attribute is optional. If no shape value is specified here, the shape is inherited from
+	// the WLS component level shape.
+	Shape ServiceInstanceShape `json:"shape"`
+	// Type of cluster to create. Valid values include:
+  // APPLICATION_CLUSTER - Application cluster (default).
+	// This is the WebLogic cluster that will run the service applications, which are accessible via the
+	// local load balancer resource (OTD) or the Oracle managed load balancer.
+  // CACHING_CLUSTER - Caching (data grid) cluster. This is the WebLogic cluster for Coherence storage.
+	// Optional
+	Type ClusterType `json:"type,omitempty"`
 }
 
 type Parameter struct {
