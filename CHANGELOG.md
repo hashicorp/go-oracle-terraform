@@ -1,4 +1,6 @@
-## 0.6.6 (Unreleased)
+## 0.6.6 (January 11, 2018)
+
+* compute: Create and delete machine images [GH-101]
 
 ## 0.6.5 (January 8, 2018)
 
