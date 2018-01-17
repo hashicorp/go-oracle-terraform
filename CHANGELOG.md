@@ -1,3 +1,7 @@
+## 0.6.7 (January 12, 2018)
+
+* compute: Fixes a bug around qualifying storage volume name in storage attachments [GH-102]
+
 ## 0.6.6 (January 11, 2018)
 
 * compute: Create and delete machine images [GH-101]
