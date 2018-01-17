@@ -1,4 +1,6 @@
-## 0.6.7 (January 12, 2018)
+## 0.6.8 (Unreleased)
+
+## 0.6.7 (January 17, 2018)
 
 * compute: Fixes a bug around qualifying storage volume name in storage attachments [GH-102]
 
