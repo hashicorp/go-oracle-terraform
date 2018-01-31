@@ -1,6 +1,7 @@
 package compute
 
 import (
+	"fmt"
 	"log"
 	"testing"
 
@@ -288,6 +289,78 @@ func TestAccOrchestrationLifeCycle_badInstance(t *testing.T) {
 	createdOrchestration, err := orcClient.CreateOrchestration(input)
 	if err == nil {
 		t.Fatal("Orchestration succeded when attempting to create a bad Orchestration %+v", createdOrchestration)
+	}
+}
+
+func TestAccOrchestrationLifeCycle_relationship(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
+
+	orcClient, err := getOrchestrationsTestClients()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	instanceInput1 := &CreateInstanceInput{
+		Name:      fmt.Sprintf("%s1", _OrchestrationTestName),
+		Label:     fmt.Sprintf("%s1", _OrchestrationInstanceTestLabel),
+		Shape:     _OrchestrationInstanceTestShape,
+		ImageList: _OrchestrationInstanceTestImage,
+	}
+
+	instanceInput2 := &CreateInstanceInput{
+		Name:      fmt.Sprintf("%s2", _OrchestrationTestName),
+		Label:     fmt.Sprintf("%s2", _OrchestrationInstanceTestLabel),
+		Shape:     _OrchestrationInstanceTestShape,
+		ImageList: _OrchestrationInstanceTestImage,
+	}
+
+	object1 := Object{
+		Label:         fmt.Sprintf("%s1", _OrchestrationTestLabel),
+		Orchestration: _OrchestrationTestName,
+		Template:      instanceInput1,
+		Type:          OrchestrationTypeInstance,
+	}
+
+	relationship := Relationship{
+		Type:    OrchestrationRelationshipTypeDepends,
+		Targets: []string{object1.Label},
+	}
+
+	object2 := Object{
+		Label:         fmt.Sprintf("%s2", _OrchestrationTestLabel),
+		Orchestration: _OrchestrationTestName,
+		Template:      instanceInput2,
+		Type:          OrchestrationTypeInstance,
+		Relationships: []Relationship{relationship},
+	}
+
+	input := &CreateOrchestrationInput{
+		Name:         _OrchestrationTestName,
+		DesiredState: OrchestrationDesiredStateActive,
+		Objects:      []Object{object1, object2},
+	}
+
+	createdOrchestration, err := orcClient.CreateOrchestration(input)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer deleteOrchestration(t, orcClient, createdOrchestration.Name)
+	log.Printf("Created NIC Set: %#v", createdOrchestration)
+
+	getInput := &GetOrchestrationInput{
+		Name: createdOrchestration.Name,
+	}
+
+	orchestration, err := orcClient.GetOrchestration(getInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	log.Printf("orchestration Retrieved: %+v", orchestration)
+	if orchestration.Name != createdOrchestration.Name || orchestration.Name == "" {
+		t.Fatal("orchestration Name mismatch! Got: %q Expected: %q", orchestration.Name, createdOrchestration)
+	}
+	if orchestration.Objects[1].Relationships == nil {
+		t.Fatal("Relationship between instances not setup properly")
 	}
 }
 
