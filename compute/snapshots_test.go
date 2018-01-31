@@ -111,6 +111,57 @@ func TestAccSnapshotLifeCycleMachineImage(t *testing.T) {
 	assert.Equal(t, createdSnapshot.Name, snapshot.Name, "Snapshot Name mismatch!")
 }
 
+func TestAccSnapshotLifeCycleNoDeleteMachineImage(t *testing.T) {
+	// Same test as above; different tear-down
+	helper.Test(t, helper.TestCase{})
+
+	sClient, iClient, mClient, err := getSnapshotsTestClients()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// In order to get details on a Snapshot we need to create the following resources
+	// - Instance
+
+	instanceInput := &CreateInstanceInput{
+		Name:      _SnapshotInstanceTestName,
+		Label:     _SnapshotInstanceTestLabel,
+		Shape:     _SnapshotInstanceTestShape,
+		ImageList: _SnapshotInstanceTestImage,
+	}
+
+	createdInstance, err := iClient.CreateInstance(instanceInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tearDownInstances(t, iClient, createdInstance.Name, createdInstance.ID)
+
+	createSnapshotInput := &CreateSnapshotInput{
+		Instance:     strings.Join([]string{createdInstance.Name, createdInstance.ID}, "/"),
+		MachineImage: _SnapshotInstanceTestName,
+	}
+	createdSnapshot, err := sClient.CreateSnapshot(createSnapshotInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer tearDownSnapshotResource(t, sClient, createdSnapshot.Name, createdSnapshot.MachineImage)
+	defer tearDownMachineImage(t, mClient, createdSnapshot.MachineImage)
+
+	getInput := &GetSnapshotInput{
+		Name: createdSnapshot.Name,
+	}
+
+	snapshot, err := sClient.GetSnapshot(getInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	log.Printf("Snapshot Retrieved: %+v", snapshot)
+	if !reflect.DeepEqual(snapshot.Name, createdSnapshot.Name) {
+		t.Fatal("Snapshot Name mismatch! Got: %s Expected: %s", snapshot.Name, createdSnapshot.Name)
+	}
+}
+
 func TestAccSnapshotLifeCycleDelay(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
@@ -221,6 +272,29 @@ func tearDownSnapshots(t *testing.T, snapshotsClient *SnapshotsClient, machineIm
 		MachineImage: machineImageName,
 	}
 	if err := snapshotsClient.DeleteSnapshot(machineImagesClient, deleteRequest); err != nil {
+		t.Fatalf("Error deleting snapshot, dangling resources may occur: %v", err)
+	}
+}
+
+func tearDownSnapshotResource(t *testing.T, snapshotsClient *SnapshotsClient, snapshotName string, machineImageName string) {
+	log.Printf("Deleting Snapshot %s", snapshotName)
+
+	deleteRequest := &DeleteSnapshotInput{
+		Snapshot:     snapshotName,
+		MachineImage: machineImageName,
+	}
+	if err := snapshotsClient.DeleteSnapshotResourceOnly(deleteRequest); err != nil {
+		t.Fatalf("Error removing snapshot, dangling resources may occur: %v", err)
+	}
+}
+
+func tearDownMachineImage(t *testing.T, machineImagesClient *MachineImagesClient, machineImageName string) {
+	log.Printf("Deleting Machine Image %s", machineImageName)
+
+	deleteInput := &DeleteMachineImageInput{
+		Name: machineImageName,
+	}
+	if err := machineImagesClient.DeleteMachineImage(deleteInput); err != nil {
 		t.Fatalf("Error deleting snapshot, dangling resources may occur: %v", err)
 	}
 }
