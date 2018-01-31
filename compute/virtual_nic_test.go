@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -64,9 +65,8 @@ func TestAccVirtNICLifeCycle(t *testing.T) {
 	}
 	// Don't need to tear down the VNIC, it's attached to the instance
 	log.Printf("VNIC Retrieved: %+v", vNIC)
-	if vNIC.Name != createdVNIC || vNIC.Name == "" {
-		t.Fatal("VNIC Name mismatch! Got: %s Expected: %s", vNIC.Name, createdVNIC)
-	}
+	assert.NotEmpty(t, vNIC.Name, "Expected VNIC name not to be empty")
+	assert.Equal(t, createdVNIC, vNIC.Name, "Expected VNIC and name to match.")
 }
 
 func getVirtNICsTestClients() (*InstancesClient, *IPNetworksClient, *VirtNICsClient, error) {
