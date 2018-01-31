@@ -28,7 +28,7 @@ func getJavaTestClient(c *opc.Config) (*JavaClient, error) {
 	}
 
 	if c.APIEndpoint == nil {
-		apiEndpoint, err := url.Parse(os.Getenv("OPC_JAVA_ENDPOINT"))
+		apiEndpoint, err := url.Parse(os.Getenv("OPAAS_JAVA_ENDPOINT"))
 		if err != nil {
 			return nil, err
 		}
