@@ -50,7 +50,7 @@ func TestAccACLLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !reflect.DeepEqual(createdACL, getACLOutput) {
-		t.Fatalf("Created and retrived acls don't match.\n Desired: %s\n Actual: %s", createdACL, getACLOutput)
+		t.Fatalf("Created and retrieved acls don't match.\n Desired: %s\n Actual: %s", createdACL, getACLOutput)
 	}
 	log.Print("Successfully retrieved acl")
 
