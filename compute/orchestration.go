@@ -60,6 +60,12 @@ const (
 	OrchestrationTypeInstance OrchestrationType = "Instance"
 )
 
+type OrchestrationRelationshipType string
+
+const (
+	OrchestrationRelationshipTypeDepends OrchestrationRelationshipType = "depends"
+)
+
 // OrchestrationInfo describes an existing Orchestration.
 type Orchestration struct {
 	// The default Oracle Compute Cloud Service account, such as /Compute-acme/default.
@@ -162,7 +168,7 @@ type Object struct {
 	// Note that when recovering from a failure, the orchestration doesn't consider object relationships.
 	// Orchestrations v2 use object references to recover interdependent objects to a healthy state. SeeObject
 	// References and Relationships in Using Oracle Compute Cloud Service (IaaS).
-	Relationship []Object `json:"relationships,omitempty"`
+	Relationships []Relationship `json:"relationships,omitempty"`
 	// The template attribute defines the properties or characteristics of the Oracle Compute Cloud Service object
 	// that you want to create, as specified by the type attribute.
 	// The fields in the template section vary depending on the specified type. See Orchestration v2 Attributes
@@ -191,6 +197,16 @@ type Health struct {
 	Detail string `json:"detail,omitempty"`
 	// Any errors associated with creation of the object
 	Error string `json:"error,omitempty"`
+}
+
+type Relationship struct {
+	// The type of Relationship
+	// The only type is depends
+	// Required
+	Type OrchestrationRelationshipType `json:"type"`
+	// What objects the relationship depends on
+	// Required
+	Targets []string `json:"targets"`
 }
 
 // CreateOrchestration creates a new Orchestration with the given name, key and enabled flag.
@@ -222,6 +238,7 @@ func (c *OrchestrationsClient) CreateOrchestration(input *CreateOrchestrationInp
 			instanceInput.Storage = qualifiedStorageAttachments
 
 			instanceInput.Networking = instanceClient.qualifyNetworking(instanceInput.Networking)
+
 		}
 	}
 
