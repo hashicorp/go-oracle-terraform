@@ -1,4 +1,6 @@
-## 0.6.8 (Unreleased)
+## 0.6.9 (Unreleased)
+
+## 0.6.8 (January 31, 2018)
 
 * compute: Orchestration objects can now have relationships [GH-104]
 
