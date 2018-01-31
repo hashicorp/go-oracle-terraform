@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"log"
 	"math/rand"
-	"reflect"
 	"testing"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAccStorageAttachmentsLifecycle(t *testing.T) {
@@ -77,9 +77,8 @@ func TestAccStorageAttachmentsLifecycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !reflect.DeepEqual(createResult.Index, getResult.Index) {
-		t.Fatalf("Retrieved Storage Volume Attachment did not match Expected. \nDesired: %s \nActual: %s", createResult, getResult)
-	}
+	assert.Equal(t, createResult.Index, getResult.Index,
+		"Retrieved Storage Volume Attachment did not match Expected.")
 
 	log.Printf("Attachment created: %#v\n", getResult)
 }

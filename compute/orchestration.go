@@ -275,7 +275,7 @@ func (c *OrchestrationsClient) CreateOrchestration(input *CreateOrchestrationInp
 // GetOrchestrationInput describes the Orchestration to get
 type GetOrchestrationInput struct {
 	// The three-part name of the Orchestration (/Compute-identity_domain/user/object).
-	Name string `json:name`
+	Name string `json:"name"`
 }
 
 // GetOrchestration retrieves the Orchestration with the given name.
@@ -358,7 +358,7 @@ func (c *OrchestrationsClient) UpdateOrchestration(input *UpdateOrchestrationInp
 type DeleteOrchestrationInput struct {
 	// The three-part name of the Orchestration (/Compute-identity_domain/user/object).
 	// Required
-	Name string `json:name`
+	Name string `json:"name"`
 	// Timeout for delete request
 	Timeout time.Duration `json:"-"`
 }

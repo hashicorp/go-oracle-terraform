@@ -2,12 +2,12 @@ package compute
 
 import (
 	"log"
-	"reflect"
 	"strings"
 	"testing"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -61,9 +61,7 @@ func TestAccSnapshotLifeCycleBasic(t *testing.T) {
 	}
 
 	log.Printf("Snapshot Retrieved: %+v", snapshot)
-	if !reflect.DeepEqual(snapshot.Name, createdSnapshot.Name) {
-		t.Fatal("Snapshot Name mismatch! Got: %s Expected: %s", snapshot.Name, createdSnapshot.Name)
-	}
+	assert.Equal(t, createdSnapshot.Name, snapshot.Name, "Snapshot Name mismatch!")
 }
 
 func TestAccSnapshotLifeCycleMachineImage(t *testing.T) {
@@ -110,9 +108,7 @@ func TestAccSnapshotLifeCycleMachineImage(t *testing.T) {
 	}
 
 	log.Printf("Snapshot Retrieved: %+v", snapshot)
-	if !reflect.DeepEqual(snapshot.Name, createdSnapshot.Name) {
-		t.Fatal("Snapshot Name mismatch! Got: %s Expected: %s", snapshot.Name, createdSnapshot.Name)
-	}
+	assert.Equal(t, createdSnapshot.Name, snapshot.Name, "Snapshot Name mismatch!")
 }
 
 func TestAccSnapshotLifeCycleDelay(t *testing.T) {
@@ -167,9 +163,7 @@ func TestAccSnapshotLifeCycleDelay(t *testing.T) {
 	}
 
 	log.Printf("Snapshot Retrieved: %+v", snapshot)
-	if !reflect.DeepEqual(snapshot.Name, createdSnapshot.Name) {
-		t.Fatal("Snapshot Name mismatch! Got: %s Expected: %s", snapshot.Name, createdSnapshot.Name)
-	}
+	assert.Equal(t, createdSnapshot.Name, snapshot.Name, "Snapshot Name mismatch!")
 }
 
 func TestAccSnapshotLifeCycleAccount(t *testing.T) {
@@ -216,9 +210,7 @@ func TestAccSnapshotLifeCycleAccount(t *testing.T) {
 	}
 
 	log.Printf("Snapshot Retrieved: %+v", snapshot)
-	if !reflect.DeepEqual(snapshot.Name, createdSnapshot.Name) {
-		t.Fatal("Snapshot Name mismatch! Got: %s Expected: %s", snapshot.Name, createdSnapshot.Name)
-	}
+	assert.Equal(t, createdSnapshot.Name, snapshot.Name, "Snapshot Name mismatch!")
 }
 
 func tearDownSnapshots(t *testing.T, snapshotsClient *SnapshotsClient, machineImagesClient *MachineImagesClient, snapshotName string, machineImageName string) {

@@ -120,7 +120,7 @@ func (c *SnapshotsClient) CreateSnapshot(input *CreateSnapshotInput) (*Snapshot,
 type GetSnapshotInput struct {
 	// The name of the Snapshot
 	// Required
-	Name string `json:name`
+	Name string `json:"name"`
 }
 
 // GetSnapshot retrieves the Snapshot with the given name.
