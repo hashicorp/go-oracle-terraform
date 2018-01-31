@@ -1,5 +1,7 @@
 ## 0.6.8 (Unreleased)
 
+* compute: Orchestration objects can now have relationships [GH-104]
+
 ## 0.6.7 (January 17, 2018)
 
 * compute: Fixes a bug around qualifying storage volume name in storage attachments [GH-102]
