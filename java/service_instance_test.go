@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	_ServiceInstanceName                        = "testingjavaserviceinstance"
+	_ServiceInstanceName                        = "testingjavaserviceinstance1"
 	_ServiceInstanceLevel                       = "PAAS"
 	_ServiceInstanceSubscriptionType            = "HOURLY"
 	_ServiceInstanceType                        = "weblogic"
@@ -110,15 +110,17 @@ func TestAccServiceInstanceLifeCycle(t *testing.T) {
 	}
 }
 
-/*
 func TestAccServiceInstanceLifeCycle_typeOTD(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
+	siClient, _, err := getServiceInstanceTestClients()
+	if err != nil {
+		t.Fatal(err)
+	}
 	siClient, dClient, err := getServiceInstanceTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
-
 	databaseParameter := database.ParameterInput{
 		AdminPassword:                   _ServiceInstanceDBAPassword,
 		BackupDestination:               _ServiceInstanceBackupDestinationBoth,
@@ -146,35 +148,32 @@ func TestAccServiceInstanceLifeCycle_typeOTD(t *testing.T) {
 	}
 	defer destroyDatabaseServiceInstance(t, dClient, _ServiceInstanceDatabaseName)
 
-	webLogicParameter := Parameter{
-		Type:          ServiceInstanceTypeWebLogic,
-		DBAName:       _ServiceInstanceDBAUser,
-		DBAPassword:   _ServiceInstanceDBAPassword,
-		DBServiceName: _ServiceInstanceDatabaseName,
-		Shape:         _ServiceInstanceShape,
-		Version:       _ServiceInstanceVersion,
-		AdminUsername: _ServiceInstanceAdminUsername,
-		AdminPassword: _ServiceInstanceAdminPassword,
-		VMsPublicKey:  _ServiceInstancePubKey,
+	wlsConfig := &CreateWLS{
+		DBAName:            _ServiceInstanceDBAUser,
+		DBAPassword:        _ServiceInstanceDBAPassword,
+		DBServiceName:      _ServiceInstanceDatabaseName,
+		Shape:              _ServiceInstanceShape,
+		ManagedServerCount: 0,
+		AdminUsername:      _ServiceInstanceAdminUsername,
+		AdminPassword:      _ServiceInstanceAdminPassword,
 	}
 
-	otdParameter := Parameter{
-		Type:          ServiceInstanceTypeOTD,
+	otdConfig := &CreateOTD{
 		AdminUsername: _ServiceInstanceAdminUsername,
 		AdminPassword: _ServiceInstanceAdminPassword,
 		Shape:         _ServiceInstanceShape,
-		VMsPublicKey:  _ServiceInstancePubKey,
 	}
 
-	siName := fmt.Sprintf("%s-otda", _ServiceInstanceName)
 	createServiceInstance := &CreateServiceInstanceInput{
-		ProvisionOTD:                    true,
-		CloudStorageContainer:           _ServiceInstanceCloudStorageContainer,
-		CreateStorageContainerIfMissing: _ServiceInstanceCloudStorageCreateIfMissing,
-		ServiceName:                     siName,
-		Level:                           _ServiceInstanceLevel,
-		SubscriptionType:                _ServiceInstanceSubscriptionType,
-		Parameters:                      []Parameter{webLogicParameter, otdParameter},
+		ProvisionOTD:                      true,
+		CloudStorageContainer:             _ServiceInstanceCloudStorageContainer,
+		CloudStorageContainerAutoGenerate: _ServiceInstanceCloudStorageCreateIfMissing,
+		ServiceName:                       _ServiceInstanceName,
+		ServiceLevel:                      _ServiceInstanceLevel,
+		Components:                        CreateComponents{WLS: wlsConfig, OTD: otdConfig},
+		VMPublicKeyText:                   _ServiceInstancePubKey,
+		Edition:                           ServiceInstanceEditionSuite,
+		ServiceVersion:                    _ServiceInstanceVersion,
 	}
 
 	_, err = siClient.CreateServiceInstance(createServiceInstance)
@@ -182,123 +181,23 @@ func TestAccServiceInstanceLifeCycle_typeOTD(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	defer destroyServiceInstance(t, siClient, siName)
+	defer destroyServiceInstance(t, siClient, _ServiceInstanceName)
 
 	getInput := &GetServiceInstanceInput{
-		Name: siName,
+		Name: _ServiceInstanceName,
 	}
 
 	receivedRes, err := siClient.GetServiceInstance(getInput)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if receivedRes.ServiceName != siName {
-		t.Fatal(fmt.Errorf("Names do not match. Wanted: %q Received: %q", siName, receivedRes.ServiceName))
+	if receivedRes.ServiceName != _ServiceInstanceName {
+		t.Fatal(fmt.Errorf("Names do not match. Wanted: %q Received: %q", _ServiceInstanceName, receivedRes.ServiceName))
 	}
-	if receivedRes.OTDAdminURL == "" {
+	if receivedRes.OTDRoot == "" {
 		t.Fatal(fmt.Errorf("OTD was unsuccessfully provisioned: %+v", receivedRes))
 	}
 }
-
-func TestAccServiceInstanceLifeCycle_typeDatagrid(t *testing.T) {
-	helper.Test(t, helper.TestCase{})
-
-	siClient, dClient, err := getServiceInstanceTestClients()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	databaseParameter := database.ParameterInput{
-		AdminPassword:                   _ServiceInstanceDBAPassword,
-		BackupDestination:               _ServiceInstanceBackupDestinationBoth,
-		SID:                             _ServiceInstanceDBSID,
-		Type:                            _ServiceInstanceDBType,
-		UsableStorage:                   _ServiceInstanceUsableStorage,
-		CloudStorageContainer:           _ServiceInstanceDBCloudStorageContainer,
-		CreateStorageContainerIfMissing: _ServiceInstanceCloudStorageCreateIfMissing,
-	}
-
-	createDatabaseServiceInstance := &database.CreateServiceInstanceInput{
-		Name:             _ServiceInstanceDatabaseName,
-		Edition:          _ServiceInstanceEdition,
-		Level:            _ServiceInstanceLevel,
-		Shape:            _ServiceInstanceShape,
-		SubscriptionType: _ServiceInstanceSubscriptionType,
-		Version:          _ServiceInstanceDBVersion,
-		VMPublicKey:      _ServiceInstancePubKey,
-		Parameter:        databaseParameter,
-	}
-
-	_, err = dClient.CreateServiceInstance(createDatabaseServiceInstance)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer destroyDatabaseServiceInstance(t, dClient, _ServiceInstanceDatabaseName)
-
-	datagridParameter := Parameter{
-		Type:             ServiceInstanceTypeDataGrid,
-		ScalingUnitCount: 1,
-		ClusterName:      "testDataGrid",
-		ScalingUnitName:  "SMALL",
-	}
-
-	webLogicParameter := Parameter{
-		Type:          ServiceInstanceTypeWebLogic,
-		Edition:       ServiceInstanceEditionSuite,
-		DBAName:       _ServiceInstanceDBAUser,
-		DBAPassword:   _ServiceInstanceDBAPassword,
-		DBServiceName: _ServiceInstanceDatabaseName,
-		Shape:         _ServiceInstanceShape,
-		Version:       _ServiceInstanceVersion,
-		AdminUsername: _ServiceInstanceAdminUsername,
-		AdminPassword: _ServiceInstanceAdminPassword,
-		VMsPublicKey:  _ServiceInstancePubKey,
-	}
-
-	siName := fmt.Sprintf("%s-datagrid", _ServiceInstanceName)
-	createServiceInstance := &CreateServiceInstanceInput{
-		CloudStorageContainer:           _ServiceInstanceCloudStorageContainer,
-		CreateStorageContainerIfMissing: _ServiceInstanceCloudStorageCreateIfMissing,
-		ServiceName:                     siName,
-		Level:                           _ServiceInstanceLevel,
-		SubscriptionType:                _ServiceInstanceSubscriptionType,
-		Parameters:                      []Parameter{webLogicParameter, datagridParameter},
-	}
-
-	_, err = siClient.CreateServiceInstance(createServiceInstance)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	defer destroyServiceInstance(t, siClient, siName)
-
-	getInput := &GetServiceInstanceInput{
-		Name: siName,
-	}
-
-	receivedRes, err := siClient.GetServiceInstance(getInput)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if receivedRes.ServiceName != siName {
-		t.Fatal(fmt.Errorf("Names do not match. Wanted: %q Received: %q", siName, receivedRes.ServiceName))
-	}
-
-	if len(receivedRes.Options) > 0 {
-		option := receivedRes.Options[0]
-		if len(option.Clusters) > 0 {
-			cluster := option.Clusters[0]
-			if cluster.ScalingUnitCount != 1 {
-				t.Fatal(fmt.Errorf("Scaling unit counts don't match. Wanted: %d Received %d", 1, cluster.ScalingUnitCount))
-			}
-		} else {
-			t.Fatal(fmt.Errorf("Error reading cluster for Scaling Units: %+v", option.Clusters))
-		}
-	} else {
-		t.Fatal(fmt.Errorf("Error reading Options for Scaling Units: %+v", receivedRes))
-	}
-}
-*/
 
 func getServiceInstanceTestClients() (*ServiceInstanceClient, *database.ServiceInstanceClient, error) {
 	client, err := getJavaTestClient(&opc.Config{})

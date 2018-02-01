@@ -866,7 +866,7 @@ type CreateOTD struct {
 	// If a username is not explicitly set, the OTD user name defaults to the WebLogic Server (WLS) administrator
 	// user name.
 	// Optional
-	AdminUserName string `json:"adminUserName,omitempty"`
+	AdminUsername string `json:"adminUserName,omitempty"`
 	// Flag that specifies whether the local load balancer HA is enabled.
 	// This value defaults to false (that is, HA is not enabled).
 	// Optional
