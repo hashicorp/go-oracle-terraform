@@ -1,11 +1,13 @@
 package compute
 
 import (
+	"fmt"
 	"log"
 	"testing"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -61,9 +63,9 @@ func TestAccOrchestrationLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 	log.Printf("orchestration Retrieved: %+v", orchestration)
-	if orchestration.Name != createdOrchestration.Name || orchestration.Name == "" {
-		t.Fatal("orchestration Name mismatch! Got: %q Expected: %q", orchestration.Name, createdOrchestration)
-	}
+	assert.NotEmpty(t, orchestration.Name, "Expected orchestration name not to be empty")
+	assert.Equal(t, createdOrchestration.Name, orchestration.Name,
+		"Expected orchestration names to match.")
 }
 
 func TestAccOrchestrationLifeCycle_active(t *testing.T) {
@@ -110,9 +112,9 @@ func TestAccOrchestrationLifeCycle_active(t *testing.T) {
 		t.Fatal(err)
 	}
 	log.Printf("orchestration Retrieved: %+v", orchestration)
-	if orchestration.Name != createdOrchestration.Name || orchestration.Name == "" {
-		t.Fatal("orchestration Name mismatch! Got: %q Expected: %q", orchestration.Name, createdOrchestration)
-	}
+	assert.NotEmpty(t, orchestration.Name, "Expected orchestration name not to be empty")
+	assert.Equal(t, createdOrchestration.Name, orchestration.Name,
+		"Expected orchestration names to match.")
 }
 
 func TestAccOrchestrationLifeCycle_update(t *testing.T) {
@@ -159,9 +161,7 @@ func TestAccOrchestrationLifeCycle_update(t *testing.T) {
 		t.Fatal(err)
 	}
 	log.Printf("orchestration Retrieved: %+v", orchestration)
-	if orchestration.DesiredState != OrchestrationDesiredStateActive {
-		t.Fatal("orchestration state mismatch! Got: %q Expected: %q", orchestration.DesiredState, OrchestrationDesiredStateActive)
-	}
+	assert.Equal(t, OrchestrationDesiredStateActive, orchestration.DesiredState, "orchestration state mismatch!")
 
 	updateOrchestrationInput := &UpdateOrchestrationInput{
 		Name:         _OrchestrationTestName,
@@ -181,9 +181,7 @@ func TestAccOrchestrationLifeCycle_update(t *testing.T) {
 	}
 	// Don't need to tear down the orchestration, it's attached to the instance
 	log.Printf("orchestration Retrieved: %+v", orchestration)
-	if orchestration.DesiredState != OrchestrationDesiredStateInactive {
-		t.Fatal("orchestration state mismatch! Got: %q Expected: %q", orchestration.DesiredState, OrchestrationDesiredStateInactive)
-	}
+	assert.Equal(t, OrchestrationDesiredStateInactive, orchestration.DesiredState, "orchestration state mismatch!")
 }
 
 func TestAccOrchestrationLifeCycle_suspend(t *testing.T) {
@@ -230,9 +228,7 @@ func TestAccOrchestrationLifeCycle_suspend(t *testing.T) {
 		t.Fatal(err)
 	}
 	log.Printf("orchestration Retrieved: %+v", orchestration)
-	if orchestration.DesiredState != OrchestrationDesiredStateActive {
-		t.Fatal("orchestration state mismatch! Got: %q Expected: %q", orchestration.DesiredState, OrchestrationDesiredStateActive)
-	}
+	assert.Equal(t, OrchestrationDesiredStateActive, orchestration.DesiredState, "orchestration state mismatch!")
 
 	updateOrchestrationInput := &UpdateOrchestrationInput{
 		Name:         _OrchestrationTestName,
@@ -252,9 +248,7 @@ func TestAccOrchestrationLifeCycle_suspend(t *testing.T) {
 	}
 	// Don't need to tear down the orchestration, it's attached to the instance
 	log.Printf("orchestration Retrieved: %+v", orchestration)
-	if orchestration.DesiredState != OrchestrationDesiredStateSuspend {
-		t.Fatal("orchestration state mismatch! Got: %q Expected: %q", orchestration.DesiredState, OrchestrationDesiredStateInactive)
-	}
+	assert.Equal(t, OrchestrationDesiredStateSuspend, orchestration.DesiredState, "orchestration state mismatch!")
 }
 
 func TestAccOrchestrationLifeCycle_badInstance(t *testing.T) {
@@ -286,9 +280,79 @@ func TestAccOrchestrationLifeCycle_badInstance(t *testing.T) {
 	}
 
 	createdOrchestration, err := orcClient.CreateOrchestration(input)
-	if err == nil {
-		t.Fatal("Orchestration succeded when attempting to create a bad Orchestration %+v", createdOrchestration)
+	assert.Error(t, err, "Orchestration succeded when attempting to create a bad Orchestration: %+v",
+		createdOrchestration)
+}
+
+func TestAccOrchestrationLifeCycle_relationship(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
+
+	orcClient, err := getOrchestrationsTestClients()
+	if err != nil {
+		t.Fatal(err)
 	}
+
+	instanceInput1 := &CreateInstanceInput{
+		Name:      fmt.Sprintf("%s1", _OrchestrationTestName),
+		Label:     fmt.Sprintf("%s1", _OrchestrationInstanceTestLabel),
+		Shape:     _OrchestrationInstanceTestShape,
+		ImageList: _OrchestrationInstanceTestImage,
+	}
+
+	instanceInput2 := &CreateInstanceInput{
+		Name:      fmt.Sprintf("%s2", _OrchestrationTestName),
+		Label:     fmt.Sprintf("%s2", _OrchestrationInstanceTestLabel),
+		Shape:     _OrchestrationInstanceTestShape,
+		ImageList: _OrchestrationInstanceTestImage,
+	}
+
+	object1 := Object{
+		Label:         fmt.Sprintf("%s1", _OrchestrationTestLabel),
+		Orchestration: _OrchestrationTestName,
+		Template:      instanceInput1,
+		Type:          OrchestrationTypeInstance,
+	}
+
+	relationship := Relationship{
+		Type:    OrchestrationRelationshipTypeDepends,
+		Targets: []string{object1.Label},
+	}
+
+	object2 := Object{
+		Label:         fmt.Sprintf("%s2", _OrchestrationTestLabel),
+		Orchestration: _OrchestrationTestName,
+		Template:      instanceInput2,
+		Type:          OrchestrationTypeInstance,
+		Relationships: []Relationship{relationship},
+	}
+
+	input := &CreateOrchestrationInput{
+		Name:         _OrchestrationTestName,
+		DesiredState: OrchestrationDesiredStateActive,
+		Objects:      []Object{object1, object2},
+	}
+
+	createdOrchestration, err := orcClient.CreateOrchestration(input)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer deleteOrchestration(t, orcClient, createdOrchestration.Name)
+	log.Printf("Created NIC Set: %#v", createdOrchestration)
+
+	getInput := &GetOrchestrationInput{
+		Name: createdOrchestration.Name,
+	}
+
+	orchestration, err := orcClient.GetOrchestration(getInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	log.Printf("orchestration Retrieved: %+v", orchestration)
+	assert.NotEmpty(t, orchestration.Name, "Expected orchestration name not to be empty")
+	assert.Equal(t, createdOrchestration.Name, orchestration.Name,
+		"Expected orchestration names to match.")
+	assert.NotNil(t, orchestration.Objects[1].Relationships,
+		"Relationship between instances not setup properly")
 }
 
 func getOrchestrationsTestClients() (*OrchestrationsClient, error) {

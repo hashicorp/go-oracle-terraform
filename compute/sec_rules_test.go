@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"reflect"
 	"testing"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAccSecRuleLifeCycle(t *testing.T) {
@@ -94,9 +94,8 @@ func TestAccSecRuleLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !reflect.DeepEqual(createdSecRule, getSecRuleOutput) {
-		t.Fatalf("Created and retrived sec rules don't match.\n Desired: %s\n Actual: %s", createdSecRule, getSecRuleOutput)
-	}
+	assert.Equal(t, createdSecRule, getSecRuleOutput,
+		"Created and retrived sec rules don't match.")
 	log.Printf("Successfully retrieved Sec Rule")
 
 	updateSecRuleInput := UpdateSecRuleInput{

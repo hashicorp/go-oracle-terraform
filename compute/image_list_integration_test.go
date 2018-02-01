@@ -15,7 +15,7 @@ func TestAccImageListLifeCycle(t *testing.T) {
 
 	client, err := getImageListClient()
 	if err != nil {
-		t.Fatal("Error Creating Image List Client: %+v", err)
+		t.Fatalf("Error Creating Image List Client: %+v", err)
 	}
 
 	createInput := CreateImageListInput{
@@ -25,7 +25,7 @@ func TestAccImageListLifeCycle(t *testing.T) {
 	}
 	createResult, err := client.CreateImageList(&createInput)
 	if err != nil {
-		t.Fatal("Error Creating Image List: %+v", err)
+		t.Fatalf("Error Creating Image List: %+v", err)
 	}
 
 	defer tearDownImageList(t, client, name)

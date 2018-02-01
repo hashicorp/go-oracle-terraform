@@ -1,4 +1,16 @@
-## 0.6.6 (Unreleased)
+## 0.6.9 (Unreleased)
+
+## 0.6.8 (January 31, 2018)
+
+* compute: Orchestration objects can now have relationships [GH-104]
+
+## 0.6.7 (January 17, 2018)
+
+* compute: Fixes a bug around qualifying storage volume name in storage attachments [GH-102]
+
+## 0.6.6 (January 11, 2018)
+
+* compute: Create and delete machine images [GH-101]
 
 ## 0.6.5 (January 8, 2018)
 

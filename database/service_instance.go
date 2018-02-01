@@ -143,7 +143,7 @@ type ServiceInstance struct {
 	// The backup configuration of the service instance.
 	BackupDestination string `json:"backup_destination"`
 	// The version of cloud tooling for backup and recovery supported by the service instance.
-	BackupSupportedVersion string `backup_supported_version`
+	BackupSupportedVersion string `json:"backup_supported_version"`
 	// The database character set of the database.
 	CharSet string `json:"charset"`
 	// The Oracle Storage Cloud container for backups.
