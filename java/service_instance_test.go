@@ -1,16 +1,16 @@
 package java
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/hashicorp/go-oracle-terraform/database"
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
-	_ServiceInstanceName                        = "testingjavaserviceinstance1"
+	_ServiceInstanceName                        = "testingjavaserviceinstance"
 	_ServiceInstanceLevel                       = "PAAS"
 	_ServiceInstanceSubscriptionType            = "HOURLY"
 	_ServiceInstanceType                        = "weblogic"
@@ -24,7 +24,7 @@ const (
 	_ServiceInstanceCloudStorageContainer       = "Storage-a459477/test-java-instance"
 	_ServiceInstanceCloudStorageCreateIfMissing = true
 	// Database specific configuration
-	_ServiceInstanceDatabaseName            = "testing-java-instance-service1"
+	_ServiceInstanceDatabaseName            = "testing-java-instance-service3"
 	_ServiceInstanceBackupDestinationBoth   = "BOTH"
 	_ServiceInstanceDBSID                   = "ORCL"
 	_ServiceInstanceDBType                  = "db"
@@ -35,7 +35,7 @@ const (
 	_ServiceInstanceDBVersion               = "12.2.0.1"
 )
 
-func TestAccServiceInstanceLifeCycle(t *testing.T) {
+func TestAccServiceInstanceLifeCycle_Basic(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
 	siClient, dClient, err := getServiceInstanceTestClients()
@@ -105,9 +105,7 @@ func TestAccServiceInstanceLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if receivedRes.ServiceName != _ServiceInstanceName {
-		t.Fatal(fmt.Errorf("Names do not match. Wanted: %s Received: %s", _ServiceInstanceName, receivedRes.ServiceName))
-	}
+	assert.Equal(t, _ServiceInstanceName, receivedRes.ServiceName, "Service instance name not expected.")
 }
 
 func TestAccServiceInstanceLifeCycle_typeOTD(t *testing.T) {
@@ -191,12 +189,8 @@ func TestAccServiceInstanceLifeCycle_typeOTD(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if receivedRes.ServiceName != _ServiceInstanceName {
-		t.Fatal(fmt.Errorf("Names do not match. Wanted: %q Received: %q", _ServiceInstanceName, receivedRes.ServiceName))
-	}
-	if receivedRes.OTDRoot == "" {
-		t.Fatal(fmt.Errorf("OTD was unsuccessfully provisioned: %+v", receivedRes))
-	}
+	assert.Equal(t, _ServiceInstanceName, receivedRes.ServiceName, "Service instance name not expected.")
+	assert.NotEmpty(t, receivedRes.OTDRoot, "Expected OTDROot to not be empty")
 }
 
 func getServiceInstanceTestClients() (*ServiceInstanceClient, *database.ServiceInstanceClient, error) {
