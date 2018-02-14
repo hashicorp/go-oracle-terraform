@@ -140,6 +140,9 @@ const (
 type ServiceInstance struct {
 	// The URL to use to connect to Oracle Application Express on the service instance.
 	ApexURL string `json:"apex_url"`
+	// Applicable only in Oracle Cloud Infrastructure regions.
+	// Name of the availability domain within the region where the Oracle Database Cloud Service instance is provisioned.
+	AvailabilityDomain string `json:"availabilityDomain"`
 	// The backup configuration of the service instance.
 	BackupDestination string `json:"backup_destination"`
 	// The version of cloud tooling for backup and recovery supported by the service instance.
@@ -221,6 +224,9 @@ type ServiceInstance struct {
 	SMPluginVersion string `json:"sm_plugin_version"`
 	// The status of the service instance
 	Status ServiceInstanceState `json:"status"`
+	// Applicable only in Oracle Cloud Infrastructure regions.
+	// Name of the subnet within the region where the Oracle Database Cloud Service instance is provisioned.
+	Subnet string `json:"subnet"`
 	// The billing frequency of the service instance; either MONTHLY or HOURLY.
 	SubscriptionType ServiceInstanceSubscriptionType `json:"subscriptionType"`
 	// The time zone of the operating system.
@@ -233,6 +239,9 @@ type ServiceInstance struct {
 }
 
 type CreateServiceInstanceInput struct {
+	// Name of the availability domain within the region where the Oracle Database Cloud Service instance is to be provisioned.
+	// Optional
+	AvailabilityDomain string `json:"availabilityDomain,omitempty"`
 	// Free-form text that provides additional information about the service instance.
 	// Optional.
 	Description string `json:"description,omitempty"`
@@ -243,6 +252,17 @@ type CreateServiceInstanceInput struct {
 	// Cloud Service instance as Cluster Database.
 	// Required.
 	Edition ServiceInstanceEdition `json:"edition"`
+	// Applicable only if region is an Oracle Cloud Infrastructure Classic region.
+	// The three-part name of a custom IP network to use. For example: /Compute-identity_domain/user/object.
+	// A region must be specified in order to use ipNetwork. Only IP networks created in the specified region can be used.
+	// ipNetwork cannot be used with ipReservations.
+	// Optional
+	IPNetwork string `json:"ipNetwork,omitempty"`
+	// Applicable only if region is an Oracle Cloud Infrastructure Classic region.
+	// A single IP reservation name or multiple IP reservation names separated by commas. Only IP reservations created in the specified region can be used.
+	// When IP reservations are used, all compute nodes of an instance must be provisioned with IP reservations, so the number of names in ipReservations must match the number of compute nodes in the service instance.
+	// Optional
+	IPReservations []string `json:"ipReservations,omitempty"`
 	// Service level for the service instance
 	// Required.
 	Level ServiceInstanceLevel `json:"level"`
@@ -258,10 +278,18 @@ type CreateServiceInstanceInput struct {
 	// Must be unique within the identity domain.
 	// Required.
 	Name string `json:"serviceName"`
+	// Applicable only to accounts that support regions.
+	// Name of the Oracle Cloud Infrastructure or Oracle Cloud Infrastructure Classic region where the Oracle Database Cloud Service instance is to be provisioned.
+	// Optional
+	Region string `json:"region,omitempty"`
 	// Desired compute shape. A shape defines the number of Oracle Compute Units (OCPUs) and amount
 	// of memory (RAM).
 	// Required.
 	Shape ServiceInstanceShape `json:"shape"`
+	// Required if region is an Oracle Cloud Infrastructure region.
+	// Name of the subnet within the region where the Oracle Database Cloud Service instance is to be provisioned.
+	// Optional
+	Subnet string `json:"subnet,omitempty"`
 	// Billing unit. Valid values are:
 	// HOURLY: Pay only for the number of hours used during your billing period. This is the default.
 	// MONTHLY: Pay one price for the full month irrespective of the number of hours used.
