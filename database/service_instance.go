@@ -243,6 +243,16 @@ type CreateServiceInstanceInput struct {
 	// Cloud Service instance as Cluster Database.
 	// Required.
 	Edition ServiceInstanceEdition `json:"edition"`
+	// Specify if you want an email notification sent upon successful or unsuccessful completion of the instance-creation operation.
+	// When true, you must also specify notificationEmail. Valid values are true and false. Default value is false.
+	// Optional
+	EnableNotification bool `json:"enableNotification,omitempty"`
+	// Specify if you want to use an existing perpetual license to Oracle Database to establish the right to use Oracle Database on the new instance.
+	// When true, your Oracle Cloud account will be charged a lesser amount for the new instance because the right to use Oracle Database is covered by your perpetual license agreement.
+	// Valid values are true and false. Default value is false.
+	// Optional
+	IsBYOL bool `json:"isBYOL,omitempty"`
+	// This parameter is not available on Oracle Cloud at Customer.
 	// Service level for the service instance
 	// Required.
 	Level ServiceInstanceLevel `json:"level"`
@@ -258,6 +268,11 @@ type CreateServiceInstanceInput struct {
 	// Must be unique within the identity domain.
 	// Required.
 	Name string `json:"serviceName"`
+	// Required if enableNotification is set to true.
+	// The email address to send completion notifications to.
+	// This parameter is not available on Oracle Cloud at Customer.
+	// Optional
+	NotificationEmail string `json:"notificationEmail,omitempty"`
 	// Desired compute shape. A shape defines the number of Oracle Compute Units (OCPUs) and amount
 	// of memory (RAM).
 	// Required.
@@ -267,6 +282,11 @@ type CreateServiceInstanceInput struct {
 	// MONTHLY: Pay one price for the full month irrespective of the number of hours used.
 	// Required.
 	SubscriptionType ServiceInstanceSubscriptionType `json:"subscriptionType"`
+	// Specify if high performance storage should be used for the Database Cloud Service instance. Default data storage will allocate your database
+	// block storage on spinning devices. By checking this box, your block storage will be allocated on solid state devices. Valid values are true and false.
+	// Default value is false.
+	// Optional
+	UseHighPerformanceStorage bool `json:"useHighPerformanceStorage,omitempty"`
 	// Oracle Database software version
 	// Required.
 	Version ServiceInstanceVersion `json:"version"`
