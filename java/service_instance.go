@@ -1195,7 +1195,7 @@ type CreateWLS struct {
 	// /u01/zips/upperstack on the Administration Server virtual machine. To install the product over the provisioned domain,
 	// follow the instructions provided by the Oracle product's installation and configuration documentation.
 	// Optional
-	UpperStackProductName string `json:"upperStackProductName,omitempty"`
+	UpperStackProductName ServiceInstanceUpperStackProductName `json:"upperStackProductName,omitempty"`
 }
 
 type CreateCluster struct {
