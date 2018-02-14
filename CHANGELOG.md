@@ -1,4 +1,4 @@
-## 0.6.9 (Unreleased)
+## 0.6.9 (February 14, 2018)
 
 * database: Added OCI support to Service Instance [GH-108]
 
