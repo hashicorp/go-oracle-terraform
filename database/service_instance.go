@@ -188,6 +188,8 @@ type ServiceInstance struct {
 	// This attribute is only applicable to accounts where regions are supported.
 	// This attribute is returned when you set the ?outputLevel=verbose query parameter.
 	IPReservations string `json:"ipReservations"`
+	// Indicates whether service instance was provisioned with the 'Bring Your Own License' (BYOL) option.
+	IsBYOL bool `json:"isBYOL"`
 	// The Oracle Java Cloud Service instances using this Database Cloud Service instance.
 	JAASInstancesUsingService string `json:"jaas_instances_using_service"`
 	// The date-and-time stamp when the service instance was last modified.
@@ -228,6 +230,8 @@ type ServiceInstance struct {
 	// For service instances hosting an Oracle RAC database, the size in GB of the storage shared
 	// and accessed by the nodes of the RAC database.
 	TotalSharedStorage int `json:"total_shared_storage"`
+	// Indicates whether the service instance was provisioned with high performance storage.
+	UseHighPerformanceStorage bool `json:"useHighPerformanceStorage"`
 	// The Oracle Database version on the service instance.
 	Version string `json:"version"`
 }
