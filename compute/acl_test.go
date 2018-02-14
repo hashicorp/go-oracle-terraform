@@ -5,11 +5,11 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"net/url"
-	"reflect"
 	"testing"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -49,9 +49,7 @@ func TestAccACLLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !reflect.DeepEqual(createdACL, getACLOutput) {
-		t.Fatalf("Created and retrived acls don't match.\n Desired: %s\n Actual: %s", createdACL, getACLOutput)
-	}
+	assert.Equal(t, createdACL, getACLOutput, "Created and retrieved acls don't match.")
 	log.Print("Successfully retrieved acl")
 
 	updateACLInput := UpdateACLInput{
@@ -87,12 +85,8 @@ func TestAccACLsClient_CreateRule(t *testing.T) {
 		unmarshalRequestBody(t, r, ruleSpec)
 
 		expectedName := "/Compute-test/test/test-acc-acl"
-		if ruleSpec.Name != expectedName {
-			t.Errorf("Expected name '%s', was %s", expectedName, ruleSpec.Name)
-		}
-		if ruleSpec.Enabled != false {
-			t.Errorf("Expected enabled to be 'false', was %s", ruleSpec.Enabled)
-		}
+		assert.Equal(t, expectedName, ruleSpec.Name, "ruleSpec name not expected.")
+		assert.False(t, ruleSpec.Enabled, "Expected ruleSpec to not be enabled.")
 
 		w.WriteHeader(201)
 		w.Write([]byte(exampleCreateACLResponse))
@@ -114,9 +108,7 @@ func TestAccACLsClient_CreateRule(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Create security rule request failed: %s", err)
 	}
-	if info.Enabled != false {
-		t.Errorf("Expected enabled 'false', was %s", info.Enabled)
-	}
+	assert.False(t, info.Enabled, "Expected `info` to not be enabled.")
 }
 
 var exampleCreateACLResponse = `
