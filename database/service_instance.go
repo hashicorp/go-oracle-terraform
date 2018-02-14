@@ -374,20 +374,35 @@ type ParameterInput struct {
 	// Cloud Service. Default value is false.
 	// Optional
 	IBKUP bool `json:"-"`
+	// Name of the Oracle Storage Cloud Service container where the existing cloud backup is stored. This parameter is required if ibkup is set to yes and ibkupOnPremise is set to yes.
+	// Optional
+	IBKUPCloudStorageContainer string `json:"ibkupCloudStorageContainer,omitempty"`
 	// Name of the Oracle Storage Cloud Service container where the existing cloud backup is stored.
 	// This parameter is required if ibkup is set to yes.
+	// Optional
 	IBKUPCloudStoragePassword string `json:"ibkupCloudStoragePassword,omitempty"`
 	// User name of an Oracle Cloud user who has read access to the container specified in
 	// ibkupCloudStorageContainer.
 	// This parameter is required if ibkup is set to yes.
+	// Optional
 	IBKUPCloudStorageUser string `json:"ibkupCloudStorageUser,omitempty"`
 	// Database id of the database from which the existing cloud backup was created.
 	// This parameter is required if ibkup is set to yes.
+	// Optional
 	IBKUPDatabaseID string `json:"ibkupDatabaseID,omitempty"`
 	// Password used to create the existing, password-encrypted cloud backup.
 	// This password is used to decrypt the backup.
 	// This parameter is required if ibkup is set to yes.
+	// Optional
 	IBKUPDecryptionKey string `json:"ibkupDecryptionKey,omitempty"`
+	// Specify if the existing cloud backup being used to replace the database is from an on-premises database or another Database Cloud Service instance.
+	// Valid values are true for an on-premises database and false for a Database Cloud Service instance. Default value is true.
+	// Optional
+	IBKUPOnPremise bool `json:"ibkupOnPremise,omitempty"`
+	// Oracle Databsae Cloud Service instance name from which the database of new Oracle Database Cloud Service instance should be created.
+	// This parameter is required if ibkup is set to yes and ibkupOnPremise is set to no.
+	// Optional
+	IBKUPServiceID string `json:"ibkupServiceID"`
 	// String containing the xsd:base64Binary representation of the cloud backup's wallet archive file.
 	// Optional
 	IBKUPWalletFileContent string `json:"ibkupWalletFileContent,omitempty"`
@@ -454,7 +469,7 @@ type ParameterRequest struct {
 	DisasterRecoveryString string `json:"disasterRecovery,omitempty"`
 	FailoverDatabaseString string `json:"failoverDatabase,omitempty"`
 	GoldenGateString       string `json:"goldenGate,omitempty"`
-	HDGString 			   string `json:"hdg,omitempty"`
+	HDGString              string `json:"hdg,omitempty"`
 	IsRACString            string `json:"isRac,omitempty"`
 	IBKUPString            string `json:"ibkup,omitempty"`
 }
@@ -501,7 +516,7 @@ func createRequest(input *CreateServiceInstanceInput) *CreateServiceInstanceRequ
 		DisasterRecoveryString: convertOracleBool(input.Parameter.DisasterRecovery),
 		FailoverDatabaseString: convertOracleBool(input.Parameter.FailoverDatabase),
 		GoldenGateString:       convertOracleBool(input.Parameter.GoldenGate),
-		HDGString:      		convertOracleBool(input.Parameter.HDG),
+		HDGString:              convertOracleBool(input.Parameter.HDG),
 		IsRACString:            convertOracleBool(input.Parameter.IsRAC),
 		IBKUPString:            convertOracleBool(input.Parameter.IBKUP),
 	}
