@@ -355,6 +355,20 @@ type ParameterInput struct {
 	// You cannot set goldenGate to true if either isRac or failoverDatabase is set to true.
 	// Optional
 	GoldenGate bool `json:"-"`
+	// Specify if an Oracle Hybrid Disaster Recovery configuration comprising a primary database on customer premisesand a standby database in Oracle Public Cloud should be configured.
+	// Valid values are yes and no. Default value is no.
+	// You cannot set failoverDatabase or isRac to yes if Hybrid Disaster Recovery options is chosen.
+	// Optional
+	HDG bool `json:"-"`
+	// Name of the Oracle Storage Cloud Service container where the backup from on-premise instance is stored. This parameter is required if hdg is set to yes.
+	// Optional
+	HDGCloudStorageContainer string `json:"hdgCloudStorageContainer,omitempty"`
+	// Password of the Oracle Cloud user specified in hdgCloudStorageUser. This parameter is required if hdg is set to yes.
+	// Optional
+	HDGCloudStoragePassword string `json:"hdgCloudStoragePassword,omitempty"`
+	// User name of an Oracle Cloud user who has read access to the container specified in hdgCloudStorageContainer. This parameter is required if hdg is set to yes.
+	// Optional
+	HDGCloudStorageUser string `json:"hdgCloudStorageUser,omitempty"`
 	// Specify if the service instance's database should, after the instance is created, be replaced
 	// by a database stored in an existing cloud backup that was created using Oracle Database Backup
 	// Cloud Service. Default value is false.
@@ -440,6 +454,7 @@ type ParameterRequest struct {
 	DisasterRecoveryString string `json:"disasterRecovery,omitempty"`
 	FailoverDatabaseString string `json:"failoverDatabase,omitempty"`
 	GoldenGateString       string `json:"goldenGate,omitempty"`
+	HDGString 			   string `json:"hdg,omitempty"`
 	IsRACString            string `json:"isRac,omitempty"`
 	IBKUPString            string `json:"ibkup,omitempty"`
 }
@@ -486,6 +501,7 @@ func createRequest(input *CreateServiceInstanceInput) *CreateServiceInstanceRequ
 		DisasterRecoveryString: convertOracleBool(input.Parameter.DisasterRecovery),
 		FailoverDatabaseString: convertOracleBool(input.Parameter.FailoverDatabase),
 		GoldenGateString:       convertOracleBool(input.Parameter.GoldenGate),
+		HDGString:      		convertOracleBool(input.Parameter.HDG),
 		IsRACString:            convertOracleBool(input.Parameter.IsRAC),
 		IBKUPString:            convertOracleBool(input.Parameter.IBKUP),
 	}
