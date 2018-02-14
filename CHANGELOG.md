@@ -1,5 +1,11 @@
 ## 0.6.9 (Unreleased)
 
+* database: Added OCI support to Service Instance [GH-108]
+
+* database: Added hdg, ibkup, and additional general fields to Service Instance [GH-110]
+
+* database: Added Timeout support for deleting Access Rules [GH-111]
+
 ## 0.6.8 (January 31, 2018)
 
 * compute: Orchestration objects can now have relationships [GH-104]
