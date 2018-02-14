@@ -27,7 +27,54 @@ const (
 	_ServiceInstanceDeleteBackup                = true
 )
 
-func TestAccServiceInstanceLifeCycle(t *testing.T) {
+func TestAccServiceInstanceLifeCycle_Basic(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
+
+	siClient, err := getServiceInstanceTestClients()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	parameter := ParameterInput{
+		AdminPassword:     _ServiceInstancePassword,
+		BackupDestination: _ServiceInstanceBackupDestination,
+		SID:               _ServiceInstanceDBSID,
+		Type:              _ServiceInstanceType,
+		UsableStorage:     _ServiceInstanceUsableStorage,
+	}
+
+	createServiceInstance := &CreateServiceInstanceInput{
+		Name:             _ServiceInstanceName,
+		Edition:          _ServiceInstanceEdition,
+		Level:            ServiceInstanceLevelBasic,
+		Shape:            _ServiceInstanceShape,
+		SubscriptionType: _ServiceInstanceSubscription,
+		Version:          ServiceInstanceVersion11204,
+		VMPublicKey:      _ServiceInstancePubKey,
+		Parameter:        parameter,
+	}
+
+	_, err = siClient.CreateServiceInstance(createServiceInstance)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	defer destroyServiceInstance(t, siClient, _ServiceInstanceName)
+
+	getInput := &GetServiceInstanceInput{
+		Name: _ServiceInstanceName,
+	}
+
+	receivedRes, err := siClient.GetServiceInstance(getInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if receivedRes.Name != _ServiceInstanceName {
+		t.Fatal(fmt.Errorf("Names do not match. Wanted: %s Received: %s", _ServiceInstanceName, receivedRes.Name))
+	}
+}
+
+func TestAccServiceInstanceLifeCycle_PAAS(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
 	siClient, err := getServiceInstanceTestClients()
