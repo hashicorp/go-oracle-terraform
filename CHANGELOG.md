@@ -1,3 +1,9 @@
+## 0.7.1 (Unreleased)
+
+## 0.7.0 (February 15, 2018)
+
+* java: Migrated java service instance to version 1.1 of their api
+
 ## 0.6.9 (February 14, 2018)
 
 * database: Added OCI support to Service Instance [GH-108]
