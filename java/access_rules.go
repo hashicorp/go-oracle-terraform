@@ -88,6 +88,8 @@ type AccessRuleInfo struct {
 	Destination AccessRuleDestination `json:"destination"`
 	// The ports for the rule.
 	Ports string `json:"ports"`
+	// Protocol for the rule. One of: "tcp" or "udp"
+	Protocol AccessRuleProtocol `json:"protocol"`
 	// The name of the Access Rule
 	Name string `json:"ruleName"`
 	// The Type of the rule. One of: "DEFAULT", "SYSTEM", or "USER".
