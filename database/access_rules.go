@@ -272,7 +272,6 @@ func (c *UtilityClient) DeleteAccessRule(input *DeleteAccessRuleInput) error {
 		return err
 	}
 
-
 	timeout := input.Timeout
 	if timeout == 0 {
 		timeout = WaitForAccessRuleTimeout

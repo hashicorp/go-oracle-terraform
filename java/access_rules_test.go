@@ -97,6 +97,7 @@ func TestAccAccessRulesLifeCycle(t *testing.T) {
 		Description: _TestAccessRuleDescription,
 		Destination: AccessRuleDestinationWLSAdmin,
 		Ports:       _TestAccessRulePorts,
+		Protocol:    AccessRuleProtocolTCP,
 		Name:        _TestAccessRuleName,
 		Source:      _TestAccessRuleSource,
 		Status:      AccessRuleDisabled,
