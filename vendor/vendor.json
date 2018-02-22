@@ -9,6 +9,12 @@
 			"revisionTime": "2018-01-23T06:50:59Z"
 		},
 		{
+			"checksumSHA1": "5rPfda8jFccr3A6heL+JAmi9K9g=",
+			"path": "github.com/davecgh/go-spew/spew",
+			"revision": "5215b55f46b2b919f50a1df0eaa5886afe4e3b3d",
+			"revisionTime": "2015-11-05T21:09:06Z"
+		},
+		{
 			"checksumSHA1": "0xjvz/KGzXhAFsnDRvzofE0xNzI=",
 			"path": "github.com/kylelemons/godebug/diff",
 			"revision": "a616ab194758ae0a11290d87ca46ee8c440117b0",
@@ -25,6 +31,12 @@
 			"path": "github.com/mitchellh/mapstructure",
 			"revision": "53818660ed4955e899c0bcafa97299a388bd7c8e",
 			"revisionTime": "2017-03-07T20:11:23Z"
+		},
+		{
+			"checksumSHA1": "LuFv4/jlrmFNnDb/5SCSEPAM9vU=",
+			"path": "github.com/pmezard/go-difflib/difflib",
+			"revision": "792786c7400a136282c1664665ae0a8db921c6c2",
+			"revisionTime": "2016-01-10T10:55:54Z"
 		},
 		{
 			"checksumSHA1": "Wx2FYL6OLgZ/9PF1nb+hhNoXcTo=",

@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAccStorageVolumeLifecycle(t *testing.T) {
@@ -131,9 +132,8 @@ func testStorageVolume(t *testing.T, createInput CreateStorageVolumeInput, updat
 		t.Fatal(err)
 	}
 
-	if createResponse.Size != createdResponse.Size {
-		t.Fatalf("Retrieved Storage Volume Size did not match Expected. \nDesired: %s \nActual: %s", createResponse, createdResponse)
-	}
+	assert.Equal(t, createResponse.Size, createdResponse.Size,
+		"Retrieved Storage Volume Size did not match Expected.")
 
 	actualSize := createdResponse.Size
 	expectedSize := "20"
@@ -151,9 +151,8 @@ func testStorageVolume(t *testing.T, createInput CreateStorageVolumeInput, updat
 		t.Fatal(err)
 	}
 
-	if updateResponse.Size != updatedResponse.Size {
-		t.Fatalf("Retrieved Storage Volume did not match Expected. \nDesired: %s \nActual: %s", updateResponse, updatedResponse)
-	}
+	assert.Equal(t, updateResponse.Size, updatedResponse.Size,
+		"Retrieved Storage Volume did not match Expected.")
 
 	actualSize = updatedResponse.Size
 	expectedSize = "30"

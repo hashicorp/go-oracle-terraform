@@ -21,6 +21,8 @@ const (
 	_TestAcceptRanges        = "bytes"
 )
 
+var _TestObjectMetadata = map[string]string{"Foo": "bar", "Abc-Def": "XYZ"}
+
 func TestAccObjectLifeCycle_contentSource(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
@@ -40,10 +42,11 @@ func TestAccObjectLifeCycle_contentSource(t *testing.T) {
 	// Create body seeker
 	body := bytes.NewReader([]byte(_SourceInput))
 	input := &CreateObjectInput{
-		Name:        _TestObjectName,
-		Container:   container.Name,
-		ContentType: _TestContentType,
-		Body:        body,
+		Name:           _TestObjectName,
+		Container:      container.Name,
+		ContentType:    _TestContentType,
+		ObjectMetadata: _TestObjectMetadata,
+		Body:           body,
 	}
 
 	object, err := client.CreateObject(input)
@@ -65,6 +68,7 @@ func TestAccObjectLifeCycle_contentSource(t *testing.T) {
 		DeleteAt:           0,
 		ID:                 fmt.Sprintf("%s/%s", _ContainerName, _TestObjectName),
 		ObjectManifest:     "",
+		ObjectMetadata:     _TestObjectMetadata,
 	}
 
 	if err := testAssertions(object, expected); err != nil {
@@ -95,10 +99,11 @@ func TestAccObjectLifeCycle_fileSource(t *testing.T) {
 	}
 
 	input := &CreateObjectInput{
-		Name:        _TestObjectName,
-		Container:   container.Name,
-		ContentType: _TestContentType,
-		Body:        body,
+		Name:           _TestObjectName,
+		Container:      container.Name,
+		ContentType:    _TestContentType,
+		ObjectMetadata: _TestObjectMetadata,
+		Body:           body,
 	}
 
 	object, err := client.CreateObject(input)
@@ -120,6 +125,7 @@ func TestAccObjectLifeCycle_fileSource(t *testing.T) {
 		DeleteAt:           0,
 		ID:                 fmt.Sprintf("%s/%s", _ContainerName, _TestObjectName),
 		ObjectManifest:     "",
+		ObjectMetadata:     _TestObjectMetadata,
 	}
 
 	if err := testAssertions(object, expected); err != nil {
@@ -146,10 +152,11 @@ func TestAccObjectLifeCycle_contentSourceID(t *testing.T) {
 	// Create body seeker
 	body := bytes.NewReader([]byte(_SourceInput))
 	input := &CreateObjectInput{
-		Name:        _TestObjectName,
-		Container:   container.Name,
-		ContentType: _TestContentType,
-		Body:        body,
+		Name:           _TestObjectName,
+		Container:      container.Name,
+		ContentType:    _TestContentType,
+		ObjectMetadata: _TestObjectMetadata,
+		Body:           body,
 	}
 
 	object, err := client.CreateObject(input)
@@ -171,6 +178,7 @@ func TestAccObjectLifeCycle_contentSourceID(t *testing.T) {
 		DeleteAt:           0,
 		ID:                 fmt.Sprintf("%s/%s", _ContainerName, _TestObjectName),
 		ObjectManifest:     "",
+		ObjectMetadata:     _TestObjectMetadata,
 	}
 
 	if err := testAssertions(object, expected); err != nil {

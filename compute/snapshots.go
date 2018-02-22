@@ -120,7 +120,7 @@ func (c *SnapshotsClient) CreateSnapshot(input *CreateSnapshotInput) (*Snapshot,
 type GetSnapshotInput struct {
 	// The name of the Snapshot
 	// Required
-	Name string `json:name`
+	Name string `json:"name"`
 }
 
 // GetSnapshot retrieves the Snapshot with the given name.
@@ -171,6 +171,31 @@ func (c *SnapshotsClient) DeleteSnapshot(machineImagesClient *MachineImagesClien
 	}
 	if err := machineImagesClient.DeleteMachineImage(deleteMachineImageRequest); err != nil {
 		return fmt.Errorf("Could not delete machine image associated with snapshot: %s", err)
+	}
+
+	return nil
+}
+
+// DeleteSnapshotResourceOnly deletes the Snapshot with the given name.
+// The machine image that gets created with the associated snapshot is not
+// deleted by this method.
+func (c *SnapshotsClient) DeleteSnapshotResourceOnly(input *DeleteSnapshotInput) error {
+	// Wait for snapshot complete in case delay is active and the corresponding
+	// instance needs to be deleted first
+	getInput := &GetSnapshotInput{
+		Name: input.Snapshot,
+	}
+
+	if input.Timeout == 0 {
+		input.Timeout = WaitForSnapshotCompleteTimeout
+	}
+
+	if _, err := c.WaitForSnapshotComplete(getInput, input.Timeout); err != nil {
+		return fmt.Errorf("Could not delete snapshot: %s", err)
+	}
+
+	if err := c.deleteResource(input.Snapshot); err != nil {
+		return fmt.Errorf("Could not delete snapshot: %s", err)
 	}
 
 	return nil

@@ -1,4 +1,63 @@
-## 0.4.1 (Unreleased)
+## 0.7.1 (Unreleased)
+
+## 0.7.0 (February 15, 2018)
+
+* java: Migrated java service instance to version 1.1 of their api
+
+## 0.6.9 (February 14, 2018)
+
+* database: Added OCI support to Service Instance [GH-108]
+
+* database: Added hdg, ibkup, and additional general fields to Service Instance [GH-110]
+
+* database: Added Timeout support for deleting Access Rules [GH-111]
+
+## 0.6.8 (January 31, 2018)
+
+* compute: Orchestration objects can now have relationships [GH-104]
+
+## 0.6.7 (January 17, 2018)
+
+* compute: Fixes a bug around qualifying storage volume name in storage attachments [GH-102]
+
+## 0.6.6 (January 11, 2018)
+
+* compute: Create and delete machine images [GH-101]
+
+## 0.6.5 (January 8, 2018)
+
+* compute: Orchestration failures should explicitly tell the user why it failed [GH-100]
+
+## 0.6.4 (Decemeber 20, 2017) 
+
+* compute: Added suspend functionality to orchestrated instances [GH-99]
+
+## 0.6.3 (December 13, 2017)
+
+* storage: Added remove header option to storage objects and containers [GH-96]
+
+## 0.6.2 (November 28, 2017)
+
+* client: Added a UserAgent to the Client [GH-98]
+
+## 0.6.1 (Novemeber 26, 2017)
+
+* compute: Added is_default_gateway to network attributes for instances [GH-97]
+
+
+## 0.6.0 (November 10, 2017)
+
+* compute: Added is_default_gateway to network attributes for instances [GH-90]
+
+* compute: Added the orchestration resource, specifically for instance creation [GH-91]
+
+## 0.5.1 (October 5, 2017)
+
+* java: Fixed subscription_type field
+
+## 0.5.0 (October 5, 2017)
+
+* java: Added more fields to java service instance [GH-89]
 
 ## 0.4.0 (September 14, 2017)
 
