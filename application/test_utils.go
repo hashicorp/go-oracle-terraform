@@ -43,5 +43,5 @@ func getApplicationTestClient(c *opc.Config) (*ApplicationClient, error) {
 		}
 	}
 
-	return NewJavaClient(c)
+	return NewApplicationClient(c)
 }

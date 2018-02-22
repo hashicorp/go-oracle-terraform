@@ -1,15 +1,14 @@
 package application
 
 import (
-	"fmt"
 	"time"
 
-	"github.com/hashicorp/go-oracle-terraform/client"
+	"github.com/fatih/structs"
 )
 
 var (
   ApplicationContainerPath = "/paas/service/apaas/api/v1.1/apps/%s"
-	ApplicationResourcePath  = "/paas/service/apaas/api/v1.1/apps/%s/%s"
+  ApplicationResourcePath  = "/paas/service/apaas/api/v1.1/apps/%s/%s"
 )
 
 // ServiceInstanceClient is a client for the Service functions of the Java API.
@@ -100,37 +99,81 @@ type Deployment struct {
 }
 
 type CreateApplicationContainerInput struct {
-	// Location of the application archive file in Oracle Storage Cloud Service, in the format app-name/file-name
-	// Optional
-	ArchiveURL string `json:"archiveURL,omitempty"`
+	// The additional fields needed for ApplicationContainer
+	AdditionalFields CreateApplicationContainerAdditionalFields
 	// Name of the optional deployment file, which specifies memory, number of instances, and service bindings
 	// Optional
-	Deployment string `json:"deployment,omitempty"`
+	Deployment string
 	// Name of the manifest file, required if this file is not packaged with the application
 	// Optional
-	Manifest string `json:"manifest,omitempty"`
+	Manifest string
+
+}
+
+type CreateApplicationContainerAdditionalFields struct {
+	// Location of the application archive file in Oracle Storage Cloud Service, in the format app-name/file-name
+	// Optional
+	ArchiveURL string
 	// Name of the application
 	// Required
-	Name string `json:"name"`
+	Name string
 	// Comments on the application deployment
-	Notes string `json:"notes,omitempty"`
+	Notes string
 	// Email address to which application deployment status updates are sent.
-	NotificationEmail string `json:"notificationEmail,omitempty"`
+	NotificationEmail string
 	// Repository of the application. The only allowed value is 'dockerhub'.
 	// Optional
-	Repository ApplicationRepository `json:"repository,omitempty"`
+	Repository ApplicationRepository
 	// Runtime environment: java (the default), node, php, python, or ruby
 	// Optional
-	Runtime ApplicationRuntime `json:"runtime,omitempty"`
+	Runtime ApplicationRuntime
 	// Subscription, either hourly (the default) or monthly
-	SubscriptionType ApplicationSubscriptionType `json:"subscription"`
+	SubscriptionType ApplicationSubscriptionType
 }
 
 // Create a new Applicaiton Container from an ApplicationClient and an input struct.
 // Returns a populated ApplicationContainer struct for the Application, and any errors
-func (c *ApplicationClient) CreateApplicationContainer(input *CreateApplicationContainerInput) (*ApplicationContainer, error) {
+func (c *ApplicationContainerClient) CreateApplicationContainer(input *CreateApplicationContainerInput) (*ApplicationContainer, error) {
+
+	files := make(map[string]string, 0)
+	if input.Deployment != "" {
+		files["deployment"] = input.Deployment
+	}
+	if input.Manifest != "" {
+		files["manifest"] = input.Manifest
+	}
+	additionalFields := structs.Map(input.AdditionalFields)
+
 	var applicationContainer *ApplicationContainer
-	if err := c.createResource(input, applicationContainer); err != nil {
+	if err := c.createResource(files, additionalFields, applicationContainer); err != nil {
 		return nil, err
 	}
+	return applicationContainer, nil
+}
+
+type GetApplicationContainerInput struct {
+	// Name of the application container
+	// Required
+	Name string `json:"name"`
+}
+
+// GetApplicationContainer retrieves the application container with the given name.
+func (c *ApplicationContainerClient) GetApplicationContainer(getInput *GetApplicationContainerInput) (*ApplicationContainer, error) {
+	var applicationContainer ApplicationContainer
+	if err := c.getResource(getInput.Name, &applicationContainer); err != nil {
+		return nil, err
+	}
+
+	return &applicationContainer, nil
+}
+
+type DeleteApplicationContainerInput struct {
+	// Name of the application container
+	// Required
+	Name string `json:"name"`
+}
+
+// DeleteApplicationContainer deletes the application container with the given name.
+func (c *ApplicationContainerClient) DeleteApplicationContainer(deleteInput *DeleteApplicationContainerInput) error {
+	return c.deleteResource(deleteInput.Name)
 }

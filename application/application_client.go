@@ -31,6 +31,30 @@ func NewApplicationClient(c *opc.Config) (*ApplicationClient, error) {
 	return appClient, nil
 }
 
+func (c *ApplicationClient) executeCreateRequest(method, path string, files map[string]string, parameters map[string]interface{}) (*http.Response, error) {
+	req, err := c.client.BuildMultipartFormRequest(method, path, files, parameters)
+	if err != nil {
+		return nil, err
+	}
+
+	debugReqString := fmt.Sprintf("HTTP %s Path (%s)", method, path)
+	req.Header.Set("Content-Type", "multipart/form-data")
+	// Log the request before the authentication header, so as not to leak credentials
+	c.client.DebugLogString(debugReqString)
+	c.client.DebugLogString(fmt.Sprintf("Req (%+v)", req))
+
+	// Set the authentiation headers
+	req.Header.Add(AUTH_HEADER, *c.authHeader)
+	req.Header.Add(TENANT_HEADER, *c.client.IdentityDomain)
+
+	resp, err := c.client.ExecuteRequest(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+
 func (c *ApplicationClient) executeRequest(method, path string, body interface{}) (*http.Response, error) {
 	req, err := c.client.BuildRequest(method, path, body)
 	if err != nil {
@@ -39,7 +63,7 @@ func (c *ApplicationClient) executeRequest(method, path string, body interface{}
 
 	debugReqString := fmt.Sprintf("HTTP %s Path (%s)", method, path)
 	if body != nil {
-		req.Header.Set("Content-Type", "application/vnd.com.oracle.oracloud.provisioning.Service+json")
+		req.Header.Set("Content-Type", "multipart/form-data")
 	}
 	// Log the request before the authentication header, so as not to leak credentials
 	c.client.DebugLogString(debugReqString)
