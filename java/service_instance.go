@@ -901,7 +901,7 @@ type CreateOTD struct {
 	// Policy to use for routing requests to the load balancer. Valid policies include:
 	// Optional.
 	LoadBalancingPolicy ServiceInstanceLoadBalancingPolicy `json:"loadBalancingPolicy,omitempty"`
-	//Privileged listener port for accessing the deployed applications using HTTP. The default value is 80.
+	// Privileged listener port for accessing the deployed applications using HTTP. The default value is 80.
 	// This value has no effect if the local load balancer is disabled.
 	// To disable the privileged listener port, set the value to 0. In this case, if the local
 	// load balancer is provisioned, the listener port defaults to listenerPort, if specified, or 8080.
