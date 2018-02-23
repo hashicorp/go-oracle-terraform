@@ -11,9 +11,10 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-oracle-terraform/opc"
-	"os"
 	"io/ioutil"
 	"mime/multipart"
+	"os"
+	"strings"
 )
 
 const DEFAULT_MAX_RETRIES = 1
@@ -142,7 +143,6 @@ func (c *Client) BuildNonJSONRequest(method, path string, body io.ReadSeeker) (*
 	return req, nil
 }
 
-
 // Builds a new HTTP Request for a multipart form request
 func (c *Client) BuildMultipartFormRequest(method, path string, files map[string]string, parameters map[string]interface{}) (*http.Request, error) {
 	urlPath, err := url.Parse(path)
@@ -153,7 +153,7 @@ func (c *Client) BuildMultipartFormRequest(method, path string, files map[string
 	body := new(bytes.Buffer)
 	writer := multipart.NewWriter(body)
 
-	for fileName, filePath  := range files {
+	for fileName, filePath := range files {
 		// Open the file
 		file, err := os.Open(filePath)
 		if err != nil {
@@ -181,14 +181,19 @@ func (c *Client) BuildMultipartFormRequest(method, path string, files map[string
 
 	// Add additional parameters to the writer
 	for key, val := range parameters {
-		_ = writer.WriteField(key, val.(string))
+		if val.(string) != "" {
+			_ = writer.WriteField(strings.ToLower(key), val.(string))
+		}
 	}
 	err = writer.Close()
 	if err != nil {
 		return nil, err
 	}
 
-	return http.NewRequest("POST", c.formatURL(urlPath), body)
+	req, err := http.NewRequest("POST", c.formatURL(urlPath), body)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+
+	return req, err
 }
 
 // This method executes the http.Request from the BuildRequest method.

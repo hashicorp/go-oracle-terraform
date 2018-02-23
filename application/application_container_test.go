@@ -1,137 +1,158 @@
 package application
 
 import (
-"log"
-"net/http"
-"net/http/httptest"
-"net/url"
-"reflect"
-"testing"
+	"log"
+	"testing"
 
-"github.com/hashicorp/go-oracle-terraform/helper"
-"github.com/hashicorp/go-oracle-terraform/opc"
+	"github.com/hashicorp/go-oracle-terraform/helper"
+	"github.com/hashicorp/go-oracle-terraform/opc"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
-	_ApplicationContainerTestName        = "test-acc-application-container"
+	_ApplicationContainerTestName       = "testaccapplicationcontainer4"
+	_ApplicationContainerRuntimeJava    = "java"
+	_ApplicationContainerDeploymentFile = "./test_files/deployment.json"
+	_ApplicationContainerManifestFile   = "./test_files/manifest.json"
+	_ApplicationContainerNote           = "This is a note"
+	_ApplicationContainerUpdatedNote    = "This is an updated note"
 )
 
-func TestAccApplicationContainerLifeCycle(t *testing.T) {
+func TestAccApplicationContainerLifeCycle_Basic(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
-	name := "test-acc-acl"
-
-	applicationContainerClient, err := getApplicationContainersClient()
+	aClient, err := getApplicationContainerTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
-	log.Printf("Obtained acl Client")
 
-	createApplicationContainerInput := CreateApplicationContainerInput{
-
+	createApplicationContainerAdditionalFields := CreateApplicationContainerAdditionalFields{
+		Name:    _ApplicationContainerTestName,
+		Runtime: _ApplicationContainerRuntimeJava,
 	}
 
-	createdACL, err := appl
+	createApplicationContainerInput := &CreateApplicationContainerInput{
+		AdditionalFields: createApplicationContainerAdditionalFields,
+	}
+
+	createdApplicationContainer, err := aClient.CreateApplicationContainer(createApplicationContainerInput)
 	if err != nil {
 		t.Fatal(err)
 	}
-	log.Printf("Successfully created acl: %+v", createdACL)
-	defer deleteACL(t, ACLClient, name)
+	log.Printf("Successfully created Application Container: %+v", createdApplicationContainer)
+	defer deleteTestApplicationContainer(t, aClient, _ApplicationContainerTestName)
 
-	getACLInput := GetACLInput{
-		Name: _ACLTestName,
+	getInput := &GetApplicationContainerInput{
+		Name: _ApplicationContainerTestName,
 	}
-	getACLOutput, err := ACLClient.GetACL(&getACLInput)
+
+	applicationContainer, err := aClient.GetApplicationContainer(getInput)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !reflect.DeepEqual(createdACL, getACLOutput) {
-		t.Fatalf("Created and retrived acls don't match.\n Desired: %s\n Actual: %s", createdACL, getACLOutput)
-	}
-	log.Print("Successfully retrieved acl")
 
-	updateACLInput := UpdateACLInput{
-		Name:        _ACLTestName,
-		Enabled:     true,
-		Description: _ACLTestDescription,
-		Tags:        []string{"tag1"},
-	}
-	updateACLOutput, err := ACLClient.UpdateACL(&updateACLInput)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if updateACLOutput.Enabled != true {
-		t.Fatal("acl was not updated to enabled")
-	}
-	log.Print("Successfully updated acl")
+	log.Printf("Application Container Retrieved: %+v", applicationContainer)
+	assert.NotEmpty(t, applicationContainer.Name, "Expected Application Container name not to be empty")
+	assert.Equal(t, _ApplicationContainerTestName, applicationContainer.Name, "Expected Application Container and name to match.")
+	assert.Equal(t, "RUNNING", applicationContainer.Status)
 }
 
-// Test that the client can create an instance.
-func TestAccACLsClient_CreateRule(t *testing.T) {
+func TestAccApplicationContainerLifeCycle_Manifest(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
-	server := newAuthenticatingServer(func(w http.ResponseWriter, r *http.Request) {
-		if r.Method != "POST" {
-			t.Errorf("Wrong HTTP method %s, expected POST", r.Method)
-		}
 
-		expectedPath := "/network/v1/acl/"
-		if r.URL.Path != expectedPath {
-			t.Errorf("Wrong HTTP URL %v, expected %v", r.URL, expectedPath)
-		}
-
-		ruleSpec := &CreateACLInput{}
-		unmarshalRequestBody(t, r, ruleSpec)
-
-		expectedName := "/Compute-test/test/test-acc-acl"
-		if ruleSpec.Name != expectedName {
-			t.Errorf("Expected name '%s', was %s", expectedName, ruleSpec.Name)
-		}
-		if ruleSpec.Enabled != false {
-			t.Errorf("Expected enabled to be 'false', was %s", ruleSpec.Enabled)
-		}
-
-		w.WriteHeader(201)
-		w.Write([]byte(exampleCreateACLResponse))
-	})
-
-	defer server.Close()
-	client, err := getStubACLsClient(server)
+	aClient, err := getApplicationContainerTestClients()
 	if err != nil {
-		t.Fatalf("error getting stub client: %s", err)
+		t.Fatal(err)
 	}
 
-	createInput := CreateACLInput{
-		Name:        _ACLTestName,
-		Enabled:     false,
-		Description: _ACLTestDescription,
-		Tags:        []string{"tag1"},
+	createApplicationContainerAdditionalFields := CreateApplicationContainerAdditionalFields{
+		Name:    _ApplicationContainerTestName,
+		Runtime: _ApplicationContainerRuntimeJava,
 	}
-	info, err := client.CreateACL(&createInput)
+
+	createApplicationContainerInput := &CreateApplicationContainerInput{
+		AdditionalFields: createApplicationContainerAdditionalFields,
+		Manifest:         _ApplicationContainerManifestFile,
+	}
+
+	createdApplicationContainer, err := aClient.CreateApplicationContainer(createApplicationContainerInput)
 	if err != nil {
-		t.Fatalf("Create security rule request failed: %s", err)
+		t.Fatal(err)
 	}
-	if info.Enabled != false {
-		t.Errorf("Expected enabled 'false', was %s", info.Enabled)
+	log.Printf("Successfully created Application Container: %+v", createdApplicationContainer)
+	defer deleteTestApplicationContainer(t, aClient, _ApplicationContainerTestName)
+
+	getInput := &GetApplicationContainerInput{
+		Name: _ApplicationContainerTestName,
 	}
+
+	applicationContainer, err := aClient.GetApplicationContainer(getInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	log.Printf("Application Container Retrieved: %+v", applicationContainer)
+	assert.NotEmpty(t, applicationContainer.Name, "Expected Application Container name not to be empty")
+	assert.Equal(t, _ApplicationContainerTestName, applicationContainer.Name, "Expected Application Container and name to match.")
+	assert.Equal(t, "RUNNING", applicationContainer.Status)
 }
 
-func getApplicationContainersClientClient() (*ApplicationContainerClient, error) {
-	client, err := getApplicationTestClient(&opc.Config{})
+func TestAccApplicationContainerLifeCycle_Deployment(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
+
+	aClient, err := getApplicationContainerTestClients()
 	if err != nil {
-		return &ApplicationContainerClient{}, err
+		t.Fatal(err)
 	}
 
-	return client.ApplicationContainerClient(), nil
+	createApplicationContainerAdditionalFields := CreateApplicationContainerAdditionalFields{
+		Name:    _ApplicationContainerTestName,
+		Runtime: _ApplicationContainerRuntimeJava,
+	}
+
+	createApplicationContainerInput := &CreateApplicationContainerInput{
+		AdditionalFields: createApplicationContainerAdditionalFields,
+		Deployment:       _ApplicationContainerDeploymentFile,
+		Manifest:         _ApplicationContainerManifestFile,
+	}
+
+	createdApplicationContainer, err := aClient.CreateApplicationContainer(createApplicationContainerInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	log.Printf("Successfully created Application Container: %+v", createdApplicationContainer)
+	defer deleteTestApplicationContainer(t, aClient, _ApplicationContainerTestName)
+
+	getInput := &GetApplicationContainerInput{
+		Name: _ApplicationContainerTestName,
+	}
+
+	applicationContainer, err := aClient.GetApplicationContainer(getInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	log.Printf("Application Container Retrieved: %+v", applicationContainer)
+	assert.NotEmpty(t, applicationContainer.Name, "Expected Application Container name not to be empty")
+	assert.Equal(t, _ApplicationContainerTestName, applicationContainer.Name, "Expected Application Container and name to match.")
+	assert.Equal(t, "RUNNING", applicationContainer.Status)
 }
 
-func deleteACL(t *testing.T, client *ACLsClient, name string) {
-	deleteInput := DeleteACLInput{
+func deleteTestApplicationContainer(t *testing.T, client *ApplicationContainerClient, name string) {
+	deleteInput := DeleteApplicationContainerInput{
 		Name: name,
 	}
-	err := client.DeleteACL(&deleteInput)
-	if err != nil {
+	if err := client.DeleteApplicationContainer(&deleteInput); err != nil {
 		t.Fatal(err)
 	}
 
-	log.Printf("Successfully deleted acl")
+	log.Print("Successfully deleted Application Container")
+}
+
+func getApplicationContainerTestClients() (*ApplicationContainerClient, error) {
+	client, err := getApplicationTestClient(&opc.Config{})
+	if err != nil {
+		return nil, err
+	}
+	return client.ApplicationContainerClient(), nil
 }

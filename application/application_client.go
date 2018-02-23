@@ -10,7 +10,6 @@ import (
 
 const AUTH_HEADER = "Authorization"
 const TENANT_HEADER = "X-ID-TENANT-NAME"
-const APPLICATION_QUALIFIED_NAME = "%s%s/%s"
 
 // ApplicationClient represents an authenticated application client, with credentials and an api client.
 type ApplicationClient struct {
@@ -31,20 +30,20 @@ func NewApplicationClient(c *opc.Config) (*ApplicationClient, error) {
 	return appClient, nil
 }
 
-func (c *ApplicationClient) executeCreateRequest(method, path string, files map[string]string, parameters map[string]interface{}) (*http.Response, error) {
+func (c *ApplicationClient) executeCreateUpdateRequest(method, path string, files map[string]string, parameters map[string]interface{}) (*http.Response, error) {
 	req, err := c.client.BuildMultipartFormRequest(method, path, files, parameters)
 	if err != nil {
 		return nil, err
 	}
 
 	debugReqString := fmt.Sprintf("HTTP %s Path (%s)", method, path)
-	req.Header.Set("Content-Type", "multipart/form-data")
+	// req.Header.Set("Content-Type", "multipart/form-data")
 	// Log the request before the authentication header, so as not to leak credentials
 	c.client.DebugLogString(debugReqString)
 	c.client.DebugLogString(fmt.Sprintf("Req (%+v)", req))
 
-	// Set the authentiation headers
-	req.Header.Add(AUTH_HEADER, *c.authHeader)
+	// Set the authentication headers
+	req.SetBasicAuth(*c.client.UserName, *c.client.Password)
 	req.Header.Add(TENANT_HEADER, *c.client.IdentityDomain)
 
 	resp, err := c.client.ExecuteRequest(req)
@@ -54,23 +53,27 @@ func (c *ApplicationClient) executeCreateRequest(method, path string, files map[
 	return resp, nil
 }
 
-
 func (c *ApplicationClient) executeRequest(method, path string, body interface{}) (*http.Response, error) {
-	req, err := c.client.BuildRequest(method, path, body)
+	reqBody, err := c.client.MarshallRequestBody(body)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := c.client.BuildRequestBody(method, path, reqBody)
 	if err != nil {
 		return nil, err
 	}
 
 	debugReqString := fmt.Sprintf("HTTP %s Path (%s)", method, path)
 	if body != nil {
-		req.Header.Set("Content-Type", "multipart/form-data")
+		req.Header.Set("Content-Type", "application/json")
 	}
 	// Log the request before the authentication header, so as not to leak credentials
 	c.client.DebugLogString(debugReqString)
 	c.client.DebugLogString(fmt.Sprintf("Req (%+v)", req))
 
 	// Set the authentiation headers
-	req.Header.Add(AUTH_HEADER, *c.authHeader)
+	req.SetBasicAuth(*c.client.UserName, *c.client.Password)
 	req.Header.Add(TENANT_HEADER, *c.client.IdentityDomain)
 
 	resp, err := c.client.ExecuteRequest(req)

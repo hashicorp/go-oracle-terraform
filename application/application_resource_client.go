@@ -17,7 +17,7 @@ type ResourceClient struct {
 }
 
 func (c *ResourceClient) createResource(files map[string]string, additionalParams map[string]interface{}, responseBody interface{}) error {
-	_, err := c.executeCreateRequest("POST", c.getContainerPath(c.ContainerPath), files, additionalParams)
+	_, err := c.executeCreateUpdateRequest("POST", c.getContainerPath(c.ContainerPath), files, additionalParams)
 	if err != nil {
 		return err
 	}
@@ -25,8 +25,8 @@ func (c *ResourceClient) createResource(files map[string]string, additionalParam
 	return nil
 }
 
-func (c *ResourceClient) updateResource(name string, requestBody interface{}, responseBody interface{}) error {
-	_, err := c.executeRequest("PUT", c.getObjectPath(c.ResourceRootPath, name), requestBody)
+func (c *ResourceClient) updateResource(files map[string]string, additionalParams map[string]interface{}, responseBody interface{}) error {
+	_, err := c.executeCreateUpdateRequest("PUT", c.getContainerPath(c.ContainerPath), files, additionalParams)
 	if err != nil {
 		return err
 	}
