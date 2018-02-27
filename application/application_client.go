@@ -8,13 +8,9 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/opc"
 )
 
-const AUTH_HEADER = "Authorization"
-const TENANT_HEADER = "X-ID-TENANT-NAME"
-
 // ApplicationClient represents an authenticated application client, with credentials and an api client.
 type ApplicationClient struct {
-	client     *client.Client
-	authHeader *string
+	client *client.Client
 }
 
 func NewApplicationClient(c *opc.Config) (*ApplicationClient, error) {
@@ -24,8 +20,6 @@ func NewApplicationClient(c *opc.Config) (*ApplicationClient, error) {
 		return nil, err
 	}
 	appClient.client = client
-
-	appClient.authHeader = appClient.getAuthenticationHeader()
 
 	return appClient, nil
 }
@@ -44,7 +38,7 @@ func (c *ApplicationClient) executeCreateUpdateRequest(method, path string, file
 
 	// Set the authentication headers
 	req.SetBasicAuth(*c.client.UserName, *c.client.Password)
-	req.Header.Add(TENANT_HEADER, *c.client.IdentityDomain)
+	req.Header.Add("X-ID-TENANT-NAME", *c.client.IdentityDomain)
 
 	resp, err := c.client.ExecuteRequest(req)
 	if err != nil {
@@ -74,7 +68,7 @@ func (c *ApplicationClient) executeRequest(method, path string, body interface{}
 
 	// Set the authentiation headers
 	req.SetBasicAuth(*c.client.UserName, *c.client.Password)
-	req.Header.Add(TENANT_HEADER, *c.client.IdentityDomain)
+	req.Header.Add("X-ID-TENANT-NAME", *c.client.IdentityDomain)
 
 	resp, err := c.client.ExecuteRequest(req)
 	if err != nil {

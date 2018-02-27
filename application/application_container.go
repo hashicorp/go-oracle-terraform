@@ -2,11 +2,11 @@ package application
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/fatih/structs"
 	"github.com/hashicorp/go-oracle-terraform/client"
-	"strings"
 )
 
 const WaitForApplicationContainerRunningTimeout = time.Duration(600 * time.Second)
@@ -192,9 +192,9 @@ func (c *ApplicationContainerClient) CreateApplicationContainer(input *CreateApp
 	}
 
 	// Wait for application container to be ready and return the result
-	applicationContainerInfo, applicationContainerError := c.WaitForApplicationContainerRunning(getInput, input.Timeout)
-	if applicationContainerError != nil {
-		return nil, applicationContainerError
+	applicationContainerInfo, err := c.WaitForApplicationContainerRunning(getInput, input.Timeout)
+	if err != nil {
+		return nil, err
 	}
 
 	return applicationContainerInfo, nil
@@ -289,9 +289,9 @@ func (c *ApplicationContainerClient) UpdateApplicationContainer(input *UpdateApp
 	}
 
 	// Wait for application container to be ready and return the result
-	applicationContainerInfo, applicationContainerError := c.WaitForApplicationContainerRunning(getInput, input.Timeout)
-	if applicationContainerError != nil {
-		return nil, applicationContainerError
+	applicationContainerInfo, err := c.WaitForApplicationContainerRunning(getInput, input.Timeout)
+	if err != nil {
+		return nil, err
 	}
 
 	return applicationContainerInfo, nil
@@ -300,9 +300,8 @@ func (c *ApplicationContainerClient) UpdateApplicationContainer(input *UpdateApp
 // WaitForApplicationContainerRunning waits for an application container to be completely initialized and ready.
 func (c *ApplicationContainerClient) WaitForApplicationContainerRunning(input *GetApplicationContainerInput, timeoutSeconds time.Duration) (*ApplicationContainer, error) {
 	var info *ApplicationContainer
-	var getErr error
 	err := c.client.WaitFor("Waiting for Application container to be ready", timeoutSeconds, func() (bool, error) {
-		info, getErr = c.GetApplicationContainer(input)
+		info, getErr := c.GetApplicationContainer(input)
 		if getErr != nil {
 			return false, getErr
 		}

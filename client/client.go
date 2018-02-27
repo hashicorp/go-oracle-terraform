@@ -5,16 +5,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"io/ioutil"
+	"mime/multipart"
 	"net/http"
 	"net/url"
+	"os"
 	"runtime"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/go-oracle-terraform/opc"
-	"io/ioutil"
-	"mime/multipart"
-	"os"
-	"strings"
 )
 
 const DEFAULT_MAX_RETRIES = 1
@@ -159,6 +159,7 @@ func (c *Client) BuildMultipartFormRequest(method, path string, files map[string
 		if err != nil {
 			return nil, err
 		}
+		defer file.Close()
 
 		// Read the file contents
 		fileContents, err := ioutil.ReadAll(file)
@@ -171,7 +172,6 @@ func (c *Client) BuildMultipartFormRequest(method, path string, files map[string
 		if err != nil {
 			return nil, err
 		}
-		file.Close()
 		part, err := writer.CreateFormFile(fileName, fi.Name())
 		if err != nil {
 			return nil, err
