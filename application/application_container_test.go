@@ -14,8 +14,6 @@ const (
 	_ApplicationContainerRuntimeJava    = "java"
 	_ApplicationContainerDeploymentFile = "./test_files/deployment.json"
 	_ApplicationContainerManifestFile   = "./test_files/manifest.json"
-	_ApplicationContainerNote           = "This is a note"
-	_ApplicationContainerUpdatedNote    = "This is an updated note"
 )
 
 func TestAccApplicationContainerLifeCycle_Basic(t *testing.T) {
@@ -138,7 +136,7 @@ func TestAccApplicationContainerLifeCycle_Deployment(t *testing.T) {
 	assert.Equal(t, "RUNNING", applicationContainer.Status)
 }
 
-func deleteTestApplicationContainer(t *testing.T, client *ApplicationContainerClient, name string) {
+func deleteTestApplicationContainer(t *testing.T, client *ContainerClient, name string) {
 	deleteInput := DeleteApplicationContainerInput{
 		Name: name,
 	}
@@ -149,10 +147,10 @@ func deleteTestApplicationContainer(t *testing.T, client *ApplicationContainerCl
 	log.Print("Successfully deleted Application Container")
 }
 
-func getApplicationContainerTestClients() (*ApplicationContainerClient, error) {
+func getApplicationContainerTestClients() (*ContainerClient, error) {
 	client, err := getApplicationTestClient(&opc.Config{})
 	if err != nil {
 		return nil, err
 	}
-	return client.ApplicationContainerClient(), nil
+	return client.ContainerClient(), nil
 }

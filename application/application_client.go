@@ -8,13 +8,14 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/opc"
 )
 
-// ApplicationClient represents an authenticated application client, with credentials and an api client.
-type ApplicationClient struct {
+// Client represents an authenticated application client, with credentials and an api client.
+type Client struct {
 	client *client.Client
 }
 
-func NewApplicationClient(c *opc.Config) (*ApplicationClient, error) {
-	appClient := &ApplicationClient{}
+// NewClient returns a new client for the application resources managed by Oracle
+func NewClient(c *opc.Config) (*Client, error) {
+	appClient := &Client{}
 	client, err := client.NewClient(c)
 	if err != nil {
 		return nil, err
@@ -24,7 +25,7 @@ func NewApplicationClient(c *opc.Config) (*ApplicationClient, error) {
 	return appClient, nil
 }
 
-func (c *ApplicationClient) executeCreateUpdateRequest(method, path string, files map[string]string, parameters map[string]interface{}) (*http.Response, error) {
+func (c *Client) executeCreateUpdateRequest(method, path string, files map[string]string, parameters map[string]interface{}) (*http.Response, error) {
 	req, err := c.client.BuildMultipartFormRequest(method, path, files, parameters)
 	if err != nil {
 		return nil, err
@@ -47,7 +48,7 @@ func (c *ApplicationClient) executeCreateUpdateRequest(method, path string, file
 	return resp, nil
 }
 
-func (c *ApplicationClient) executeRequest(method, path string, body interface{}) (*http.Response, error) {
+func (c *Client) executeRequest(method, path string, body interface{}) (*http.Response, error) {
 	reqBody, err := c.client.MarshallRequestBody(body)
 	if err != nil {
 		return nil, err
@@ -77,10 +78,10 @@ func (c *ApplicationClient) executeRequest(method, path string, body interface{}
 	return resp, nil
 }
 
-func (c *ApplicationClient) getContainerPath(root string) string {
+func (c *Client) getContainerPath(root string) string {
 	return fmt.Sprintf(root, *c.client.IdentityDomain)
 }
 
-func (c *ApplicationClient) getObjectPath(root, name string) string {
+func (c *Client) getObjectPath(root, name string) string {
 	return fmt.Sprintf(root, *c.client.IdentityDomain, name)
 }

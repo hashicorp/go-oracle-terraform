@@ -9,37 +9,34 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/client"
 )
 
-const WaitForApplicationContainerRunningTimeout = time.Duration(600 * time.Second)
-const WaitForApplicationContainerDeleteTimeout = time.Duration(600 * time.Second)
+const waitForApplicationContainerRunningTimeout = time.Second * 600
+const waitForApplicationContainerDeleteTimeout = time.Second * 600
 
 var (
-	ApplicationContainerPath = "/paas/service/apaas/api/v1.1/apps/%s"
-	ApplicationResourcePath  = "/paas/service/apaas/api/v1.1/apps/%s/%s"
+	// ContainerContainerPath is the uri path for containers
+	ContainerContainerPath = "/paas/service/apaas/api/v1.1/apps/%s"
+	// ContainerResourcePath is the uri path for a specific container resource
+	ContainerResourcePath = "/paas/service/apaas/api/v1.1/apps/%s/%s"
 )
 
-// ApplicationContainerClient is a client for the Application container functions of the Application Container API
-type ApplicationContainerClient struct {
+// ContainerClient is a client for the Application container functions of the Application Container API
+type ContainerClient struct {
 	ResourceClient
 	Timeout time.Duration
 }
 
-// ApplicationContainerClient obtains an AppllicationClient which can be used to access to the
+// ContainerClient obtains an ApplicationClient which can be used to access to the
 // Application Container functions of the Application Container API
-func (c *ApplicationClient) ApplicationContainerClient() *ApplicationContainerClient {
-	return &ApplicationContainerClient{
+func (c *Client) ContainerClient() *ContainerClient {
+	return &ContainerClient{
 		ResourceClient: ResourceClient{
-			ApplicationClient: c,
-			ContainerPath:     ApplicationContainerPath,
-			ResourceRootPath:  ApplicationResourcePath,
+			Client:           c,
+			ContainerPath:    ContainerContainerPath,
+			ResourceRootPath: ContainerResourcePath,
 		}}
 }
 
-type ApplicationSubscriptionType string
-
-const (
-	ApplicationSubscriptionTypeHourly  ApplicationSubscriptionType = "HOURLY"
-	ApplicationSubscriptionTypeMonthly ApplicationSubscriptionType = "MONTHLY"
-)
+/* These values would normally be used as types for their respective attributes but we are unable to because we need to convert a struct to a map[string[string]
 
 type ApplicationRepository string
 
@@ -65,19 +62,30 @@ type ApplicationContainerAuthType string
 const (
 	ApplicationContainerAuthTypeBasic ApplicationContainerAuthType = "basic"
 	ApplicationContainerAuthTypeOauth ApplicationContainerAuthType = "oauth"
-)
+) */
 
-type ApplicationContainerStatus string
+// SubscriptionType are the values available for subscription
+type SubscriptionType string
 
 const (
-	ApplicationContainerStatusRunning        ApplicationContainerStatus = "RUNNING"
-	ApplicationContainerStatusNew            ApplicationContainerStatus = "NEW"
-	ApplicationContainerStatusDestroyPending ApplicationContainerStatus = "DESTROY_PENDING"
+	// SubscriptionTypeHourly specifies that the subscription is metered hourly
+	SubscriptionTypeHourly SubscriptionType = "HOURLY"
+	// SubscriptionTypeMonthly specifies that the subscription is metered monthly
+	SubscriptionTypeMonthly SubscriptionType = "MONTHLY"
 )
 
-type ApplicationContainer struct {
+type containerStatus string
+
+const (
+	applicationContainerStatusRunning        containerStatus = "RUNNING"
+	applicationContainerStatusNew            containerStatus = "NEW"
+	applicationContainerStatusDestroyPending containerStatus = "DESTROY_PENDING"
+)
+
+// Container container information about the application container
+type Container struct {
 	// ID of the application
-	AppId string `json:"appId"`
+	AppID string `json:"appId"`
 	// URL of the created application
 	AppURL string `json:"appURL"`
 	// Creation time of the application
@@ -97,11 +105,12 @@ type ApplicationContainer struct {
 	// Status of the application
 	Status string `json:"status"`
 	// Type of subscription, Hourly or Monthly
-	SubscriptionType ApplicationSubscriptionType `json:"subscriptionType"`
+	SubscriptionType SubscriptionType `json:"subscriptionType"`
 	// Web URL of the application
 	WebURL string `json:"webURL"`
 }
 
+// Instance specifies individual instance information on the application container
 type Instance struct {
 	// Instance URL. Use this url to get a description of the application instance.
 	InstanceURL string `json:"instanceURL"`
@@ -113,15 +122,17 @@ type Instance struct {
 	Status string `json:"status"`
 }
 
+// Deployment specifies individual deployment information on the application container
 type Deployment struct {
 	// Deployment ID. Use this ID to manage a specific deployment.
-	DeploymentId string `json:"deploymentId"`
+	DeploymentID string `json:"deploymentId"`
 	// Status of the deployment
 	DeploymentStatus string `json:"deploymentStatus"`
 	// Deployment URL. Use this URL to get a description of the application deployment.
 	DeploymentURL string `json:"deploymentURL"`
 }
 
+// CreateApplicationContainerInput specifies the information needed to create an application container
 type CreateApplicationContainerInput struct {
 	// The additional fields needed for ApplicationContainer
 	AdditionalFields CreateApplicationContainerAdditionalFields
@@ -135,6 +146,7 @@ type CreateApplicationContainerInput struct {
 	Timeout time.Duration
 }
 
+// CreateApplicationContainerAdditionalFields specifies the additional fields needed to create an application container
 type CreateApplicationContainerAdditionalFields struct {
 	// Location of the application archive file in Oracle Storage Cloud Service, in the format app-name/file-name
 	// Optional
@@ -165,11 +177,11 @@ type CreateApplicationContainerAdditionalFields struct {
 	SubscriptionType string //ApplicationSubscriptionType
 }
 
-// Create a new Application Container from an ApplicationClient and an input struct.
+// CreateApplicationContainer creates a new Application Container from an ApplicationClient and an input struct.
 // Returns a populated ApplicationContainer struct for the Application, and any errors
-func (c *ApplicationContainerClient) CreateApplicationContainer(input *CreateApplicationContainerInput) (*ApplicationContainer, error) {
+func (c *ContainerClient) CreateApplicationContainer(input *CreateApplicationContainerInput) (*Container, error) {
 
-	files := make(map[string]string, 0)
+	files := make(map[string]string)
 	if input.Deployment != "" {
 		files["deployment"] = input.Deployment
 	}
@@ -178,7 +190,7 @@ func (c *ApplicationContainerClient) CreateApplicationContainer(input *CreateApp
 	}
 	additionalFields := structs.Map(input.AdditionalFields)
 
-	var applicationContainer *ApplicationContainer
+	var applicationContainer *Container
 	if err := c.createResource(files, additionalFields, applicationContainer); err != nil {
 		return nil, err
 	}
@@ -188,7 +200,7 @@ func (c *ApplicationContainerClient) CreateApplicationContainer(input *CreateApp
 	}
 
 	if input.Timeout == 0 {
-		input.Timeout = WaitForApplicationContainerRunningTimeout
+		input.Timeout = waitForApplicationContainerRunningTimeout
 	}
 
 	// Wait for application container to be ready and return the result
@@ -200,6 +212,7 @@ func (c *ApplicationContainerClient) CreateApplicationContainer(input *CreateApp
 	return applicationContainerInfo, nil
 }
 
+// GetApplicationContainerInput specifies the information needed to get an application container
 type GetApplicationContainerInput struct {
 	// Name of the application container
 	// Required
@@ -207,8 +220,8 @@ type GetApplicationContainerInput struct {
 }
 
 // GetApplicationContainer retrieves the application container with the given name.
-func (c *ApplicationContainerClient) GetApplicationContainer(getInput *GetApplicationContainerInput) (*ApplicationContainer, error) {
-	var applicationContainer ApplicationContainer
+func (c *ContainerClient) GetApplicationContainer(getInput *GetApplicationContainerInput) (*Container, error) {
+	var applicationContainer Container
 	if err := c.getResource(getInput.Name, &applicationContainer); err != nil {
 		return nil, err
 	}
@@ -216,6 +229,7 @@ func (c *ApplicationContainerClient) GetApplicationContainer(getInput *GetApplic
 	return &applicationContainer, nil
 }
 
+// DeleteApplicationContainerInput specifies the information needed to delete an application container
 type DeleteApplicationContainerInput struct {
 	// Name of the application container
 	// Required
@@ -225,20 +239,21 @@ type DeleteApplicationContainerInput struct {
 }
 
 // DeleteApplicationContainer deletes the application container with the given name.
-func (c *ApplicationContainerClient) DeleteApplicationContainer(input *DeleteApplicationContainerInput) error {
+func (c *ContainerClient) DeleteApplicationContainer(input *DeleteApplicationContainerInput) error {
 	// Call to delete the application container
 	if err := c.deleteResource(input.Name); err != nil {
 		return err
 	}
 
 	if input.Timeout == 0 {
-		input.Timeout = WaitForApplicationContainerDeleteTimeout
+		input.Timeout = waitForApplicationContainerDeleteTimeout
 	}
 
 	// Wait for application container to be deleted
 	return c.WaitForApplicationContainerDeleted(input, input.Timeout)
 }
 
+// UpdateApplicationContainerInput specifies the fields needed to update an application container
 type UpdateApplicationContainerInput struct {
 	// Name of the application container
 	Name string
@@ -254,6 +269,7 @@ type UpdateApplicationContainerInput struct {
 	Timeout time.Duration
 }
 
+// UpdateApplicationContainerAdditionalFields specifies the additional fields needed to update an application container
 type UpdateApplicationContainerAdditionalFields struct {
 	// Location of the application archive file in Oracle Storage Cloud Service, in the format app-name/file-name
 	// Optional
@@ -262,11 +278,11 @@ type UpdateApplicationContainerAdditionalFields struct {
 	Notes string
 }
 
-// Create a new Application Container from an ApplicationClient and an input struct.
+// UpdateApplicationContainer updates an application container from an ApplicationClient and an input struct.
 // Returns a populated ApplicationContainer struct for the Application, and any errors
-func (c *ApplicationContainerClient) UpdateApplicationContainer(input *UpdateApplicationContainerInput) (*ApplicationContainer, error) {
+func (c *ContainerClient) UpdateApplicationContainer(input *UpdateApplicationContainerInput) (*Container, error) {
 
-	files := make(map[string]string, 0)
+	files := make(map[string]string)
 	if input.Deployment != "" {
 		files["deployment"] = input.Deployment
 	}
@@ -275,7 +291,7 @@ func (c *ApplicationContainerClient) UpdateApplicationContainer(input *UpdateApp
 	}
 	additionalFields := structs.Map(input.AdditionalFields)
 
-	var applicationContainer *ApplicationContainer
+	var applicationContainer *Container
 	if err := c.updateResource(files, additionalFields, applicationContainer); err != nil {
 		return nil, err
 	}
@@ -285,7 +301,7 @@ func (c *ApplicationContainerClient) UpdateApplicationContainer(input *UpdateApp
 	}
 
 	if input.Timeout == 0 {
-		input.Timeout = WaitForApplicationContainerRunningTimeout
+		input.Timeout = waitForApplicationContainerRunningTimeout
 	}
 
 	// Wait for application container to be ready and return the result
@@ -298,19 +314,20 @@ func (c *ApplicationContainerClient) UpdateApplicationContainer(input *UpdateApp
 }
 
 // WaitForApplicationContainerRunning waits for an application container to be completely initialized and ready.
-func (c *ApplicationContainerClient) WaitForApplicationContainerRunning(input *GetApplicationContainerInput, timeoutSeconds time.Duration) (*ApplicationContainer, error) {
-	var info *ApplicationContainer
+func (c *ContainerClient) WaitForApplicationContainerRunning(input *GetApplicationContainerInput, timeoutSeconds time.Duration) (*Container, error) {
+	var info *Container
 	err := c.client.WaitFor("Waiting for Application container to be ready", timeoutSeconds, func() (bool, error) {
-		info, getErr := c.GetApplicationContainer(input)
+		var getErr error
+		info, getErr = c.GetApplicationContainer(input)
 		if getErr != nil {
 			return false, getErr
 		}
 		c.client.DebugLogString(fmt.Sprintf("Application Container name is %v, Application Contiainer info is %+v", info.Name, info))
 		switch s := info.Status; s {
-		case string(ApplicationContainerStatusRunning): // Target State
+		case string(applicationContainerStatusRunning): // Target State
 			c.client.DebugLogString("Application Container Running")
 			return true, nil
-		case string(ApplicationContainerStatusNew):
+		case string(applicationContainerStatusNew):
 			c.client.DebugLogString("Application Container New")
 			return false, nil
 		default:
@@ -322,10 +339,10 @@ func (c *ApplicationContainerClient) WaitForApplicationContainerRunning(input *G
 }
 
 // WaitForApplicationContainerDeleted waits for an application container to be fully deleted.
-func (c *ApplicationContainerClient) WaitForApplicationContainerDeleted(input *DeleteApplicationContainerInput, timeout time.Duration) error {
+func (c *ContainerClient) WaitForApplicationContainerDeleted(input *DeleteApplicationContainerInput, timeout time.Duration) error {
 	return c.client.WaitFor("application container to be deleted", timeout, func() (bool, error) {
 		var (
-			info *ApplicationContainer
+			info *Container
 			err  error
 		)
 		getApplicationContainerInput := &GetApplicationContainerInput{
@@ -344,9 +361,9 @@ func (c *ApplicationContainerClient) WaitForApplicationContainerDeleted(input *D
 			return false, err
 		}
 		switch s := info.Status; s {
-		case string(ApplicationContainerStatusRunning):
+		case string(applicationContainerStatusRunning):
 			return false, nil
-		case string(ApplicationContainerStatusDestroyPending):
+		case string(applicationContainerStatusDestroyPending):
 			c.client.DebugLogString(fmt.Sprintf("Destroy pending for application container state: %s, waiting", s))
 			return false, nil
 		default:

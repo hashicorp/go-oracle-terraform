@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/opc"
 )
 
-func getApplicationTestClient(c *opc.Config) (*ApplicationClient, error) {
+func getApplicationTestClient(c *opc.Config) (*Client, error) {
 	// Build up config with default values if omitted
 
 	if c.IdentityDomain == nil {
@@ -43,5 +43,5 @@ func getApplicationTestClient(c *opc.Config) (*ApplicationClient, error) {
 		}
 	}
 
-	return NewApplicationClient(c)
+	return NewClient(c)
 }
