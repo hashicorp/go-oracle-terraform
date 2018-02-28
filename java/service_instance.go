@@ -1163,6 +1163,12 @@ type CreateWLS struct {
 	// The default value is 443.
 	// Optional
 	PrivilegedSecuredContentPort int `json:"privilegedSecuredContentPort,omitempty"`
+	// This attribute is not applicable to creating service instances on Oracle Cloud at Customer.
+	// This attribute is applicable only when provisioning an Oracle Java Cloud Service instance that uses Oracle Identity Cloud Service to configure user authentication and administer users, groups, and roles. Use it when you want to include additional URL patterns to use to protect JavaEE applications.
+	// A comma separated list of context roots that you want protected by Oracle Identity Cloud Service.
+	// Each context root must begin with the / character. For example:
+	// /store/departments/.*,/store/cart/.*,/marketplace/.*,/application1/.*
+	ProtectedRootContext string `json:"protectedRootContext,omitempty"`
 	// Flag that specifies whether to automatically deploy and start the sample application, sample-app.war,
 	// to the default Managed Server in your service instance.
 	// The default value is false
@@ -1273,10 +1279,6 @@ type AppDB struct {
 
 // CreateServiceInstance creates a new ServiceInstace.
 func (c *ServiceInstanceClient) CreateServiceInstance(input *CreateServiceInstanceInput) (*ServiceInstance, error) {
-	var (
-		serviceInstance      *ServiceInstance
-		serviceInstanceError error
-	)
 	if c.Timeout == 0 {
 		c.Timeout = WaitForServiceInstanceReadyTimeout
 	}
@@ -1288,16 +1290,11 @@ func (c *ServiceInstanceClient) CreateServiceInstance(input *CreateServiceInstan
 		input.CloudStoragePassword = *c.ResourceClient.JavaClient.client.Password
 	}
 
-	for i := 0; i < *c.JavaClient.client.MaxRetries; i++ {
-		c.client.DebugLogString(fmt.Sprintf("(Iteration: %d of %d) Creating service instance with name %s\n Input: %+v", i, *c.JavaClient.client.MaxRetries, input.ServiceName, input))
-
-		serviceInstance, serviceInstanceError = c.startServiceInstance(input.ServiceName, input)
-		if serviceInstanceError == nil {
-			c.client.DebugLogString(fmt.Sprintf("(Iteration: %d of %d) Finished creating service instance with name %s\n Info: %+v", i, *c.JavaClient.client.MaxRetries, input.ServiceName, serviceInstance))
-			return serviceInstance, nil
-		}
+	serviceInstance, err := c.startServiceInstance(input.ServiceName, input)
+	if err != nil {
+		return serviceInstance, fmt.Errorf("unable to create Java Service Instance %q: %+v", input.ServiceName, err)
 	}
-	return nil, serviceInstanceError
+	return serviceInstance, nil
 }
 
 func (c *ServiceInstanceClient) startServiceInstance(name string, input *CreateServiceInstanceInput) (*ServiceInstance, error) {
