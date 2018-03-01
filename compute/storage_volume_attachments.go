@@ -6,9 +6,9 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/client"
 )
 
-const WaitForVolumeAttachmentDeletePollInterval = time.Duration(5 * time.Second)
+const WaitForVolumeAttachmentDeletePollInterval = time.Duration(1 * time.Second)
 const WaitForVolumeAttachmentDeleteTimeout = time.Duration(30 * time.Second)
-const WaitForVolumeAttachmentReadyPollInterval = time.Duration(5 * time.Second)
+const WaitForVolumeAttachmentReadyPollInterval = time.Duration(1 * time.Second)
 const WaitForVolumeAttachmentReadyTimeout = time.Duration(30 * time.Second)
 
 // StorageAttachmentsClient is a client for the Storage Attachment functions of the Compute API.

@@ -291,7 +291,7 @@ func (c *Client) WaitFor(description string, pollInterval, timeout time.Duration
 			time.Sleep(pollInterval)
 		}
 	}
-	return fmt.Errorf("Timeout after %s seconds waiting for %s", timeoutSeconds, description)
+	return fmt.Errorf("Timeout after %d seconds waiting for %s", timeoutSeconds, description)
 }
 
 // Used to determine if the checked resource was found or not.
