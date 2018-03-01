@@ -274,22 +274,24 @@ func (c *Client) formatURL(path *url.URL) string {
 }
 
 // Retry function
-func (c *Client) WaitFor(description string, timeout time.Duration, test func() (bool, error)) error {
+func (c *Client) WaitFor(description string, pollInterval, timeout time.Duration, test func() (bool, error)) error {
 	tick := time.Tick(1 * time.Second)
 
 	timeoutSeconds := int(timeout.Seconds())
+	pollIntervalSeconds := int(pollInterval.Seconds())
 
-	for i := 0; i < timeoutSeconds; i++ {
+	for i := 0; i < timeoutSeconds; i += pollIntervalSeconds {
 		select {
 		case <-tick:
 			completed, err := test()
-			c.DebugLogString(fmt.Sprintf("Waiting for %s (%d/%ds)", description, i, timeoutSeconds))
 			if err != nil || completed {
 				return err
 			}
+			c.DebugLogString(fmt.Sprintf("Waiting %d seconds for %s (%d/%ds)", pollIntervalSeconds, description, i, timeoutSeconds))
+			time.Sleep(pollInterval)
 		}
 	}
-	return fmt.Errorf("Timeout waiting for %s", description)
+	return fmt.Errorf("Timeout after %d seconds waiting for %s", timeoutSeconds, description)
 }
 
 // Used to determine if the checked resource was found or not.
