@@ -9,7 +9,9 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/client"
 )
 
+const waitForApplicationContainerRunningPollInterval = time.Second * 10
 const waitForApplicationContainerRunningTimeout = time.Second * 600
+const waitForApplicationContainerDeletePollInterval = time.Second * 10
 const waitForApplicationContainerDeleteTimeout = time.Second * 600
 
 var (
@@ -22,7 +24,8 @@ var (
 // ContainerClient is a client for the Application container functions of the Application Container API
 type ContainerClient struct {
 	ResourceClient
-	Timeout time.Duration
+	PollInterval time.Duration
+	Timeout      time.Duration
 }
 
 // ContainerClient obtains an ApplicationClient which can be used to access to the
@@ -142,6 +145,8 @@ type CreateApplicationContainerInput struct {
 	// Name of the manifest file, required if this file is not packaged with the application
 	// Optional
 	Manifest string
+	// Time to wait between checks on application container status
+	PollInterval time.Duration
 	// Timeout for creating an application container
 	Timeout time.Duration
 }
@@ -199,12 +204,15 @@ func (c *ContainerClient) CreateApplicationContainer(input *CreateApplicationCon
 		Name: input.AdditionalFields.Name,
 	}
 
+	if input.PollInterval == 0 {
+		input.PollInterval = waitForApplicationContainerRunningPollInterval
+	}
 	if input.Timeout == 0 {
 		input.Timeout = waitForApplicationContainerRunningTimeout
 	}
 
 	// Wait for application container to be ready and return the result
-	applicationContainerInfo, err := c.WaitForApplicationContainerRunning(getInput, input.Timeout)
+	applicationContainerInfo, err := c.WaitForApplicationContainerRunning(getInput, input.PollInterval, input.Timeout)
 	if err != nil {
 		return nil, err
 	}
@@ -234,6 +242,8 @@ type DeleteApplicationContainerInput struct {
 	// Name of the application container
 	// Required
 	Name string `json:"name"`
+	// Time to wait between checks on application container status
+	PollInterval time.Duration
 	// Timeout to delete an application container
 	Timeout time.Duration
 }
@@ -245,12 +255,15 @@ func (c *ContainerClient) DeleteApplicationContainer(input *DeleteApplicationCon
 		return err
 	}
 
+	if input.PollInterval == 0 {
+		input.PollInterval = waitForApplicationContainerDeletePollInterval
+	}
 	if input.Timeout == 0 {
 		input.Timeout = waitForApplicationContainerDeleteTimeout
 	}
 
 	// Wait for application container to be deleted
-	return c.WaitForApplicationContainerDeleted(input, input.Timeout)
+	return c.WaitForApplicationContainerDeleted(input, input.PollInterval, input.Timeout)
 }
 
 // UpdateApplicationContainerInput specifies the fields needed to update an application container
@@ -265,6 +278,8 @@ type UpdateApplicationContainerInput struct {
 	// Name of the manifest file, required if this file is not packaged with the application
 	// Optional
 	Manifest string
+	// Time to wait between checks on application container status
+	PollInterval time.Duration
 	// Timeout for creating an application container
 	Timeout time.Duration
 }
@@ -300,12 +315,15 @@ func (c *ContainerClient) UpdateApplicationContainer(input *UpdateApplicationCon
 		Name: input.Name,
 	}
 
+	if input.PollInterval == 0 {
+		input.PollInterval = waitForApplicationContainerRunningPollInterval
+	}
 	if input.Timeout == 0 {
 		input.Timeout = waitForApplicationContainerRunningTimeout
 	}
 
 	// Wait for application container to be ready and return the result
-	applicationContainerInfo, err := c.WaitForApplicationContainerRunning(getInput, input.Timeout)
+	applicationContainerInfo, err := c.WaitForApplicationContainerRunning(getInput, input.PollInterval, input.Timeout)
 	if err != nil {
 		return nil, err
 	}
@@ -314,9 +332,9 @@ func (c *ContainerClient) UpdateApplicationContainer(input *UpdateApplicationCon
 }
 
 // WaitForApplicationContainerRunning waits for an application container to be completely initialized and ready.
-func (c *ContainerClient) WaitForApplicationContainerRunning(input *GetApplicationContainerInput, timeoutSeconds time.Duration) (*Container, error) {
+func (c *ContainerClient) WaitForApplicationContainerRunning(input *GetApplicationContainerInput, pollInterval, timeoutSeconds time.Duration) (*Container, error) {
 	var info *Container
-	err := c.client.WaitFor("Waiting for Application container to be ready", timeoutSeconds, func() (bool, error) {
+	err := c.client.WaitFor("Waiting for Application container to be ready", pollInterval, timeoutSeconds, func() (bool, error) {
 		var getErr error
 		info, getErr = c.GetApplicationContainer(input)
 		if getErr != nil {
@@ -339,8 +357,8 @@ func (c *ContainerClient) WaitForApplicationContainerRunning(input *GetApplicati
 }
 
 // WaitForApplicationContainerDeleted waits for an application container to be fully deleted.
-func (c *ContainerClient) WaitForApplicationContainerDeleted(input *DeleteApplicationContainerInput, timeout time.Duration) error {
-	return c.client.WaitFor("application container to be deleted", timeout, func() (bool, error) {
+func (c *ContainerClient) WaitForApplicationContainerDeleted(input *DeleteApplicationContainerInput, pollInterval, timeout time.Duration) error {
+	return c.client.WaitFor("application container to be deleted", pollInterval, timeout, func() (bool, error) {
 		var (
 			info *Container
 			err  error
