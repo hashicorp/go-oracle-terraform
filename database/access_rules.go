@@ -22,9 +22,9 @@ const (
 
 // Default Timeout value for Create
 const WaitForAccessRuleTimeout = time.Duration(10 * time.Second)
+
 // Default Poll Interval value for Create
 const WaitForAccessRulePollInterval = time.Duration(1 * time.Second)
-
 
 // AccessRules returns a UtilityClient for managing SSH Keys and Access Rules for a DBaaS Service Instance
 func (c *DatabaseClient) AccessRules() *UtilityClient {

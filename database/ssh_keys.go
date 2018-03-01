@@ -31,6 +31,7 @@ const (
 
 // Default poll interval value for Create
 const WaitForSSHKeyPollInterval = time.Duration(5 * time.Second)
+
 // Default timeout value for Create
 // In testing this is anywhere between 10-20s depending on if it's a new SSH Key
 // or if it's an "updated" ssh key.

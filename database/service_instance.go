@@ -24,7 +24,7 @@ var (
 type ServiceInstanceClient struct {
 	ResourceClient
 	PollInterval time.Duration
-	Timeout time.Duration
+	Timeout      time.Duration
 }
 
 // ServiceInstanceClient obtains an ServiceInstanceClient which can be used to access to the
