@@ -22,6 +22,9 @@ const (
 
 // Default Timeout value for Create
 const WaitForAccessRuleTimeout = time.Duration(10 * time.Second)
+// Default Poll Interval value for Create
+const WaitForAccessRulePollInterval = time.Duration(1 * time.Second)
+
 
 // AccessRules returns a UtilityClient for managing SSH Keys and Access Rules for a DBaaS Service Instance
 func (c *DatabaseClient) AccessRules() *UtilityClient {
@@ -116,6 +119,8 @@ type CreateAccessRuleInput struct {
 	// Desired Status of the rule. Either "disabled" or "enabled".
 	// Required
 	Status AccessRuleStatus `json:"status"`
+	// Time to wait between polling for access rule to be ready
+	PollInterval time.Duration `json:"-"`
 	// Time to wait for an access rule to be ready
 	Timeout time.Duration `json:"-"`
 }
@@ -134,6 +139,11 @@ func (c *UtilityClient) CreateAccessRule(input *CreateAccessRuleInput) (*AccessR
 		return nil, err
 	}
 
+	pollInterval := input.PollInterval
+	if pollInterval == 0 {
+		pollInterval = WaitForAccessRulePollInterval
+	}
+
 	timeout := input.Timeout
 	if timeout == 0 {
 		timeout = WaitForAccessRuleTimeout
@@ -143,7 +153,7 @@ func (c *UtilityClient) CreateAccessRule(input *CreateAccessRuleInput) (*AccessR
 		Name: input.Name,
 	}
 
-	result, err := c.WaitForAccessRuleReady(getInput, timeout)
+	result, err := c.WaitForAccessRuleReady(getInput, pollInterval, timeout)
 	if err != nil {
 		return nil, err
 	}
@@ -251,6 +261,8 @@ type DeleteAccessRuleInput struct {
 	// modified on an access rule.
 	// Required
 	Status AccessRuleStatus `json:"status"`
+	// Time to wait between checking access rule state
+	PollInterval time.Duration `json:"-"`
 	// Time to wait for an access rule to be ready
 	Timeout time.Duration `json:"-"`
 }
@@ -272,6 +284,11 @@ func (c *UtilityClient) DeleteAccessRule(input *DeleteAccessRuleInput) error {
 		return err
 	}
 
+	pollInterval := input.PollInterval
+	if pollInterval == 0 {
+		pollInterval = WaitForAccessRulePollInterval
+	}
+
 	timeout := input.Timeout
 	if timeout == 0 {
 		timeout = WaitForAccessRuleTimeout
@@ -281,7 +298,7 @@ func (c *UtilityClient) DeleteAccessRule(input *DeleteAccessRuleInput) error {
 		Name: input.Name,
 	}
 
-	_, err := c.WaitForAccessRuleDeleted(getInput, timeout)
+	_, err := c.WaitForAccessRuleDeleted(getInput, pollInterval, timeout)
 	if err != nil {
 		return err
 	}
@@ -289,10 +306,10 @@ func (c *UtilityClient) DeleteAccessRule(input *DeleteAccessRuleInput) error {
 	return nil
 }
 
-func (c *UtilityClient) WaitForAccessRuleReady(input *GetAccessRuleInput, timeout time.Duration) (*AccessRuleInfo, error) {
+func (c *UtilityClient) WaitForAccessRuleReady(input *GetAccessRuleInput, pollInterval, timeout time.Duration) (*AccessRuleInfo, error) {
 	var info *AccessRuleInfo
 	var getErr error
-	err := c.client.WaitFor("access rule to be ready", timeout, func() (bool, error) {
+	err := c.client.WaitFor("access rule to be ready", pollInterval, timeout, func() (bool, error) {
 		info, getErr = c.GetAccessRule(input)
 		if getErr != nil {
 			return false, getErr
@@ -307,10 +324,10 @@ func (c *UtilityClient) WaitForAccessRuleReady(input *GetAccessRuleInput, timeou
 	return info, err
 }
 
-func (c *UtilityClient) WaitForAccessRuleDeleted(input *GetAccessRuleInput, timeout time.Duration) (*AccessRuleInfo, error) {
+func (c *UtilityClient) WaitForAccessRuleDeleted(input *GetAccessRuleInput, pollInternval, timeout time.Duration) (*AccessRuleInfo, error) {
 	var info *AccessRuleInfo
 	var getErr error
-	err := c.client.WaitFor("access rule to be deleted", timeout, func() (bool, error) {
+	err := c.client.WaitFor("access rule to be deleted", pollInternval, timeout, func() (bool, error) {
 		info, getErr = c.GetAccessRule(input)
 		if getErr != nil {
 			return true, nil
