@@ -537,10 +537,6 @@ type AdditionalParameters struct {
 
 // CreateServiceInstance creates a new ServiceInstace.
 func (c *ServiceInstanceClient) CreateServiceInstance(input *CreateServiceInstanceInput) (*ServiceInstance, error) {
-	var (
-		serviceInstance      *ServiceInstance
-		serviceInstanceError error
-	)
 	if c.PollInterval == 0 {
 		c.PollInterval = WaitForServiceInstanceReadyPollInterval
 	}
@@ -556,16 +552,12 @@ func (c *ServiceInstanceClient) CreateServiceInstance(input *CreateServiceInstan
 
 	// Create request where bools(true/false) are switched to strings(yes/no).
 	request := createRequest(input)
-	for i := 0; i < *c.DatabaseClient.client.MaxRetries; i++ {
-		c.client.DebugLogString(fmt.Sprintf("(Iteration: %d of %d) Creating service instance with name %s\n Input: %+v", i, *c.DatabaseClient.client.MaxRetries, input.Name, input))
 
-		serviceInstance, serviceInstanceError = c.startServiceInstance(request.Name, request)
-		if serviceInstanceError == nil {
-			c.client.DebugLogString(fmt.Sprintf("(Iteration: %d of %d) Finished creating service instance with name %s\n Info: %+v", i, *c.DatabaseClient.client.MaxRetries, input.Name, serviceInstance))
-			return serviceInstance, nil
-		}
+	serviceInstance, err := c.startServiceInstance(request.Name, request)
+	if err != nil {
+		return serviceInstance, fmt.Errorf("unable to create Database Service Instance %q: %+v", request.Name, err)
 	}
-	return nil, serviceInstanceError
+	return serviceInstance, nil
 }
 
 func createRequest(input *CreateServiceInstanceInput) *CreateServiceInstanceRequest {
