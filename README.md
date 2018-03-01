@@ -60,7 +60,7 @@ func main() {
     Name: "test-instance",
     Label: "test",
     Shape: "oc3",
-    ImageList: "/oracle/public/oel_6.7_apaas_16.4.5_1610211300",
+    ImageList: "/oracle/public/OL_7.2_UEKR4_x86_64",
     Storage: nil,
     BootOrder: nil,
     SSHKeys: []string{},

@@ -14,7 +14,7 @@ func TestAccSecurityAssociationLifeCycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
 	var (
-		instanceImage string = "/oracle/public/oel_6.7_apaas_16.4.5_1610211300"
+		instanceImage string = "/oracle/public/OL_7.2_UEKR4_x86_64"
 		name          string = "test-sec-association"
 	)
 

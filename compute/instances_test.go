@@ -230,7 +230,7 @@ var exampleCreateResponse = `
       "cluster": null,
       "shape": "oc3",
       "vethernets": null,
-      "imagelist": "/oracle/public/oel_6.4_2GB_v1",
+      "imagelist": "/oracle/public/OL_7.2_UEKR4_x86_64",
       "image_format": "raw",
       "id": "016e75e7-e911-42d1-bfe1-6a7f1b3f7908",
       "cluster_uri": null,
@@ -310,7 +310,7 @@ var exampleRetrieveResponse = `
 "ip": "10...",
 "site": "",
 "shape": "oc5",
-"imagelist": "/oracle/public/oel_6.4_60GB",
+"imagelist": "/oracle/public/OL_7.2_UEKR4_x86_64",
 "attributes": {
 "network": {
 "nimbula_vcable-eth0": {
@@ -394,7 +394,7 @@ var exampleErrorRetrieveResponse = `
 "ip": "10...",
 "site": "",
 "shape": "oc5",
-"imagelist": "/oracle/public/oel_6.4_60GB",
+"imagelist": "/oracle/public/OL_7.2_UEKR4_x86_64",
 "attributes": {
 "network": {
 "nimbula_vcable-eth0": {

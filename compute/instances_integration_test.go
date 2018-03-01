@@ -15,7 +15,8 @@ const (
 	_InstanceTestName       = "test-acc"
 	_InstanceTestLabel      = "test"
 	_InstanceTestShape      = "oc3"
-	_InstanceTestImage      = "/oracle/public/oel_6.7_apaas_16.4.5_1610211300"
+	_InstanceTestImage      = "/oracle/public/OL_7.2_UEKR4_x86_64"
+	_InstanceTestImageEntry = 4
 	_InstanceTestPublicPool = "ippool:/oracle/public/ippool"
 )
 
@@ -97,7 +98,7 @@ func TestAccInstanceLifeCycle(t *testing.T) {
 		Shape:        _InstanceTestShape,
 		ImageList:    _InstanceTestImage,
 		DesiredState: "running",
-		Entry:        1,
+		Entry:        _InstanceTestImageEntry,
 		ImageFormat:  "raw",
 		PlacementRequirements: []string{
 			"/system/compute/placement/default",
@@ -155,43 +156,18 @@ func TestAccInstanceStopStart(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
 	// Setup Instance Client
-	iClient, sClient, lClient, eClient, err := getInstanceStartStopTestClients()
+	iClient, sClient, err := getInstanceStartStopTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
-
-	// Create Image List
-	imageListInput := &CreateImageListInput{
-		Name:        _InstanceTestName,
-		Description: "Testing Bootable Instance Reboot",
-		Default:     1,
-	}
-	createdImageList, err := lClient.CreateImageList(imageListInput)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer tearDownImageList(t, lClient, _InstanceTestName)
-
-	// Create Image List Entry
-	createEntryInput := &CreateImageListEntryInput{
-		Name:          _InstanceTestName,
-		MachineImages: []string{_InstanceTestImage},
-		Version:       1,
-	}
-
-	createdListEntry, err := eClient.CreateImageListEntry(createEntryInput)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer destroyImageListEntry(t, eClient, createdListEntry)
 
 	// Create the bootable storage volume
 	volumeName := fmt.Sprintf("%s-volume-%d", _InstanceTestName, rInt)
 	volumeInput := &CreateStorageVolumeInput{
 		Name:           volumeName,
 		Size:           "20",
-		ImageList:      createdImageList.Name,
-		ImageListEntry: createdListEntry.Version,
+		ImageList:      _InstanceTestImage,
+		ImageListEntry: _InstanceTestImageEntry,
 		Bootable:       true,
 		Properties:     []string{string(StorageVolumeKindDefault)},
 	}
@@ -333,15 +309,14 @@ func getInstancesTestClients() (*InstancesClient, *IPAddressReservationsClient, 
 	return client.Instances(), client.IPAddressReservations(), client.IPNetworks(), nil
 }
 
-func getInstanceStartStopTestClients() (*InstancesClient,
-	*StorageVolumeClient, *ImageListClient, *ImageListEntriesClient, error) {
+func getInstanceStartStopTestClients() (*InstancesClient, *StorageVolumeClient, error) {
 
 	client, err := getTestClient(&opc.Config{})
 	if err != nil {
-		return nil, nil, nil, nil, err
+		return nil, nil, err
 	}
 
-	return client.Instances(), client.StorageVolumes(), client.ImageList(), client.ImageListEntries(), nil
+	return client.Instances(), client.StorageVolumes(), nil
 }
 
 // Zero fields that we cannot check with a static struct

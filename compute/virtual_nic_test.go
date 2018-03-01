@@ -13,7 +13,7 @@ const (
 	_VirtNicInstanceTestName  = "test-acc-virt-nic"
 	_VirtNicInstanceTestLabel = "test"
 	_VirtNicInstanceTestShape = "oc3"
-	_VirtNicInstanceTestImage = "/oracle/public/Oracle_Solaris_11.3"
+	_VirtNicInstanceTestImage = "/oracle/public/OL_7.2_UEKR4_x86_64"
 )
 
 func TestAccVirtNICLifeCycle(t *testing.T) {
