@@ -4,6 +4,14 @@
 
 * application: New feature Application Container [GH-113]
 
+* java: Fixed logs for java and database [GH-114]
+
+* long running resources: Added polling to prevent hitting the api rate limits [GH-115]
+
+* java and database: Removed retry capabilities from java and database service instance [GH-116]
+
+* tests: reduced instance test time by using a smaller image list [GH-117]
+
 ## 0.7.0 (February 15, 2018)
 
 * java: Migrated java service instance to version 1.1 of their api [GH-107]
