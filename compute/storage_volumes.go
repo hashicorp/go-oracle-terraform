@@ -9,7 +9,9 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/client"
 )
 
+const WaitForVolumeReadyPollInterval = time.Duration(10 * time.Second)
 const WaitForVolumeReadyTimeout = time.Duration(600 * time.Second)
+const WaitForVolumeDeletePollInterval = time.Duration(10 * time.Second)
 const WaitForVolumeDeleteTimeout = time.Duration(600 * time.Second)
 
 // StorageVolumeClient is a client for the Storage Volume functions of the Compute API.
@@ -149,6 +151,9 @@ type CreateStorageVolumeInput struct {
 	// Comma-separated strings that tag the storage volume.
 	Tags []string `json:"tags,omitempty"`
 
+	// Timeout to wait polling storage volume status.
+	PollInterval time.Duration `json:"-"`
+
 	// Timeout to wait for storage volume creation.
 	Timeout time.Duration `json:"-"`
 }
@@ -170,11 +175,14 @@ func (c *StorageVolumeClient) CreateStorageVolume(input *CreateStorageVolumeInpu
 	}
 
 	// Should never be nil, as we set this in the provider; but protect against it anyways.
+	if input.PollInterval == 0 {
+		input.PollInterval = WaitForVolumeReadyPollInterval
+	}
 	if input.Timeout == 0 {
 		input.Timeout = WaitForVolumeReadyTimeout
 	}
 
-	volume, err := c.waitForStorageVolumeToBecomeAvailable(input.Name, input.Timeout)
+	volume, err := c.waitForStorageVolumeToBecomeAvailable(input.Name, input.PollInterval, input.Timeout)
 	if err != nil {
 		if volume != nil {
 			deleteInput := &DeleteStorageVolumeInput{
@@ -194,6 +202,9 @@ type DeleteStorageVolumeInput struct {
 	// The three-part name of the object (/Compute-identity_domain/user/object).
 	Name string `json:"name"`
 
+	// Timeout to wait betweeon polling storage volume status
+	PollInterval time.Duration `json:"-"`
+
 	// Timeout to wait for storage volume deletion
 	Timeout time.Duration `json:"-"`
 }
@@ -205,11 +216,14 @@ func (c *StorageVolumeClient) DeleteStorageVolume(input *DeleteStorageVolumeInpu
 	}
 
 	// Should never be nil, but protect against it anyways
+	if input.PollInterval == 0 {
+		input.PollInterval = WaitForVolumeDeletePollInterval
+	}
 	if input.Timeout == 0 {
 		input.Timeout = WaitForVolumeDeleteTimeout
 	}
 
-	return c.waitForStorageVolumeToBeDeleted(input.Name, input.Timeout)
+	return c.waitForStorageVolumeToBeDeleted(input.Name, input.PollInterval, input.Timeout)
 }
 
 // GetStorageVolumeInput represents the body of an API request to obtain a Storage Volume.
@@ -278,6 +292,9 @@ type UpdateStorageVolumeInput struct {
 	// Comma-separated strings that tag the storage volume.
 	Tags []string `json:"tags,omitempty"`
 
+	// Time to wait between polling storage volume status
+	PollInterval time.Duration `json:"-"`
+
 	// Time to wait for storage volume ready
 	Timeout time.Duration `json:"-"`
 }
@@ -299,11 +316,14 @@ func (c *StorageVolumeClient) UpdateStorageVolume(input *UpdateStorageVolumeInpu
 		return nil, err
 	}
 
+	if input.PollInterval == 0 {
+		input.PollInterval = WaitForVolumeReadyPollInterval
+	}
 	if input.Timeout == 0 {
 		input.Timeout = WaitForVolumeReadyTimeout
 	}
 
-	volumeInfo, err := c.waitForStorageVolumeToBecomeAvailable(input.Name, input.Timeout)
+	volumeInfo, err := c.waitForStorageVolumeToBecomeAvailable(input.Name, input.PollInterval, input.Timeout)
 	if err != nil {
 		return nil, err
 	}
@@ -312,11 +332,12 @@ func (c *StorageVolumeClient) UpdateStorageVolume(input *UpdateStorageVolumeInpu
 }
 
 // waitForStorageVolumeToBecomeAvailable waits until a new Storage Volume is available (i.e. has finished initialising or updating).
-func (c *StorageVolumeClient) waitForStorageVolumeToBecomeAvailable(name string, timeout time.Duration) (*StorageVolumeInfo, error) {
+func (c *StorageVolumeClient) waitForStorageVolumeToBecomeAvailable(name string, pollInterval, timeout time.Duration) (*StorageVolumeInfo, error) {
 	var waitResult *StorageVolumeInfo
 
 	err := c.client.WaitFor(
 		fmt.Sprintf("storage volume %s to become available", c.getQualifiedName(name)),
+		pollInterval,
 		timeout,
 		func() (bool, error) {
 			getRequest := &GetStorageVolumeInput{
@@ -345,9 +366,10 @@ func (c *StorageVolumeClient) waitForStorageVolumeToBecomeAvailable(name string,
 }
 
 // waitForStorageVolumeToBeDeleted waits until the specified storage volume has been deleted.
-func (c *StorageVolumeClient) waitForStorageVolumeToBeDeleted(name string, timeout time.Duration) error {
+func (c *StorageVolumeClient) waitForStorageVolumeToBeDeleted(name string, pollInterval, timeout time.Duration) error {
 	return c.client.WaitFor(
 		fmt.Sprintf("storage volume %s to be deleted", c.getQualifiedName(name)),
+		pollInterval,
 		timeout,
 		func() (bool, error) {
 			getRequest := &GetStorageVolumeInput{

@@ -9,7 +9,9 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/client"
 )
 
+const WaitForInstanceReadyPollInterval = time.Duration(10 * time.Second)
 const WaitForInstanceReadyTimeout = time.Duration(3600 * time.Second)
+const WaitForInstanceDeletePollInterval = time.Duration(10 * time.Second)
 const WaitForInstanceDeleteTimeout = time.Duration(3600 * time.Second)
 
 // InstancesClient is a client for the Instance functions of the Compute API.
@@ -295,6 +297,8 @@ type NetworkingInfo struct {
 type LaunchPlanInput struct {
 	// Describes an array of instances which should be launched
 	Instances []CreateInstanceInput `json:"instances"`
+	// Time to wait between polls to check status
+	PollInterval time.Duration `json:"-"`
 	// Time to wait for instance boot
 	Timeout time.Duration `json:"-"`
 }
@@ -364,14 +368,16 @@ func (c *InstancesClient) startInstance(name string, plan LaunchPlanInput) (*Ins
 		ID:   responseBody.Instances[0].ID,
 	}
 
-	//timeout := WaitForInstanceReadyTimeout
+	if plan.PollInterval == 0 {
+		plan.PollInterval = WaitForInstanceReadyPollInterval
+	}
 	if plan.Timeout == 0 {
 		plan.Timeout = WaitForInstanceReadyTimeout
 	}
 
 	// Wait for instance to be ready and return the result
 	// Don't have to unqualify any objects, as the GetInstance method will handle that
-	instanceInfo, instanceError := c.WaitForInstanceRunning(getInput, plan.Timeout)
+	instanceInfo, instanceError := c.WaitForInstanceRunning(getInput, plan.PollInterval, plan.Timeout)
 	// If the instance enters an error state we need to delete the instance and retry
 	if instanceError != nil {
 		deleteInput := &DeleteInstanceInput{
@@ -508,6 +514,8 @@ type UpdateInstanceInput struct {
 	// A list of tags to be supplied to the instance
 	// Optional
 	Tags []string `json:"tags,omitempty"`
+	// Time to wait between polls for instance state
+	PollInterval time.Duration `json:"-"`
 	// Time to wait for instance to be ready, or shutdown depending on desired state
 	Timeout time.Duration `json:"-"`
 }
@@ -533,6 +541,10 @@ func (c *InstancesClient) UpdateInstance(input *UpdateInstanceInput) (*InstanceI
 		ID:   input.ID,
 	}
 
+	if input.PollInterval == 0 {
+		input.PollInterval = WaitForInstanceReadyPollInterval
+	}
+
 	if input.Timeout == 0 {
 		input.Timeout = WaitForInstanceReadyTimeout
 	}
@@ -543,9 +555,9 @@ func (c *InstancesClient) UpdateInstance(input *UpdateInstanceInput) (*InstanceI
 	// we wait until the correct action has finalized, either a shutdown or restart, catching
 	// any intermittent errors during the process.
 	if responseBody.DesiredState == InstanceDesiredRunning {
-		return c.WaitForInstanceRunning(getInput, input.Timeout)
+		return c.WaitForInstanceRunning(getInput, input.PollInterval, input.Timeout)
 	} else {
-		return c.WaitForInstanceShutdown(getInput, input.Timeout)
+		return c.WaitForInstanceShutdown(getInput, input.PollInterval, input.Timeout)
 	}
 }
 
@@ -554,6 +566,8 @@ type DeleteInstanceInput struct {
 	Name string
 	// The Unqualified ID of this Instance
 	ID string
+	// Time to wait between polls to check status
+	PollInterval time.Duration
 	// Time to wait for instance to be deleted
 	Timeout time.Duration
 }
@@ -569,19 +583,22 @@ func (c *InstancesClient) DeleteInstance(input *DeleteInstanceInput) error {
 		return err
 	}
 
+	if input.PollInterval == 0 {
+		input.PollInterval = WaitForInstanceDeletePollInterval
+	}
 	if input.Timeout == 0 {
 		input.Timeout = WaitForInstanceDeleteTimeout
 	}
 
 	// Wait for instance to be deleted
-	return c.WaitForInstanceDeleted(input, input.Timeout)
+	return c.WaitForInstanceDeleted(input, input.PollInterval, input.Timeout)
 }
 
 // WaitForInstanceRunning waits for an instance to be completely initialized and available.
-func (c *InstancesClient) WaitForInstanceRunning(input *GetInstanceInput, timeout time.Duration) (*InstanceInfo, error) {
+func (c *InstancesClient) WaitForInstanceRunning(input *GetInstanceInput, pollInterval, timeout time.Duration) (*InstanceInfo, error) {
 	var info *InstanceInfo
 	var getErr error
-	err := c.client.WaitFor("instance to be ready", timeout, func() (bool, error) {
+	err := c.client.WaitFor("instance to be ready", pollInterval, timeout, func() (bool, error) {
 		info, getErr = c.GetInstance(input)
 		if getErr != nil {
 			return false, getErr
@@ -614,10 +631,10 @@ func (c *InstancesClient) WaitForInstanceRunning(input *GetInstanceInput, timeou
 }
 
 // WaitForInstanceShutdown waits for an instance to be shutdown
-func (c *InstancesClient) WaitForInstanceShutdown(input *GetInstanceInput, timeout time.Duration) (*InstanceInfo, error) {
+func (c *InstancesClient) WaitForInstanceShutdown(input *GetInstanceInput, pollInterval, timeout time.Duration) (*InstanceInfo, error) {
 	var info *InstanceInfo
 	var getErr error
-	err := c.client.WaitFor("instance to be shutdown", timeout, func() (bool, error) {
+	err := c.client.WaitFor("instance to be shutdown", pollInterval, timeout, func() (bool, error) {
 		info, getErr = c.GetInstance(input)
 		if getErr != nil {
 			return false, getErr
@@ -652,8 +669,8 @@ func (c *InstancesClient) WaitForInstanceShutdown(input *GetInstanceInput, timeo
 }
 
 // WaitForInstanceDeleted waits for an instance to be fully deleted.
-func (c *InstancesClient) WaitForInstanceDeleted(input *DeleteInstanceInput, timeout time.Duration) error {
-	return c.client.WaitFor("instance to be deleted", timeout, func() (bool, error) {
+func (c *InstancesClient) WaitForInstanceDeleted(input *DeleteInstanceInput, pollInterval, timeout time.Duration) error {
+	return c.client.WaitFor("instance to be deleted", pollInterval, timeout, func() (bool, error) {
 		var info InstanceInfo
 		if err := c.getResource(input.String(), &info); err != nil {
 			if client.WasNotFoundError(err) {

@@ -6,7 +6,9 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/client"
 )
 
+const WaitForVolumeAttachmentDeletePollInterval = time.Duration(5 * time.Second)
 const WaitForVolumeAttachmentDeleteTimeout = time.Duration(30 * time.Second)
+const WaitForVolumeAttachmentReadyPollInterval = time.Duration(5 * time.Second)
 const WaitForVolumeAttachmentReadyTimeout = time.Duration(30 * time.Second)
 
 // StorageAttachmentsClient is a client for the Storage Attachment functions of the Compute API.
@@ -74,6 +76,9 @@ type CreateStorageAttachmentInput struct {
 	// Required.
 	StorageVolumeName string `json:"storage_volume_name"`
 
+	// Time to wait between polls to check volume attachment status
+	PollInterval time.Duration `json:"-"`
+
 	// Time to wait for storage volume attachment
 	Timeout time.Duration `json:"-"`
 }
@@ -88,11 +93,14 @@ func (c *StorageAttachmentsClient) CreateStorageAttachment(input *CreateStorageA
 		return nil, err
 	}
 
+	if input.PollInterval == 0 {
+		input.PollInterval = WaitForVolumeAttachmentReadyPollInterval
+	}
 	if input.Timeout == 0 {
 		input.Timeout = WaitForVolumeAttachmentReadyTimeout
 	}
 
-	return c.waitForStorageAttachmentToFullyAttach(attachmentInfo.Name, input.Timeout)
+	return c.waitForStorageAttachmentToFullyAttach(attachmentInfo.Name, input.PollInterval, input.Timeout)
 }
 
 // DeleteStorageAttachmentInput represents the body of an API request to delete a Storage Attachment.
@@ -100,6 +108,9 @@ type DeleteStorageAttachmentInput struct {
 	// The three-part name of the Storage Attachment (/Compute-identity_domain/user/object).
 	// Required
 	Name string `json:"name"`
+
+	// Time to wait between polls to check volume attachment status
+	PollInterval time.Duration `json:"-"`
 
 	// Time to wait for storage volume snapshot
 	Timeout time.Duration `json:"-"`
@@ -111,11 +122,14 @@ func (c *StorageAttachmentsClient) DeleteStorageAttachment(input *DeleteStorageA
 		return err
 	}
 
+	if input.PollInterval == 0 {
+		input.PollInterval = WaitForVolumeAttachmentDeletePollInterval
+	}
 	if input.Timeout == 0 {
 		input.Timeout = WaitForVolumeAttachmentDeleteTimeout
 	}
 
-	return c.waitForStorageAttachmentToBeDeleted(input.Name, input.Timeout)
+	return c.waitForStorageAttachmentToBeDeleted(input.Name, input.PollInterval, input.Timeout)
 }
 
 // GetStorageAttachmentInput represents the body of an API request to obtain a Storage Attachment.
@@ -136,10 +150,10 @@ func (c *StorageAttachmentsClient) GetStorageAttachment(input *GetStorageAttachm
 }
 
 // waitForStorageAttachmentToFullyAttach waits for the storage attachment with the given name to be fully attached, or times out.
-func (c *StorageAttachmentsClient) waitForStorageAttachmentToFullyAttach(name string, timeout time.Duration) (*StorageAttachmentInfo, error) {
+func (c *StorageAttachmentsClient) waitForStorageAttachmentToFullyAttach(name string, pollInterval, timeout time.Duration) (*StorageAttachmentInfo, error) {
 	var waitResult *StorageAttachmentInfo
 
-	err := c.client.WaitFor("storage attachment to be attached", timeout, func() (bool, error) {
+	err := c.client.WaitFor("storage attachment to be attached", pollInterval, timeout, func() (bool, error) {
 		input := &GetStorageAttachmentInput{
 			Name: name,
 		}
@@ -162,8 +176,8 @@ func (c *StorageAttachmentsClient) waitForStorageAttachmentToFullyAttach(name st
 }
 
 // waitForStorageAttachmentToBeDeleted waits for the storage attachment with the given name to be fully deleted, or times out.
-func (c *StorageAttachmentsClient) waitForStorageAttachmentToBeDeleted(name string, timeout time.Duration) error {
-	return c.client.WaitFor("storage attachment to be deleted", timeout, func() (bool, error) {
+func (c *StorageAttachmentsClient) waitForStorageAttachmentToBeDeleted(name string, pollInterval, timeout time.Duration) error {
+	return c.client.WaitFor("storage attachment to be deleted", pollInterval, timeout, func() (bool, error) {
 		input := &GetStorageAttachmentInput{
 			Name: name,
 		}
