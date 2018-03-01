@@ -39,8 +39,8 @@ func TestAccImageListEntriesLifeCycle(t *testing.T) {
 
 	createInput := &CreateImageListEntryInput{
 		Name:          _ImageListEntryTestName,
-		MachineImages: []string{"/oracle/public/oel_6.7_apaas_16.4.5_1610211300"},
-		Version:       _ImageListEntryTestVersion,
+		MachineImages: []string{"/oracle/public/OL_7.2_UEKR4_x86_64-18.1.4-20180209-231028"},
+		Version:       1,
 	}
 
 	createdImageListEntry, err := entryClient.CreateImageListEntry(createInput)

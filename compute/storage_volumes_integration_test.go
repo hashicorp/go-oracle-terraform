@@ -39,40 +39,7 @@ func TestAccStorageVolumeBootableLifecycle(t *testing.T) {
 	rInt := rand.Int()
 	name := fmt.Sprintf("test-acc-storage-volume-bootable-lifecycle-%d", rInt)
 
-	imageListName := fmt.Sprintf("test-acc-storage-volume-bootable-lifecycle-il-%d", rInt)
-
-	imageListClient, err := getImageListClient()
-	if err != nil {
-		t.Fatalf("Error building Image List Client: %+v", err)
-	}
-
-	input := CreateImageListInput{
-		Name:        imageListName,
-		Description: "Test from the TestAccStorageVolumeBootableLifecycle",
-		Default:     1,
-	}
-	_, err = imageListClient.CreateImageList(&input)
-	if err != nil {
-		t.Fatalf("Error Creating Image List: %+v", err)
-	}
-	defer tearDownImageList(t, imageListClient, imageListName)
-
-	entryClient, err := getImageListEntriesClient()
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	createEntryInput := &CreateImageListEntryInput{
-		Name:          imageListName,
-		MachineImages: []string{"/oracle/public/oel_6.7_apaas_16.4.5_1610211300"},
-		Version:       1,
-	}
-
-	createdImageListEntry, err := entryClient.CreateImageListEntry(createEntryInput)
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer destroyImageListEntry(t, entryClient, createdImageListEntry)
+	imageListName := "/oracle/public/OL_7.2_UEKR4_x86_64"
 
 	createRequest := CreateStorageVolumeInput{
 		Name:        name,

@@ -15,7 +15,7 @@ const (
 	_SnapshotInstanceTestName    = "test-acc-snapshot"
 	_SnapshotInstanceTestLabel   = "test"
 	_SnapshotInstanceTestShape   = "oc3"
-	_SnapshotInstanceTestImage   = "/oracle/public/JEOS_OL_6.6_10GB_RD-1.2.217-20151201-194209"
+	_SnapshotInstanceTestImage   = "/oracle/public/OL_7.2_UEKR4_x86_64"
 	_SnapshotInstanceTestAccount = "cloud_storage"
 )
 

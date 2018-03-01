@@ -15,8 +15,8 @@ const (
 	_OrchestrationTestLabel            = "test-acc-orchestration-lbl"
 	_OrchestrationInstanceTestLabel    = "test"
 	_OrchestrationInstanceTestShape    = "oc3"
-	_OrchestrationInstanceTestImage    = "/oracle/public/Oracle_Solaris_11.3"
-	_OrchestrationInstanceTestBadImage = "/oracle/public/Oracle_Solaris_11.3_bad"
+	_OrchestrationInstanceTestImage    = "/oracle/public/OL_7.2_UEKR4_x86_64"
+	_OrchestrationInstanceTestBadImage = "/oracle/public/OL_7.2_UEKR4_x86_64_bad"
 )
 
 func TestAccOrchestrationLifeCycle(t *testing.T) {
