@@ -13,8 +13,10 @@ const (
 	StorageVolumeSnapshotContainerPath = "/storage/snapshot/"
 	StorageVolumeSnapshotResourcePath  = "/storage/snapshot"
 
-	WaitForSnapshotCreateTimeout = time.Duration(2400 * time.Second)
-	WaitForSnapshotDeleteTimeout = time.Duration(1500 * time.Second)
+	WaitForSnapshotCreatePollInterval = time.Duration(30 * time.Second)
+	WaitForSnapshotCreateTimeout      = time.Duration(2400 * time.Second)
+	WaitForSnapshotDeletePollInterval = time.Duration(30 * time.Second)
+	WaitForSnapshotDeleteTimeout      = time.Duration(1500 * time.Second)
 
 	// Collocated Snapshot Property
 	SnapshotPropertyCollocated = "/oracle/private/storage/snapshot/collocated"
@@ -116,6 +118,9 @@ type CreateStorageVolumeSnapshotInput struct {
 	// Required
 	Volume string `json:"volume"`
 
+	// Timeout to wait between polling snapshot status. Will use default if unspecified
+	PollInterval time.Duration `json:"-"`
+
 	// Timeout to wait for snapshot to be completed. Will use default if unspecified
 	Timeout time.Duration `json:"-"`
 }
@@ -132,12 +137,15 @@ func (c *StorageVolumeSnapshotClient) CreateStorageVolumeSnapshot(input *CreateS
 		return nil, err
 	}
 
+	if input.PollInterval == 0 {
+		input.PollInterval = WaitForSnapshotCreatePollInterval
+	}
 	if input.Timeout == 0 {
 		input.Timeout = WaitForSnapshotCreateTimeout
 	}
 
 	// The name of the snapshot could have been generated. Use the response name as input
-	return c.waitForStorageSnapshotAvailable(storageSnapshotInfo.Name, input.Timeout)
+	return c.waitForStorageSnapshotAvailable(storageSnapshotInfo.Name, input.PollInterval, input.Timeout)
 }
 
 // GetStorageVolumeSnapshotInput represents the body of an API request to get information on a storage volume snapshot
@@ -165,6 +173,9 @@ type DeleteStorageVolumeSnapshotInput struct {
 	// Name of the snapshot to delete
 	Name string `json:"name"`
 
+	// Timeout to wait between polling snapshot status, will use default if unspecified
+	PollInterval time.Duration `json:"-"`
+
 	// Timeout to wait for deletion, will use default if unspecified
 	Timeout time.Duration `json:"-"`
 }
@@ -177,11 +188,14 @@ func (c *StorageVolumeSnapshotClient) DeleteStorageVolumeSnapshot(input *DeleteS
 		return err
 	}
 
+	if input.PollInterval == 0 {
+		input.PollInterval = WaitForSnapshotDeletePollInterval
+	}
 	if input.Timeout == 0 {
 		input.Timeout = WaitForSnapshotDeleteTimeout
 	}
 
-	return c.waitForStorageSnapshotDeleted(input.Name, input.Timeout)
+	return c.waitForStorageSnapshotDeleted(input.Name, input.PollInterval, input.Timeout)
 }
 
 func (c *StorageVolumeSnapshotClient) success(result *StorageVolumeSnapshotInfo) (*StorageVolumeSnapshotInfo, error) {
@@ -198,11 +212,12 @@ func (c *StorageVolumeSnapshotClient) success(result *StorageVolumeSnapshotInfo)
 }
 
 // Waits for a storage snapshot to become available
-func (c *StorageVolumeSnapshotClient) waitForStorageSnapshotAvailable(name string, timeout time.Duration) (*StorageVolumeSnapshotInfo, error) {
+func (c *StorageVolumeSnapshotClient) waitForStorageSnapshotAvailable(name string, pollInterval, timeout time.Duration) (*StorageVolumeSnapshotInfo, error) {
 	var result *StorageVolumeSnapshotInfo
 
 	err := c.client.WaitFor(
 		fmt.Sprintf("storage volume snapshot %s to become available", c.getQualifiedName(name)),
+		pollInterval,
 		timeout,
 		func() (bool, error) {
 			req := &GetStorageVolumeSnapshotInput{
@@ -229,9 +244,10 @@ func (c *StorageVolumeSnapshotClient) waitForStorageSnapshotAvailable(name strin
 }
 
 // Waits for a storage snapshot to be deleted
-func (c *StorageVolumeSnapshotClient) waitForStorageSnapshotDeleted(name string, timeout time.Duration) error {
+func (c *StorageVolumeSnapshotClient) waitForStorageSnapshotDeleted(name string, pollInterval, timeout time.Duration) error {
 	return c.client.WaitFor(
 		fmt.Sprintf("storage volume snapshot %s to be deleted", c.getQualifiedName(name)),
+		pollInterval,
 		timeout,
 		func() (bool, error) {
 			req := &GetStorageVolumeSnapshotInput{

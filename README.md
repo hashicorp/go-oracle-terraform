@@ -15,7 +15,7 @@ The config struct holds the following fields:
 * `APIEndpoint` - (`*url.URL`) The API Endpoint provided by Oracle Public Cloud.
 * `LogLevel` - (`LogLevelType`) Defaults to `opc.LogOff`, can be either `opc.LogOff` or `opc.LogDebug`.
 * `Logger` - (`Logger`) Must satisfy the generic `Logger` interface. Defaults to `ioutil.Discard` for the `LogOff` loglevel, and `os.Stderr` for the `LogDebug` loglevel.
-* `HTTPClient` - (`*http.Client`) Defaults to generic HTTP Client if unspecified. 
+* `HTTPClient` - (`*http.Client`) Defaults to generic HTTP Client if unspecified.
 
 Oracle Compute Client
 ----------------------
@@ -81,12 +81,17 @@ Please refer to inline documentation for each resource that the compute client p
 Running the SDK Integration Tests
 -----------------------------
 
-To authenticate with the Oracle Compute Cloud the following credentails must be set in the following environment variables:
+To authenticate with the Oracle Compute Cloud the following credentials must be set in the following environment variables:
 
--	`OPC_ENDPOINT` - Endpoint provided by Oracle Public Cloud (e.g. https://api-z13.compute.em2.oraclecloud.com/\)
+-	`OPC_ENDPOINT` - API Endpoint URL for the Compute Classic service (e.g. https://api-z13.compute.em2.oraclecloud.com/\)
+- `OPC_STORAGE_ENDPOINT` - API Endpoint URL for the Object Storage Classic service (e.g. https://mydomain.storage.oraclecloud.com/\)
+- `ORACLEPAAS_DATABASE_ENDPOINT` - API Endpoint URL for the Database Cloud service (e.g. https://dbaas.oraclecloud.com/\)
+- `ORACLEPAAS_JAVA_ENDPOINT` - API Endpoint URL for the Java Cloud service (e.g. https://jaas.oraclecloud.com/\)
+- `ORACLEPAAS_APPLICATION_ENDPOINT` - API Endpoint URL for the Application Container Cloud service (e.g. https://apaas.us.oraclecloud.com/\)
+
 -	`OPC_USERNAME` - Username for Oracle Public Cloud
 -	`OPC_PASSWORD` - Password for Oracle Public Cloud
--	`OPC_IDENTITY_DOMAIN` - Identity domain for Oracle Public Cloud
+-	`OPC_IDENTITY_DOMAIN` - Identity Domain Name (for Traditional Accounts) or Identity Service Id (for Cloud Accounts)
 
 
 The Integration tests can be ran with the following command:

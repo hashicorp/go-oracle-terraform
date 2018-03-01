@@ -5,6 +5,7 @@ import (
 	"time"
 )
 
+const WaitForSnapshotCompletePollInterval = time.Duration(30 * time.Second)
 const WaitForSnapshotCompleteTimeout = time.Duration(600 * time.Second)
 
 // SnapshotsClient is a client for the Snapshot functions of the Compute API.
@@ -88,6 +89,8 @@ type CreateSnapshotInput struct {
 	// If you don't specify a name for this object, then the name is generated automatically.
 	// Optional
 	MachineImage string `json:"machineimage,omitempty"`
+	// Time to wait between polling snapshot status
+	PollInterval time.Duration `json:"-"`
 	// Time to wait for snapshot to be completed
 	Timeout time.Duration `json:"-"`
 }
@@ -108,12 +111,15 @@ func (c *SnapshotsClient) CreateSnapshot(input *CreateSnapshotInput) (*Snapshot,
 		Name: snapshotInfo.Name,
 	}
 
+	if input.PollInterval == 0 {
+		input.PollInterval = WaitForSnapshotCompletePollInterval
+	}
 	if input.Timeout == 0 {
 		input.Timeout = WaitForSnapshotCompleteTimeout
 	}
 
 	// Wait for snapshot to be complete and return the result
-	return c.WaitForSnapshotComplete(getInput, input.Timeout)
+	return c.WaitForSnapshotComplete(getInput, input.PollInterval, input.Timeout)
 }
 
 // GetSnapshotInput describes the snapshot to get
@@ -142,6 +148,8 @@ type DeleteSnapshotInput struct {
 	// The name of the machine image
 	// Required
 	MachineImage string
+	// Time to wait between polls to check snapshot status
+	PollInterval time.Duration
 	// Time to wait for snapshot to be deleted
 	Timeout time.Duration
 }
@@ -154,11 +162,14 @@ func (c *SnapshotsClient) DeleteSnapshot(machineImagesClient *MachineImagesClien
 		Name: input.Snapshot,
 	}
 
+	if input.PollInterval == 0 {
+		input.PollInterval = WaitForSnapshotCompletePollInterval
+	}
 	if input.Timeout == 0 {
 		input.Timeout = WaitForSnapshotCompleteTimeout
 	}
 
-	if _, err := c.WaitForSnapshotComplete(getInput, input.Timeout); err != nil {
+	if _, err := c.WaitForSnapshotComplete(getInput, input.PollInterval, input.Timeout); err != nil {
 		return fmt.Errorf("Could not delete snapshot: %s", err)
 	}
 
@@ -186,11 +197,14 @@ func (c *SnapshotsClient) DeleteSnapshotResourceOnly(input *DeleteSnapshotInput)
 		Name: input.Snapshot,
 	}
 
+	if input.PollInterval == 0 {
+		input.PollInterval = WaitForSnapshotCompletePollInterval
+	}
 	if input.Timeout == 0 {
 		input.Timeout = WaitForSnapshotCompleteTimeout
 	}
 
-	if _, err := c.WaitForSnapshotComplete(getInput, input.Timeout); err != nil {
+	if _, err := c.WaitForSnapshotComplete(getInput, input.PollInterval, input.Timeout); err != nil {
 		return fmt.Errorf("Could not delete snapshot: %s", err)
 	}
 
@@ -202,10 +216,10 @@ func (c *SnapshotsClient) DeleteSnapshotResourceOnly(input *DeleteSnapshotInput)
 }
 
 // WaitForSnapshotComplete waits for an snapshot to be completely initialized and available.
-func (c *SnapshotsClient) WaitForSnapshotComplete(input *GetSnapshotInput, timeout time.Duration) (*Snapshot, error) {
+func (c *SnapshotsClient) WaitForSnapshotComplete(input *GetSnapshotInput, pollInterval, timeout time.Duration) (*Snapshot, error) {
 	var info *Snapshot
 	var getErr error
-	err := c.client.WaitFor("snapshot to be complete", timeout, func() (bool, error) {
+	err := c.client.WaitFor("snapshot to be complete", pollInterval, timeout, func() (bool, error) {
 		info, getErr = c.GetSnapshot(input)
 		if getErr != nil {
 			return false, getErr

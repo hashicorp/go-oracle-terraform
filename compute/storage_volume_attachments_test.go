@@ -23,7 +23,7 @@ func TestAccStorageAttachmentsClient_WaitForStorageDetachmentSuccessful(t *testi
 		t.Fatalf("error getting stub client: %s", err)
 	}
 
-	err = sv.waitForStorageAttachmentToBeDeleted(name, time.Duration(10*time.Second))
+	err = sv.waitForStorageAttachmentToBeDeleted(name, time.Duration(1*time.Second), time.Duration(10*time.Second))
 	if err != nil {
 		t.Fatalf("Wait for storage attachment to become detach request failed: %s", err)
 	}
@@ -42,7 +42,7 @@ func TestAccStorageAttachmentsClient_WaitForStorageDetachmentTimeout(t *testing.
 		t.Fatalf("error getting stub client: %s", err)
 	}
 
-	err = sv.waitForStorageAttachmentToBeDeleted(name, time.Duration(3*time.Second))
+	err = sv.waitForStorageAttachmentToBeDeleted(name, time.Duration(1*time.Second), time.Duration(3*time.Second))
 	if err == nil {
 		t.Fatal("Expected timeout error")
 	}
@@ -60,7 +60,7 @@ func TestAccStorageAttachmentsClient_WaitForStorageAttachmentToBeFullyAttachedSu
 		t.Fatalf("error getting stub client: %s", err)
 	}
 
-	info, err := sv.waitForStorageAttachmentToFullyAttach(name, time.Duration(10*time.Second))
+	info, err := sv.waitForStorageAttachmentToFullyAttach(name, time.Duration(1*time.Second), time.Duration(10*time.Second))
 	if err != nil {
 		t.Fatalf("Wait for storage attachment to become available request failed: %s", err)
 	}
@@ -84,7 +84,7 @@ func TestAccStorageAttachmentsClient_WaitForStorageAttachmentToBeFullyAttachedTi
 		t.Fatalf("error getting stub client: %s", err)
 	}
 
-	_, err = sv.waitForStorageAttachmentToFullyAttach(name, time.Duration(3*time.Second))
+	_, err = sv.waitForStorageAttachmentToFullyAttach(name, time.Duration(1*time.Second), time.Duration(3*time.Second))
 	if err == nil {
 		t.Fatal("Expected timeout error")
 	}

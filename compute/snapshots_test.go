@@ -2,6 +2,7 @@ package compute
 
 import (
 	"log"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -158,7 +159,7 @@ func TestAccSnapshotLifeCycleNoDeleteMachineImage(t *testing.T) {
 
 	log.Printf("Snapshot Retrieved: %+v", snapshot)
 	if !reflect.DeepEqual(snapshot.Name, createdSnapshot.Name) {
-		t.Fatal("Snapshot Name mismatch! Got: %s Expected: %s", snapshot.Name, createdSnapshot.Name)
+		t.Fatalf("Snapshot Name mismatch! Got: %s Expected: %s", snapshot.Name, createdSnapshot.Name)
 	}
 }
 
