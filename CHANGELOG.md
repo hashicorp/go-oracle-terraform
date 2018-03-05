@@ -1,4 +1,10 @@
-## 0.7.1 (Unreleased)
+## 0.8.1 (March 5, 2018)
+
+* database: Add additional variable to database version
+
+* java: Use correct JSON variable for AvailabilityDomain
+
+## 0.8.0 (March 2, 2018)
 
 * java: New feature Java Access Rules [GH-112]
 
