@@ -2,7 +2,7 @@
 
 * database: Add additional variable to database version
 
-* java: Use correct JSON variable for AvailabilityDomain
+* database: Use correct JSON variable for AvailabilityDomain
 
 ## 0.8.0 (March 2, 2018)
 
