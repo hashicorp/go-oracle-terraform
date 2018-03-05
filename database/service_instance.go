@@ -115,6 +115,8 @@ const (
 type ServiceInstanceVersion string
 
 const (
+	// 18.0.0.0
+	ServiceInstanceVersion18000 ServiceInstanceVersion = "18.0.0.0"
 	// 12.2.0.1
 	ServiceInstanceVersion12201 ServiceInstanceVersion = "12.2.0.1"
 	// 12.1.0.2
