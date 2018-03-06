@@ -551,6 +551,14 @@ func (c *ServiceInstanceClient) CreateServiceInstance(input *CreateServiceInstan
 		input.Parameter.CloudStorageUsername = *c.ResourceClient.DatabaseClient.client.UserName
 		input.Parameter.CloudStoragePassword = *c.ResourceClient.DatabaseClient.client.Password
 	}
+	if input.Parameter.IBKUPCloudStorageContainer != "" && input.Parameter.IBKUPCloudStorageUser == "" && input.Parameter.IBKUPCloudStoragePassword == "" {
+		input.Parameter.IBKUPCloudStorageUser = *c.ResourceClient.DatabaseClient.client.UserName
+		input.Parameter.IBKUPCloudStoragePassword = *c.ResourceClient.DatabaseClient.client.Password
+	}
+	if input.Parameter.HDGCloudStorageContainer != "" && input.Parameter.HDGCloudStorageUser == "" && input.Parameter.HDGCloudStoragePassword == "" {
+		input.Parameter.HDGCloudStorageUser = *c.ResourceClient.DatabaseClient.client.UserName
+		input.Parameter.HDGCloudStoragePassword = *c.ResourceClient.DatabaseClient.client.Password
+	}
 
 	// Create request where bools(true/false) are switched to strings(yes/no).
 	request := createRequest(input)
