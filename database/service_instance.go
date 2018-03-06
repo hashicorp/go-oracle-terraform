@@ -459,7 +459,7 @@ type ParameterInput struct {
 	// Oracle Databsae Cloud Service instance name from which the database of new Oracle Database Cloud Service instance should be created.
 	// This parameter is required if ibkup is set to yes and ibkupOnPremise is set to no.
 	// Optional
-	IBKUPServiceID string `json:"ibkupServiceID"`
+	IBKUPServiceID string `json:"ibkupServiceID,omitempty"`
 	// String containing the xsd:base64Binary representation of the cloud backup's wallet archive file.
 	// Optional
 	IBKUPWalletFileContent string `json:"ibkupWalletFileContent,omitempty"`
@@ -745,5 +745,6 @@ func convertOracleBool(val bool) string {
 	if val {
 		return "yes"
 	}
-	return "no"
+	// set false as blank rather than "no" so omitempty is honored
+	return ""
 }
