@@ -624,10 +624,6 @@ func (c *ServiceInstanceClient) startServiceInstance(name string, input *CreateS
 		}
 		return nil, serviceInstanceError
 	}
-	// Jobs are still running on  the instance after it's configured and we need to sleep until they are done.
-	//It doesn't take more than ten minutes however there isn't a way to check for completion
-	time.Sleep(10 * time.Minute)
-	return serviceInstance, nil
 }
 
 // WaitForServiceInstanceRunning waits for a service instance to be completely initialized and available.
@@ -643,10 +639,10 @@ func (c *ServiceInstanceClient) WaitForServiceInstanceRunning(input *GetServiceI
 		switch s := info.Status; s {
 		case ServiceInstanceRunning: // Target State
 			c.client.DebugLogString("Service Instance Running")
-			return false, nil
+			return true, nil
 		case ServiceInstanceConfigured:
 			c.client.DebugLogString("Service Instance Configured")
-			return true, nil
+			return false, nil
 		case ServiceInstanceInProgress:
 			c.client.DebugLogString("Service Instance is being created")
 			return false, nil
