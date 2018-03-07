@@ -1,14 +1,22 @@
+## 0.8.4 (Unreleased)
+
+## 0.8.3 (March 7, 2018)
+
+* database: Add omitempty support to yes/no attributes [GH-123]
+
+* database: Enhance WaitForReady [GH-124]
+
 ## 0.8.2 (March 6, 2018)
 
-* java: Protected Root Context attribute is correctly placed in the Create struct
+* java: Protected Root Context attribute is correctly placed in the Create struct [GH-121]
 
-* database: Any cloud storage credentials are defaulted to the clients username and password when not specified
+* database: Any cloud storage credentials are defaulted to the clients username and password when not specified [GH-122]
 
 ## 0.8.1 (March 5, 2018)
 
-* database: Add additional variable to database version
+* database: Add additional variable to database version [GH-120]
 
-* database: Use correct JSON variable for AvailabilityDomain
+* database: Use correct JSON variable for AvailabilityDomain [GH-119]
 
 ## 0.8.0 (March 2, 2018)
 
