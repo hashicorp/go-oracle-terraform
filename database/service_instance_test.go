@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	_ServiceInstanceName                        = "testing-db-service-instance"
+	_ServiceInstanceName                        = "testing-db-service-instance1"
 	_ServiceInstanceEdition                     = "EE"
 	_ServiceInstanceLevel                       = "PAAS"
 	_ServiceInstanceShape                       = "oc3"
@@ -21,7 +21,7 @@ const (
 	_ServiceInstanceDBSID                       = "ORCL"
 	_ServiceInstanceType                        = "db"
 	_ServiceInstanceUsableStorage               = "15"
-	_ServiceInstanceCloudStorageContainer       = "Storage-canonical/test-database-instance"
+	_ServiceInstanceCloudStorageContainer       = "Storage-a459477/test-database-instance"
 	_ServiceInstanceCloudStorageCreateIfMissing = true
 	_ServiceInstanceBackupDestinationBoth       = "BOTH"
 	_ServiceInstanceDeleteBackup                = true

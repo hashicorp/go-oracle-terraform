@@ -624,6 +624,7 @@ func (c *ServiceInstanceClient) startServiceInstance(name string, input *CreateS
 		}
 		return nil, serviceInstanceError
 	}
+	return serviceInstance, nil
 }
 
 // WaitForServiceInstanceRunning waits for a service instance to be completely initialized and available.
