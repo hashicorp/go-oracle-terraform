@@ -1,3 +1,9 @@
+## 0.8.2 (March 6, 2018)
+
+* java: Protected Root Context attribute is correctly placed in the Create struct
+
+* database: Any cloud storage credentials are defaulted to the clients username and password when not specified
+
 ## 0.8.1 (March 5, 2018)
 
 * database: Add additional variable to database version
