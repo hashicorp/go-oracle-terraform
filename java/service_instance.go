@@ -101,9 +101,9 @@ const (
 type ServiceInstanceLoadBalancingPolicy string
 
 const (
-	ServiceInstanceLoadBalancingPolicyLCC ServiceInstanceLoadBalancingPolicy = "least_connection_count"
-	ServiceInstanceLoadBalancingPolicyLRT ServiceInstanceLoadBalancingPolicy = "least_response_time"
-	ServiceInstanceLoadBalancingPolicyRR  ServiceInstanceLoadBalancingPolicy = "round_robin"
+	ServiceInstanceLoadBalancingPolicyLCC ServiceInstanceLoadBalancingPolicy = "LEAST_CONNECTION_COUNT"
+	ServiceInstanceLoadBalancingPolicyLRT ServiceInstanceLoadBalancingPolicy = "LEAST_RESPONSE_TIME"
+	ServiceInstanceLoadBalancingPolicyRR  ServiceInstanceLoadBalancingPolicy = "ROUND_ROBIN"
 )
 
 type ServiceInstanceShape string
