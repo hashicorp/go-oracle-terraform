@@ -158,7 +158,7 @@ const (
 	// Supported OCI Bare Metal shapes
 	// BM.Standard1.36: 36 OCPU, 256 GB memory
 	ServiceInstanceShapeBMStandard1_36 ServiceInstanceShape = "BM.Standard1.36"
-	// BM.Standard1.36: 36 OCPU, 256 GB memory
+	// BM.Standard2.52: 52 OCPU, 768 GB memory
 	ServiceInstanceShapeBMStandard2_52 ServiceInstanceShape = "BM.Standard2.52"
 )
 
