@@ -991,7 +991,7 @@ type CreateWLS struct {
 	// Groups details of Database Cloud Service database deployments that host application schemas, if used.
 	// You can specify up to four application schema database deployments.
 	// Optional.
-	AppDBs []AppDB `json:"addDbs,omitempty"`
+	AppDBs []AppDB `json:"appDBs,omitempty"`
 	// Size of the backup volume for the service. The value must be a multiple of GBs. You can specify this
 	// value in bytes or GBs. If specified in GBs, use the following format: nG, where n specifies the number of GBs.
 	// For example, you can express 10 GBs as bytes or GBs. For example: 100000000000 or 10G.
@@ -1153,7 +1153,7 @@ type CreateWLS struct {
 	// msMaxHeapMB, and msMaxPermMB. In addition, msInitialHeapMB must be less than msMaxHeapMB, and msPermMB must be less
 	// than msMaxPermMB.
 	// Optional
-	MSPermMB int `json:"mxPermMB,omitempty"`
+	MSPermMB int `json:"msPermMB,omitempty"`
 	// Size of the MW_HOME disk volume for the service (/u01/app/oracle/middleware). The value must be a multiple
 	// of GBs. You can specify this value in bytes or GBs. If specified in GBs, use the following format: nG, where n
 	//specifies the number of GBs. For example, you can express 10 GBs as bytes or GBs. For example: 100000000000 or 10G.
