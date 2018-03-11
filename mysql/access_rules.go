@@ -247,6 +247,7 @@ func (c *AccessRulesClient) DeleteAccessRule(input *DeleteAccessRuleInput) error
 	// json unmarshal
 	var result AccessRuleInfo
 	if err := c.updateAccessRulesResource(input.Name, input, &result); err != nil {
+		c.client.DebugLogString(fmt.Sprintf("[DEBUG] Failed to delete access rule : %v", err))
 		return err
 	}
 
@@ -266,6 +267,7 @@ func (c *AccessRulesClient) DeleteAccessRule(input *DeleteAccessRuleInput) error
 
 	_, err := c.WaitForAccessRuleDeleted(getInput, pollInterval, timeout)
 	if err != nil {
+		c.client.DebugLogString(fmt.Sprintf("[DEBUG] Failed to delete access rule : %v", err))
 		return err
 	}
 
@@ -278,6 +280,7 @@ func (c *AccessRulesClient) WaitForAccessRuleDeleted(input *GetAccessRuleInput, 
 	err := c.client.WaitFor("access rule to be deleted", pollInterval, timeout, func() (bool, error) {
 		info, getErr = c.GetAccessRule(input)
 		if getErr != nil {
+			c.client.DebugLogString(fmt.Sprintf("[DEBUG] Failed waiting for access rule delete : %v",getErr))
 			return true, nil
 		}
 		if info != nil {

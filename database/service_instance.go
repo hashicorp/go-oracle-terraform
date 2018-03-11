@@ -138,7 +138,6 @@ const (
 	ServiceInstanceShapeBMStandard1_36 ServiceInstanceShape = "BM.Standard1.36"
 	// BM.Standard2.52: 52 OCPU, 768 GB memory
 	ServiceInstanceShapeBMStandard2_52 ServiceInstanceShape = "BM.Standard2.52"
-
 )
 
 type ServiceInstanceSubscriptionType string

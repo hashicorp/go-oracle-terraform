@@ -7,8 +7,9 @@ import (
 	"testing"
 )
 
+var _ServiceInstanceName = fmt.Sprintf("test-serviceinstance-acc-rule-%d", helper.RInt())
+
 const (
-	_ServiceInstanceName              = "testing-mysql-service-instance"
 	_ServiceInstanceDesc              = "MySQL Terraform Test Instance"
 	_ServiceInstancePubKey            = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC3QxPp0BFK+ligB9m1FBcFELyvN5EdNUoSwTCe4Zv2b51OIO6wGM/dvTr/yj2ltNA/Vzl9tqf9AUBL8tKjAOk8uukip6G7rfigby+MvoJ9A8N0AC2te3TI+XCfB5Ty2M2OmKJjPOPCd6+OdzhT4cWnPOM+OAiX0DP7WCkO4Kx2kntf8YeTEurTCspOrRjGdo+zZkJxEydMt31asu9zYOTLmZPwLCkhel8vY6SnZhDTNSNkRzxZFv+Mh2VGmqu4SSxfVXr4tcFM6/MbAXlkA8jo+vHpy5sC79T4uNaPu2D8Ed7uC3yDdO3KRVdzZCfWHj4NjixdMs2CtK6EmyeVOPuiYb8/mcTybrb4F/CqA4jydAU6Ok0j0bIqftLyxNgfS31hR1Y3/GNPzly4+uUIgZqmsuVFh5h0L7qc1jMv7wRHphogo5snIp45t9jWNj8uDGzQgWvgbFP5wR7Nt6eS0kaCeGQbxWBDYfjQE801IrwhgMfmdmGw7FFveCH0tFcPm6td/8kMSyg/OewczZN3T62ETQYVsExOxEQl2t4SZ/yqklg+D9oGM+ILTmBRzIQ2m/xMmsbowiTXymjgVmvrWuc638X6dU2fKJ7As4hxs3rA1BA5sOt0XyqfHQhtYrL/Ovb1iV+C7MRhKicTyoNTc7oVcDDG0VW785d8CPqttDi50w=="
 	_ServiceInstanceBackupDestination = "NONE"
@@ -22,6 +23,9 @@ const (
 )
 
 func TestAccServiceInstanceLifeCycle(t *testing.T) {
+
+	t.Log("Skipping TestAccServiceInstanceLifeCycle")
+	return
 
 	helper.Test(t, helper.TestCase{})
 
@@ -79,43 +83,6 @@ func TestAccServiceInstanceLifeCycle(t *testing.T) {
 	}
 }
 
-/*
-func createAccessRuleInstance(t *testing.T, siClient *ServiceInstanceClient) {
-
-	t.Log("... Creating Access Rules")
-	createAccessRuleInfo := &AccessRuleInfo{
-		Description: _Service_AccessRule_Description,
-		Destination: _Service_AccessRule_Destination,
-		Ports:       _Service_AccessRule_Ports,
-		Protocol:    _Service_AccessRule_Protocol,
-		RuleName:    _Service_AccessRule_RuleName,
-		Source:      _Service_AccessRule_Source,
-		Status:      _Service_AccessRule_Status,
-	}
-
-	err := siClient.CreateAccessRule(_ServiceInstanceName, createAccessRuleInfo)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	accessRuleList, err := siClient.GetAccessRules(_ServiceInstanceName)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	var accessRuleMatch = false
-	for _, accessRule := range accessRuleList.AccessRules {
-		if accessRule.RuleName == _Service_AccessRule_RuleName {
-			accessRuleMatch = true
-		}
-	}
-
-	t.Log("... Checking Access Rules")
-	if !accessRuleMatch {
-		t.Fatal(fmt.Errorf("Could not find access rule. Wanted: %s", _Service_AccessRule_RuleName))
-	}
-}
-*/
 func getServiceInstanceTestClients() (*ServiceInstanceClient, error) {
 	client, err := GetMySQLTestClient(&opc.Config{})
 	if err != nil {

@@ -2,8 +2,9 @@ package mysql
 
 import (
 	"fmt"
-	"github.com/hashicorp/go-oracle-terraform/client"
 	"time"
+
+	"github.com/hashicorp/go-oracle-terraform/client"
 )
 
 const WaitForServiceInstanceReadyPollInterval = time.Duration(60 * time.Second)
@@ -100,11 +101,13 @@ type MySQLParameters struct {
 	MysqlCollation                   string `json:"mysqlCollation,omitempty"`
 	MysqlEMPort                      string `json:"mysqlEMPort,omitempty"`
 	MysqlPort                        string `json:"mysqlPort,omitempty"`
-	MysqlUserName                    string `json:"mysqlUserName"`
-	MysqlUserPassword                string `json:"mysqlUserPassword,omitempty"`
-	Shape                            string `json:"shape,omitempty"`
-	SnapshotName                     string `json:"snapshot,omitempty"`
-	SourceServiceName                string `json:"sourceServiceName,omitempty"`
+	//	MysqlTimezone                    string `json:"mysqlTimezone, omitempty`
+	//	MysqlOptions                     string `json:"mysqlOptions,omitempty`
+	MysqlUserName     string `json:"mysqlUserName"`
+	MysqlUserPassword string `json:"mysqlUserPassword,omitempty"`
+	Shape             string `json:"shape,omitempty"`
+	SnapshotName      string `json:"snapshot,omitempty"`
+	SourceServiceName string `json:"sourceServiceName,omitempty"`
 }
 
 type ServiceParameters struct {
@@ -385,10 +388,13 @@ func (c *ServiceInstanceClient) DeleteServiceInstance(serviceName string) error 
 		c.PollInterval = WaitForServiceInstanceDeletePollInterval
 	}
 
+	c.client.DebugLogString(fmt.Sprintf("Deleting Instance : %s", serviceName))
+
 	deleteInput := &DeleteServiceInput{}
 
 	deleteErr := c.deleteServiceInstanceResource(serviceName, deleteInput)
 	if deleteErr != nil {
+		c.client.DebugLogString(fmt.Sprintf("[Debug] : Delete Failed %s", deleteErr))
 		return deleteErr
 	}
 
@@ -404,6 +410,9 @@ func (c *ServiceInstanceClient) DeleteServiceInstance(serviceName string) error 
 // WaitForServiceInstanceDeleted waits for a service instance to be fully deleted.
 func (c *ServiceInstanceClient) WaitForServiceInstanceDeleted(input *GetServiceInstanceInput, pollingInterval time.Duration, timeoutSeconds time.Duration) error {
 	return c.client.WaitFor("service instance to be deleted", pollingInterval, timeoutSeconds, func() (bool, error) {
+
+		c.client.DebugLogString(fmt.Sprintf("Waiting to destroy instance : %s", input.Name))
+
 		info, err := c.GetServiceInstance(input)
 		if err != nil {
 			if client.WasNotFoundError(err) {

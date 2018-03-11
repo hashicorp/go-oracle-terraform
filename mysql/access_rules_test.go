@@ -9,16 +9,15 @@ import (
 	"time"
 )
 
-var _TestAccessRuleName = fmt.Sprintf("test-acc-rule-%d", helper.RInt())
+var _Service_AccessRule_Name = fmt.Sprintf("test-acc-rule-%d", helper.RInt())
+var _TestServiceInstanceName = fmt.Sprintf("test-serviceinstance-acc-rule-%d", helper.RInt())
 
 const (
 	_Service_AccessRule_Description = "test-mysql-accessrule"
 	_Service_AccessRule_Destination = "mysql_MASTER"
 	_Service_AccessRule_Ports       = "7000-8000"
 	_Service_AccessRule_Protocol    = "tcp"
-	_Service_AccessRule_RuleName    = "test-accessrule-1"
 	_Service_AccessRule_Source      = "0.0.0.0/24"
-	//_Service_AccessRule_Source = "PUBLIC_INTERNET"
 	_Service_AccessRule_Status = "enabled"
 )
 
@@ -39,17 +38,13 @@ func TestAccAccessRuleLifeCycle(t *testing.T) {
 	instanceName := sInstance.ServiceName
 	defer destroyServiceInstance(t, sClient, instanceName)
 
-	//_, aClient, err := getAccessRulesTestClients()
-	//instanceName := "sampleInstance"
-	//aClient.ServiceInstanceID = instanceName
-
 	createAccessRuleInput := &CreateAccessRuleInput{
 		ServiceInstanceID: instanceName,
 		Description:       _Service_AccessRule_Description,
 		Destination:       _Service_AccessRule_Destination,
 		Ports:             _Service_AccessRule_Ports,
 		Protocol:          _Service_AccessRule_Protocol,
-		RuleName:          _TestAccessRuleName,
+		RuleName:          _Service_AccessRule_Name,
 		Source:            _Service_AccessRule_Source,
 		Status:            _Service_AccessRule_Status,
 	}
@@ -59,7 +54,7 @@ func TestAccAccessRuleLifeCycle(t *testing.T) {
 		Destination: _Service_AccessRule_Destination,
 		Ports:       _Service_AccessRule_Ports,
 		Protocol:    _Service_AccessRule_Protocol,
-		RuleName:    _TestAccessRuleName,
+		RuleName:    _Service_AccessRule_Name,
 		Source:      _Service_AccessRule_Source,
 		Status:      _Service_AccessRule_Status,
 		RuleType:    "USER",
@@ -68,8 +63,6 @@ func TestAccAccessRuleLifeCycle(t *testing.T) {
 	if err := aClient.CreateAccessRule(createAccessRuleInput); err != nil {
 		t.Fatalf("Error creating AccessRule: %s", err)
 	}
-
-	defer destroyAccessRule(t, aClient, instanceName, _TestAccessRuleName)
 
 	// Get Access Rule (Create only returns AccessRule name)
 	getInput := &GetAccessRuleInput{
@@ -86,7 +79,7 @@ func TestAccAccessRuleLifeCycle(t *testing.T) {
 	}
 
 	// Read Result
-	getInput.Name = _TestAccessRuleName
+	getInput.Name = _Service_AccessRule_Name
 	ruleResult, err := aClient.GetAccessRule(getInput)
 
 	if err != nil {
@@ -101,7 +94,7 @@ func TestAccAccessRuleLifeCycle(t *testing.T) {
 	// Update Access Rule
 	updateInput := &UpdateAccessRuleInput{
 		ServiceInstanceID: instanceName,
-		Name:              _TestAccessRuleName,
+		Name:              _Service_AccessRule_Name,
 		Status:            "disabled",
 	}
 
@@ -126,9 +119,11 @@ func TestAccAccessRuleLifeCycle(t *testing.T) {
 	// We don't explicitly test the delete, because its called
 	// using the defer.
 
-	// Sleep for 2 minutes to prevent failure because the resource is still
+	// Sleep for 3 minutes to prevent failure because the resource is still
 	// locked.
-	time.Sleep(2 * time.Minute)
+
+	destroyAccessRule(t, aClient, instanceName, _Service_AccessRule_Name)
+	time.Sleep(3 * time.Minute)
 }
 
 func getAccessRulesTestClients() (*ServiceInstanceClient, *AccessRulesClient, error) {
@@ -144,7 +139,7 @@ func (c *ServiceInstanceClient) createTestServiceInstance() (*ServiceInstance, e
 	serviceParameter := ServiceParameters{
 		BackupDestination:  _ServiceInstanceBackupDestination,
 		ServiceDescription: _ServiceInstanceDesc,
-		ServiceName:        fmt.Sprintf("test-acc-instance-%d", helper.RInt()),
+		ServiceName:        _TestServiceInstanceName,
 		VMPublicKeyText:    _ServiceInstancePubKey,
 	}
 

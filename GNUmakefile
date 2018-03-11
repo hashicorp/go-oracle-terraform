@@ -6,8 +6,8 @@ test: fmtcheck errcheck
 	echo $(TEST) | \
 		xargs -t -n4 go test $(TESTARGS) -timeout=60m -parallel=4
 
-testacc: fmtcheck
-	ORACLE_ACC=1 go test -v $(TEST) $(TESTARGS) -timeout 120m
+testacc:
+	ORACLE_ACC=1 go test -coverprofile=coverage.out -v $(TEST) $(TESTARGS) -timeout 120m
 
 testrace: fmtcheck
 	ORACLE_ACC= go test -race $(TEST) $(TESTARGS)
