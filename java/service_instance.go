@@ -1346,17 +1346,10 @@ func (c *ServiceInstanceClient) startServiceInstance(name string, input *CreateS
 
 	// Wait for the service instance to be running and return the result
 	// Don't have to unqualify any objects, as the GetServiceInstance method will handle that
-	serviceInstance, serviceInstanceError := c.WaitForServiceInstanceRunning(getInput, c.PollInterval, c.Timeout)
-	// If the service instance enters an error state we need to delete the instance and retry
-	if serviceInstanceError != nil {
-		deleteInput := &DeleteServiceInstanceInput{
-			Name: name,
-		}
-		err := c.DeleteServiceInstance(deleteInput)
-		if err != nil {
-			return nil, fmt.Errorf("Error creating service instance %s: %s\n Error deleting service instance %s: %s", name, serviceInstanceError, name, err)
-		}
-		return nil, serviceInstanceError
+	serviceInstance, err := c.WaitForServiceInstanceRunning(getInput, c.PollInterval, c.Timeout)
+	// If the service instance is returned as nil if it enters a terminating state.
+	if err != nil || serviceInstance == nil {
+		return nil, fmt.Errorf("error creating service instance %q: %+v", name, err)
 	}
 	return serviceInstance, nil
 }
@@ -1381,6 +1374,10 @@ func (c *ServiceInstanceClient) WaitForServiceInstanceRunning(input *GetServiceI
 		case ServiceInstanceStatusInitializing:
 			c.client.DebugLogString("Service Instance is being initialized")
 			return false, nil
+		case ServiceInstanceStatusTerminating:
+			c.client.DebugLogString("Service Instance creation failed, terminating")
+			// The Service Instance creation failed. Wait for the instance to be deleted.
+			return false, c.WaitForServiceInstanceDeleted(input, pollInterval, timeoutSeconds)
 		default:
 			c.client.DebugLogString(fmt.Sprintf("Unknown instance state: %s, waiting", s))
 			return false, nil
