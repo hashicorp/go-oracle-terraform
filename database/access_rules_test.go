@@ -11,7 +11,6 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
 	"github.com/kylelemons/godebug/pretty"
-	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/utils"
 )
 
 // Testing Parameters Used
@@ -145,12 +144,12 @@ func TestGetDefaultAccessRule_Basic(t *testing.T) {
 	}
 
 	expected := &DefaultAccessRuleInfo{
-		EnableSSH:        utils.Bool(true),
-		EnableHTTP:       utils.Bool(false),
-		EnableHTTPSSL:    utils.Bool(false),
-		EnableDBConsole:  utils.Bool(false),
-		EnableDBExpress:  utils.Bool(false),
-		EnableDBListener: utils.Bool(false),
+		EnableSSH:        helper.Bool(true),
+		EnableHTTP:       helper.Bool(false),
+		EnableHTTPSSL:    helper.Bool(false),
+		EnableDBConsole:  helper.Bool(false),
+		EnableDBExpress:  helper.Bool(false),
+		EnableDBListener: helper.Bool(false),
 	}
 
 	if diff := pretty.Compare(result, expected); diff != "" {
@@ -180,12 +179,12 @@ func TestUpdateDefaultAccessRule_Basic(t *testing.T) {
 
 	expected := &DefaultAccessRuleInfo{
 		ServiceInstanceID: instanceName,
-		EnableSSH:         utils.Bool(false),
-		EnableHTTP:        utils.Bool(true),
-		EnableHTTPSSL:     utils.Bool(true),
-		EnableDBConsole:   utils.Bool(false),
-		EnableDBExpress:   utils.Bool(true),
-		EnableDBListener:  utils.Bool(false),
+		EnableSSH:         helper.Bool(false),
+		EnableHTTP:        helper.Bool(true),
+		EnableHTTPSSL:     helper.Bool(true),
+		EnableDBConsole:   helper.Bool(false),
+		EnableDBExpress:   helper.Bool(true),
+		EnableDBListener:  helper.Bool(false),
 	}
 
 	result, err := aClient.UpdateDefaultAccessRules(expected)

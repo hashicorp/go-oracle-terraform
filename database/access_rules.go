@@ -15,7 +15,7 @@ package database
 import (
 	"time"
 
-	"github.com/terraform-providers/terraform-provider-azurerm/azurerm/utils"
+	"github.com/hashicorp/go-oracle-terraform/helper"
 )
 
 // API URI Paths for Container and Root objects
@@ -401,34 +401,34 @@ func (c *UtilityClient) GetDefaultAccessRules(input *GetDefaultAccessRuleInput) 
 		}
 		if rule != nil {
 			if key == "EnableSSH" {
-				defaultAccessRules.EnableSSH = utils.Bool(rule.Status == AccessRuleEnabled)
+				defaultAccessRules.EnableSSH = helper.Bool(rule.Status == AccessRuleEnabled)
 			}
 			if key == "EnableHTTP" {
-				defaultAccessRules.EnableHTTP = utils.Bool(rule.Status == AccessRuleEnabled)
+				defaultAccessRules.EnableHTTP = helper.Bool(rule.Status == AccessRuleEnabled)
 			}
 			if key == "EnableHTTPSSL" {
-				defaultAccessRules.EnableHTTPSSL = utils.Bool(rule.Status == AccessRuleEnabled)
+				defaultAccessRules.EnableHTTPSSL = helper.Bool(rule.Status == AccessRuleEnabled)
 			}
 			if key == "EnableDBConsole" {
-				defaultAccessRules.EnableDBConsole = utils.Bool(rule.Status == AccessRuleEnabled)
+				defaultAccessRules.EnableDBConsole = helper.Bool(rule.Status == AccessRuleEnabled)
 			}
 			if key == "EnableDBExpress" {
-				defaultAccessRules.EnableDBExpress = utils.Bool(rule.Status == AccessRuleEnabled)
+				defaultAccessRules.EnableDBExpress = helper.Bool(rule.Status == AccessRuleEnabled)
 			}
 			if key == "EnableDBListener" {
-				defaultAccessRules.EnableDBListener = utils.Bool(rule.Status == AccessRuleEnabled)
+				defaultAccessRules.EnableDBListener = helper.Bool(rule.Status == AccessRuleEnabled)
 			}
 			if key == "EnableEMConsole" {
-				defaultAccessRules.EnableEMConsole = utils.Bool(rule.Status == AccessRuleEnabled)
+				defaultAccessRules.EnableEMConsole = helper.Bool(rule.Status == AccessRuleEnabled)
 			}
 			if key == "EnableRACDBListener" {
-				defaultAccessRules.EnableRACDBListener = utils.Bool(rule.Status == AccessRuleEnabled)
+				defaultAccessRules.EnableRACDBListener = helper.Bool(rule.Status == AccessRuleEnabled)
 			}
 			if key == "EnableScanListener" {
-				defaultAccessRules.EnableScanListener = utils.Bool(rule.Status == AccessRuleEnabled)
+				defaultAccessRules.EnableScanListener = helper.Bool(rule.Status == AccessRuleEnabled)
 			}
 			if key == "EnableRACOns" {
-				defaultAccessRules.EnableRACOns = utils.Bool(rule.Status == AccessRuleEnabled)
+				defaultAccessRules.EnableRACOns = helper.Bool(rule.Status == AccessRuleEnabled)
 			}
 		}
 	}
