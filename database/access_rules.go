@@ -520,21 +520,23 @@ func updateDefaultAccessRule(c *UtilityClient, ruleName, serviceInstanceID strin
 	if err != nil {
 		return err
 	}
-	var status AccessRuleStatus
-	if enabled {
-		status = AccessRuleEnabled
-	} else {
-		status = AccessRuleDisabled
-	}
-	if rule.Status != status {
-		updateRuleInput := &UpdateAccessRuleInput{
-			ServiceInstanceID: serviceInstanceID,
-			Name:              rule.Name,
-			Status:            status,
+	if rule != nil {
+		var status AccessRuleStatus
+		if enabled {
+			status = AccessRuleEnabled
+		} else {
+			status = AccessRuleDisabled
 		}
-		_, err := c.UpdateAccessRule(updateRuleInput)
-		if err != nil {
-			return err
+		if rule.Status != status {
+			updateRuleInput := &UpdateAccessRuleInput{
+				ServiceInstanceID: serviceInstanceID,
+				Name:              rule.Name,
+				Status:            status,
+			}
+			_, err := c.UpdateAccessRule(updateRuleInput)
+			if err != nil {
+				return err
+			}
 		}
 	}
 	return nil
