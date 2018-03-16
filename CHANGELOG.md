@@ -1,4 +1,8 @@
-## 0.8.4 (Unreleased)
+## 0.8.5 (March 16, 2018)
+
+* database: Add nil check when updating default access rules [GH-131]
+
+## 0.8.4 (March 15, 2018)
 
 * database: Add default access rules [GH-130]
 
