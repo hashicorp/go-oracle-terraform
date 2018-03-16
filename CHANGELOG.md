@@ -1,5 +1,15 @@
 ## 0.8.4 (Unreleased)
 
+* database: Add default access rules [GH-130]
+
+* database: Add additional shapes to OCI [GH-125]
+
+* java: Fix json typos [GH-126]
+
+* java: Fix load balancer policies [GH-127]
+
+* java: Fix issue where the Java Service Instance would terminate on Create [GH-128]
+
 ## 0.8.3 (March 7, 2018)
 
 * database: Add omitempty support to yes/no attributes [GH-123]
