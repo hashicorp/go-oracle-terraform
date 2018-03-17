@@ -1329,7 +1329,10 @@ func (c *ServiceInstanceClient) CreateServiceInstance(input *CreateServiceInstan
 	}
 
 	// The JCS API errors if an ssh key has trailing content; we'll trim that here.
-	input.VMPublicKeyText = strings.Join(strings.Split(input.VMPublicKeyText, " ")[0:2], " ")
+	parts := strings.Split(input.VMPublicKeyText, " ")
+	if len(parts) > 2 {
+		input.VMPublicKeyText = strings.Join(parts[0:2], " ")
+	}
 
 	serviceInstance, err := c.startServiceInstance(input.ServiceName, input)
 	if err != nil {
