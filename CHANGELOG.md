@@ -1,3 +1,7 @@
+## 0.8.6 (March 17, 2018)
+
+* database: Optimize default access rules
+
 ## 0.8.5 (March 16, 2018)
 
 * database: Add nil check when updating default access rules [GH-131]
