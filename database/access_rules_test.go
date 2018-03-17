@@ -158,27 +158,33 @@ func TestGetDefaultAccessRule_Basic(t *testing.T) {
 }
 
 func TestUpdateDefaultAccessRule_Basic(t *testing.T) {
-	sClient, aClient, err := getAccessRulesTestClients()
+	/*
+		sClient, aClient, err := getAccessRulesTestClients()
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		var instanceName string
+		if v := os.Getenv("OPC_TEST_DB_INSTANCE"); v == "" {
+			// First Create a Service Instance
+			sInstance, err := sClient.createTestServiceInstance()
+			if err != nil {
+				t.Fatalf("Error creating Service Instance: %s", err)
+			}
+			defer destroyServiceInstance(t, sClient, sInstance.Name)
+			instanceName = sInstance.Name
+		} else {
+			log.Print("Using already created DB Service Instance")
+			instanceName = v
+		} */
+
+	_, aClient, err := getAccessRulesTestClients()
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	var instanceName string
-	if v := os.Getenv("OPC_TEST_DB_INSTANCE"); v == "" {
-		// First Create a Service Instance
-		sInstance, err := sClient.createTestServiceInstance()
-		if err != nil {
-			t.Fatalf("Error creating Service Instance: %s", err)
-		}
-		defer destroyServiceInstance(t, sClient, sInstance.Name)
-		instanceName = sInstance.Name
-	} else {
-		log.Print("Using already created DB Service Instance")
-		instanceName = v
-	}
-
 	expected := &DefaultAccessRuleInfo{
-		ServiceInstanceID: instanceName,
+		ServiceInstanceID: "matthew-test",
 		EnableSSH:         helper.Bool(false),
 		EnableHTTP:        helper.Bool(true),
 		EnableHTTPSSL:     helper.Bool(true),
