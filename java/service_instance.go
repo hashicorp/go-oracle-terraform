@@ -2,6 +2,7 @@ package java
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/go-oracle-terraform/client"
@@ -1326,6 +1327,9 @@ func (c *ServiceInstanceClient) CreateServiceInstance(input *CreateServiceInstan
 		input.CloudStorageUsername = *c.ResourceClient.JavaClient.client.UserName
 		input.CloudStoragePassword = *c.ResourceClient.JavaClient.client.Password
 	}
+
+	// The JCS API errors if an ssh key has trailing content; we'll trim that here.
+	input.VMPublicKeyText = strings.Join(strings.Split(input.VMPublicKeyText, " ")[0:2], " ")
 
 	serviceInstance, err := c.startServiceInstance(input.ServiceName, input)
 	if err != nil {
