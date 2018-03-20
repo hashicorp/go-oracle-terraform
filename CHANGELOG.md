@@ -1,3 +1,9 @@
+## 0.8.7 (March 19, 2018)
+
+* java: Fix JSON for clusters [GH-133]
+
+* database: Optimize access rules [GH-132]
+
 ## 0.8.6 (March 17, 2018)
 
 * database: Optimize default access rules
