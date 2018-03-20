@@ -1,6 +1,10 @@
+## 0.8.8 (March 19, 2018)
+
+* java: Fix JSON for clusters [GH-134]
+
 ## 0.8.7 (March 19, 2018)
 
-* java: Fix JSON for clusters [GH-133]
+* java: Trim SSH Key [GH-133]
 
 * database: Optimize access rules [GH-132]
 
