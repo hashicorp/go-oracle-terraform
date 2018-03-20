@@ -1015,7 +1015,7 @@ type CreateWLS struct {
 	// You must, however, use the clusters array if you want to define a caching (data grid) cluster for
 	// the service instance.
 	// Optional.
-	Clusters []CreateCluster `json:"cluster,omitempty"`
+	Clusters []CreateCluster `json:"clusters,omitempty"`
 	// Connection string for the database. The connection string must be entered using one of the following formats:
 	// host:port:SID
 	// host:port/serviceName
