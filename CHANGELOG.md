@@ -1,3 +1,9 @@
+## 0.8.9 (March 20, 2018)
+
+* java: Add omitempty to Cluster Shapes [GH-135]
+
+* database: Add standbys to service instance [GH-136]
+
 ## 0.8.8 (March 19, 2018)
 
 * java: Fix JSON for clusters [GH-134]
