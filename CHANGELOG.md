@@ -1,3 +1,7 @@
+## 0.8.10 (March 23, 2018)
+
+* client: Add additional check for WasNotFound [GH-137]
+
 ## 0.8.9 (March 20, 2018)
 
 * java: Add omitempty to Cluster Shapes [GH-135]
