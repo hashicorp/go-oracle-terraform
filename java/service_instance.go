@@ -2,6 +2,7 @@ package java
 
 import (
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/hashicorp/go-oracle-terraform/client"
@@ -1014,7 +1015,7 @@ type CreateWLS struct {
 	// You must, however, use the clusters array if you want to define a caching (data grid) cluster for
 	// the service instance.
 	// Optional.
-	Clusters []CreateCluster `json:"cluster,omitempty"`
+	Clusters []CreateCluster `json:"clusters,omitempty"`
 	// Connection string for the database. The connection string must be entered using one of the following formats:
 	// host:port:SID
 	// host:port/serviceName
@@ -1280,7 +1281,7 @@ type CreateCluster struct {
 	// Cloud Infrastructure Services.
 	// Note: This shape attribute is optional. If no shape value is specified here, the shape is inherited from
 	// the WLS component level shape.
-	Shape ServiceInstanceShape `json:"shape"`
+	Shape ServiceInstanceShape `json:"shape,omitempty"`
 	// Type of cluster to create.
 	// Optional
 	Type ServiceInstanceClusterType `json:"type,omitempty"`
@@ -1327,6 +1328,12 @@ func (c *ServiceInstanceClient) CreateServiceInstance(input *CreateServiceInstan
 		input.CloudStoragePassword = *c.ResourceClient.JavaClient.client.Password
 	}
 
+	// The JCS API errors if an ssh key has trailing content; we'll trim that here.
+	parts := strings.Split(input.VMPublicKeyText, " ")
+	if len(parts) > 2 {
+		input.VMPublicKeyText = strings.Join(parts[0:2], " ")
+	}
+
 	serviceInstance, err := c.startServiceInstance(input.ServiceName, input)
 	if err != nil {
 		return serviceInstance, fmt.Errorf("unable to create Java Service Instance %q: %+v", input.ServiceName, err)
@@ -1346,17 +1353,10 @@ func (c *ServiceInstanceClient) startServiceInstance(name string, input *CreateS
 
 	// Wait for the service instance to be running and return the result
 	// Don't have to unqualify any objects, as the GetServiceInstance method will handle that
-	serviceInstance, serviceInstanceError := c.WaitForServiceInstanceRunning(getInput, c.PollInterval, c.Timeout)
-	// If the service instance enters an error state we need to delete the instance and retry
-	if serviceInstanceError != nil {
-		deleteInput := &DeleteServiceInstanceInput{
-			Name: name,
-		}
-		err := c.DeleteServiceInstance(deleteInput)
-		if err != nil {
-			return nil, fmt.Errorf("Error creating service instance %s: %s\n Error deleting service instance %s: %s", name, serviceInstanceError, name, err)
-		}
-		return nil, serviceInstanceError
+	serviceInstance, err := c.WaitForServiceInstanceRunning(getInput, c.PollInterval, c.Timeout)
+	// If the service instance is returned as nil if it enters a terminating state.
+	if err != nil || serviceInstance == nil {
+		return nil, fmt.Errorf("error creating service instance %q: %+v", name, err)
 	}
 	return serviceInstance, nil
 }
@@ -1381,6 +1381,10 @@ func (c *ServiceInstanceClient) WaitForServiceInstanceRunning(input *GetServiceI
 		case ServiceInstanceStatusInitializing:
 			c.client.DebugLogString("Service Instance is being initialized")
 			return false, nil
+		case ServiceInstanceStatusTerminating:
+			c.client.DebugLogString("Service Instance creation failed, terminating")
+			// The Service Instance creation failed. Wait for the instance to be deleted.
+			return false, c.WaitForServiceInstanceDeleted(input, pollInterval, timeoutSeconds)
 		default:
 			c.client.DebugLogString(fmt.Sprintf("Unknown instance state: %s, waiting", s))
 			return false, nil

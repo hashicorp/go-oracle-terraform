@@ -1,4 +1,42 @@
-## 0.8.4 (Unreleased)
+## 0.8.10 (March 23, 2018)
+
+* client: Add additional check for WasNotFound [GH-137]
+
+## 0.8.9 (March 20, 2018)
+
+* java: Add omitempty to Cluster Shapes [GH-135]
+
+* database: Add standbys to service instance [GH-136]
+
+## 0.8.8 (March 19, 2018)
+
+* java: Fix JSON for clusters [GH-134]
+
+## 0.8.7 (March 19, 2018)
+
+* java: Trim SSH Key [GH-133]
+
+* database: Optimize access rules [GH-132]
+
+## 0.8.6 (March 17, 2018)
+
+* database: Optimize default access rules
+
+## 0.8.5 (March 16, 2018)
+
+* database: Add nil check when updating default access rules [GH-131]
+
+## 0.8.4 (March 15, 2018)
+
+* database: Add default access rules [GH-130]
+
+* database: Add additional shapes to OCI [GH-125]
+
+* java: Fix json typos [GH-126]
+
+* java: Fix load balancer policies [GH-127]
+
+* java: Fix issue where the Java Service Instance would terminate on Create [GH-128]
 
 ## 0.8.3 (March 7, 2018)
 
