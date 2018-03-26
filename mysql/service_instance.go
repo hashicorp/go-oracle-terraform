@@ -1,3 +1,4 @@
+//
 package mysql
 
 import (
@@ -7,13 +8,19 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/client"
 )
 
+// WaitForServiceInstanceReadyPollInterval is the default polling interval value for Creating a service instance and waiting for the instance to be ready
 const WaitForServiceInstanceReadyPollInterval = time.Duration(60 * time.Second)
+
+// WaitForServiceInstanceReadyTimeout is the default Timeout value for Creating a service instance and waiting for the instance to be ready
 const WaitForServiceInstanceReadyTimeout = time.Duration(3600 * time.Second)
+
+// WaitForServiceInstanceDeletePollInterval is the default polling value for deleting a service instance and waiting for the instance to be completely removed.
 const WaitForServiceInstanceDeletePollInterval = time.Duration(60 * time.Second)
+
+// WaitForServiceInstanceDeleteTimeout is the default Timeout value for deleting a service instance and waiting for the instance to be completely removed.
 const WaitForServiceInstanceDeleteTimeout = time.Duration(3600 * time.Second)
 
-const ServiceInstanceDeleteRetry = 30
-
+// API URI Paths for the Container and Root objects.
 var (
 	ServiceInstanceContainerPath = "/paas/api/v1.1/instancemgmt/%[1]s/services/MySQLCS/instances/"
 	ServiceInstanceResourcePath  = "/paas/api/v1.1/instancemgmt/%[1]s/services/MySQLCS/instances/%[2]s"
@@ -24,10 +31,6 @@ type ServiceInstanceClient struct {
 	ResourceClient
 	Timeout      time.Duration
 	PollInterval time.Duration
-}
-
-type DeleteServiceInput struct {
-	//Options string `json:"options,omitempty"`
 }
 
 // ServiceInstanceClient obtains an ServiceInstanceClient which can be used to access to the
@@ -41,93 +44,44 @@ func (c *MySQLClient) ServiceInstanceClient() *ServiceInstanceClient {
 		}}
 }
 
-type GetServiceInstanceInput struct {
-	// Name of the MySQL Cloud Service instance.
-	// Required.
-	Name string `json:"serviceId"`
-}
-
-type ServiceInstanceState string
+// Constants for whether the Enterprise Monitor should be installed
 type ServiceInstanceEnterpriseMonitor string
-type ServiceInstanceBackupDestination string
-type ServiceInstanceMeteringFrequency string
 
 const (
 	ServiceInstanceEnterpriseMonitorYes ServiceInstanceEnterpriseMonitor = "Yes"
 	ServiceInstanceEnterpriseMonitorNo  ServiceInstanceEnterpriseMonitor = "No"
 )
 
+// Constants for the metering frequency for the MySQL CS Service Instance.
+type ServiceInstanceMeteringFrequency string
+
 const (
 	ServiceInstanceMeteringFrequencyHourly  ServiceInstanceMeteringFrequency = "HOURLY"
 	ServiceInstanceMeteringFrequencyMonthly ServiceInstanceMeteringFrequency = "MONTHLY"
 )
 
+// Constants for the Backup Destination
+type ServiceInstanceBackupDestination string
+
 const (
-	// BOTH - Both Cloud Storage and Local Storage
 	ServiceInstanceBackupDestinationBoth ServiceInstanceBackupDestination = "BOTH"
-	// NONE - None
 	ServiceInstanceBackupDestinationNone ServiceInstanceBackupDestination = "NONE"
 	ServiceInstanceBackupDestinationOSS  ServiceInstanceBackupDestination = "OSS"
 )
+
+// Constants for the state of the Service Instance State
+type ServiceInstanceState string
+
 const (
-	//  Ready: The instance is ready for use
-	ServiceInstanceReady ServiceInstanceState = "READY"
-	//  Initializing: The instance is being initialized.
+	ServiceInstanceReady        ServiceInstanceState = "READY"
 	ServiceInstanceInitializing ServiceInstanceState = "INITIALIZING"
-	// Starting: The instance is being started / restarted
-	ServiceInstanceStarting ServiceInstanceState = "STARTING"
-	ServiceInstanceStopping ServiceInstanceState = "STOPPING"
-	//	Stopped: the service instance is stopped.
-	ServiceInstanceStopped     ServiceInstanceState = "STOPPED"
-	ServiceInstanceConfiguring ServiceInstanceState = "CONFIGURING"
-	ServiceInstanceError       ServiceInstanceState = "ERROR"
-	// Terminating: The services is being terminated / destroyed
-	ServiceInstanceTerminating ServiceInstanceState = "TERMINATING"
+	ServiceInstanceStarting     ServiceInstanceState = "STARTING"
+	ServiceInstanceStopping     ServiceInstanceState = "STOPPING"
+	ServiceInstanceStopped      ServiceInstanceState = "STOPPED"
+	ServiceInstanceConfiguring  ServiceInstanceState = "CONFIGURING"
+	ServiceInstanceError        ServiceInstanceState = "ERROR"
+	ServiceInstanceTerminating  ServiceInstanceState = "TERMINATING"
 )
-
-type ComponentParameters struct {
-	Mysql MySQLParameters `json:"mysql"`
-}
-
-type MySQLParameters struct {
-	DBName                           string `json:"dbName"`
-	DBStorage                        string `json:"dbStorage"`
-	EnterpriseMonitor                string `json:"enterpriseMonitor,omitempty"`
-	EnterpriseMonitorAgentPassword   string `json:"enterpriseMonitorAgentPassword,omitempty"`
-	EnterpriseMonitorAgentUser       string `json:"enterpriseMonitorAgentUser,omitempty"`
-	EnterpriseMonitorManagerPassword string `json:"enterpriseMonitorManagerPassword,omitempty"`
-	EnterpriseMonitorManagerUser     string `json:"enterpriseMonitorManagerUser,omitempty"`
-	MysqlCharset                     string `json:"mysqlCharset,omitempty"`
-	MysqlCollation                   string `json:"mysqlCollation,omitempty"`
-	MysqlEMPort                      string `json:"mysqlEMPort,omitempty"`
-	MysqlPort                        string `json:"mysqlPort,omitempty"`
-	//	MysqlTimezone                    string `json:"mysqlTimezone, omitempty`
-	//	MysqlOptions                     string `json:"mysqlOptions,omitempty`
-	MysqlUserName     string `json:"mysqlUserName"`
-	MysqlUserPassword string `json:"mysqlUserPassword,omitempty"`
-	Shape             string `json:"shape,omitempty"`
-	SnapshotName      string `json:"snapshot,omitempty"`
-	SourceServiceName string `json:"sourceServiceName,omitempty"`
-}
-
-type ServiceParameters struct {
-	BackupDestination                 string `json:"backupDestination,omitempty"`
-	CloudStorageContainer             string `json:"cloudStorageContainer,omitempty"`
-	CloudStorageContainerAutoGenerate bool   `json:"cloudStorageContainerAutoGenerate,omitempty"`
-	CloudStoragePassword              string `json:"cloudStoragePassword,omitempty"`
-	CloudStorageUsername              string `json:"cloudStorageUser,omitempty"`
-	MeteringFrequency                 string `json:"meteringFrequency,omitempty"`
-	Region                            string `json:"region,omitempty"`
-	ServiceDescription                string `json:"serviceDescription,omitempty"`
-	ServiceName                       string `json:"serviceName"`
-	VMPublicKeyText                   string `json:"vmPublicKeyText,omitempty"`
-	VMUser                            string `json:"vmUser,omitempty"`
-}
-
-type CreateServiceInstanceInput struct {
-	ComponentParameters ComponentParameters `json:"componentParameters"`
-	ServiceParameters   ServiceParameters   `json:"serviceParameters"`
-}
 
 type ActivityLogInfo struct {
 	ActivityLogId  string                `json:"activityLogId"`
@@ -161,10 +115,8 @@ type AttributeInfo struct {
 	IsKeyBinding bool   `json:"isKeyBinding"`
 }
 
-/**
-This structure defines the instance information that is returned from the Get method
-when quering the instance
-*/
+// ServiceInstance defines the instance information that is returned from the Get method
+// when quering the instance
 type ServiceInstance struct {
 	ServiceId                    string                   `json:"serviceId"`
 	ServiceUuid                  string                   `json:"serviceUuid"` // Not in API
@@ -228,7 +180,6 @@ type MysqlInfo struct {
 	AdminHostName             string                    `json:"adminHostName"`
 	Hosts                     map[string]HostInfo       `json:"hosts"`       // Not in API
 	DisplayName               string                    `json:"displayName"` // Not in API
-
 	// hosts
 	// paasServers
 }
@@ -295,6 +246,54 @@ type PatchingInfo struct {
 	TotalAvailablePatches string            `json:"totalAvailablePatches"`
 }
 
+type CreateServiceInstanceInput struct {
+	ComponentParameters ComponentParameters `json:"componentParameters"`
+	ServiceParameters   ServiceParameters   `json:"serviceParameters"`
+}
+
+type ComponentParameters struct {
+	Mysql MySQLParameters `json:"mysql"`
+}
+
+type MySQLParameters struct {
+	DBName                           string `json:"dbName"`
+	DBStorage                        string `json:"dbStorage"`
+	EnterpriseMonitor                string `json:"enterpriseMonitor,omitempty"`
+	EnterpriseMonitorAgentPassword   string `json:"enterpriseMonitorAgentPassword,omitempty"`
+	EnterpriseMonitorAgentUser       string `json:"enterpriseMonitorAgentUser,omitempty"`
+	EnterpriseMonitorManagerPassword string `json:"enterpriseMonitorManagerPassword,omitempty"`
+	EnterpriseMonitorManagerUser     string `json:"enterpriseMonitorManagerUser,omitempty"`
+	MysqlCharset                     string `json:"mysqlCharset,omitempty"`
+	MysqlCollation                   string `json:"mysqlCollation,omitempty"`
+	MysqlEMPort                      string `json:"mysqlEMPort,omitempty"`
+	MysqlPort                        string `json:"mysqlPort,omitempty"`
+	// This is commented out. Although it shows up in the REST API documentation , attempts to set it have
+	// resulted in errors.
+	//	MysqlTimezone                    string `json:"mysqlTimezone, omitempty`
+	// This is commented out. Although it shows up in the REST API documentation , attempts to set it have
+	// resulted in errors.
+	//	MysqlOptions                     string `json:"mysqlOptions,omitempty`
+	MysqlUserName     string `json:"mysqlUserName"`
+	MysqlUserPassword string `json:"mysqlUserPassword,omitempty"`
+	Shape             string `json:"shape,omitempty"`
+	SnapshotName      string `json:"snapshot,omitempty"`
+	SourceServiceName string `json:"sourceServiceName,omitempty"`
+}
+
+type ServiceParameters struct {
+	BackupDestination                 string `json:"backupDestination,omitempty"`
+	CloudStorageContainer             string `json:"cloudStorageContainer,omitempty"`
+	CloudStorageContainerAutoGenerate bool   `json:"cloudStorageContainerAutoGenerate,omitempty"`
+	CloudStoragePassword              string `json:"cloudStoragePassword,omitempty"`
+	CloudStorageUsername              string `json:"cloudStorageUser,omitempty"`
+	MeteringFrequency                 string `json:"meteringFrequency,omitempty"`
+	Region                            string `json:"region,omitempty"`
+	ServiceDescription                string `json:"serviceDescription,omitempty"`
+	ServiceName                       string `json:"serviceName"`
+	VMPublicKeyText                   string `json:"vmPublicKeyText,omitempty"`
+	VMUser                            string `json:"vmUser,omitempty"`
+}
+
 func (c *ServiceInstanceClient) CreateServiceInstance(input *CreateServiceInstanceInput) (*ServiceInstance, error) {
 	var (
 		serviceInstance      *ServiceInstance
@@ -338,11 +337,17 @@ func (c *ServiceInstanceClient) startServiceInstance(name string, input *CreateS
 	serviceInstance, serviceInstanceError := c.WaitForServiceInstanceRunning(getInput, c.PollInterval, c.Timeout)
 
 	if serviceInstanceError != nil {
-		c.client.DebugLogString(fmt.Sprintf("[Debug] : Create Failed %s", serviceInstanceError))
+		c.client.DebugLogString(fmt.Sprintf(": Create Failed %s", serviceInstanceError))
 		return nil, serviceInstanceError
 	}
 
 	return serviceInstance, nil
+}
+
+type GetServiceInstanceInput struct {
+	// Name of the MySQL Cloud Service instance.
+	// Required.
+	Name string `json:"serviceId"`
 }
 
 // GetServiceInstance retrieves the ServiceInstance with the given name.
@@ -355,7 +360,7 @@ func (c *ServiceInstanceClient) GetServiceInstance(getInput *GetServiceInstanceI
 	return &serviceInstance, nil
 }
 
-// WaitForInstanceReady waits for an instance to be completely initialized and available.
+// WaitForServiceInstanceRunning waits for an instance to be created and completely initialized and available.
 func (c *ServiceInstanceClient) WaitForServiceInstanceRunning(input *GetServiceInstanceInput, pollingInterval time.Duration, timeoutSeconds time.Duration) (*ServiceInstance, error) {
 	var info *ServiceInstance
 	var getErr error
@@ -365,6 +370,9 @@ func (c *ServiceInstanceClient) WaitForServiceInstanceRunning(input *GetServiceI
 		if getErr != nil {
 			return false, getErr
 		}
+
+		c.client.DebugLogString(fmt.Sprintf("ServiceInstance [%s] waiting for ready state. Status : %s", info.ServiceId, info.Status))
+
 		switch s := info.Status; s {
 
 		case ServiceInstanceReady: // Target State
@@ -378,6 +386,10 @@ func (c *ServiceInstanceClient) WaitForServiceInstanceRunning(input *GetServiceI
 		}
 	})
 	return info, err
+}
+
+type DeleteServiceInput struct {
+	//Options string `json:"options,omitempty"`
 }
 
 func (c *ServiceInstanceClient) DeleteServiceInstance(serviceName string) error {
@@ -394,7 +406,7 @@ func (c *ServiceInstanceClient) DeleteServiceInstance(serviceName string) error 
 
 	deleteErr := c.deleteServiceInstanceResource(serviceName, deleteInput)
 	if deleteErr != nil {
-		c.client.DebugLogString(fmt.Sprintf("[Debug] : Delete Failed %s", deleteErr))
+		c.client.DebugLogString(fmt.Sprintf(": Delete Failed %s", deleteErr))
 		return deleteErr
 	}
 
@@ -422,6 +434,9 @@ func (c *ServiceInstanceClient) WaitForServiceInstanceDeleted(input *GetServiceI
 			// Some other error occurred trying to get instance, exit
 			return false, err
 		}
+
+		c.client.DebugLogString(fmt.Sprintf("ServiceInstance [%s] waiting for deletion . Status : %s", info.ServiceId, info.Status))
+
 		switch s := info.Status; s {
 		case ServiceInstanceError:
 			return false, fmt.Errorf("Error stopping instance: %s", info.ErrorReason)

@@ -18,7 +18,7 @@ const (
 	_Service_AccessRule_Ports       = "7000-8000"
 	_Service_AccessRule_Protocol    = "tcp"
 	_Service_AccessRule_Source      = "0.0.0.0/24"
-	_Service_AccessRule_Status = "enabled"
+	_Service_AccessRule_Status      = "enabled"
 )
 
 func TestAccAccessRuleLifeCycle(t *testing.T) {

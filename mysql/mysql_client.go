@@ -62,9 +62,6 @@ func (c *MySQLClient) executeRequestWithContentType(method, path string, body in
 	// Set the authentication headers
 	req.Header.Add("Content-Type", contentType)
 	req.Header.Add("Accept", CONTENT_TYPE_JSON)
-
-	// MySQL uses a different authentication method. Does not use authHeader like the other services.
-	req.SetBasicAuth(*c.client.UserName, *c.client.Password)
 	req.Header.Add(TENANT_HEADER, *c.client.IdentityDomain)
 
 	resp, err := c.client.ExecuteRequest(req)
