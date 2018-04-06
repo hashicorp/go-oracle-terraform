@@ -24,9 +24,6 @@ const (
 
 func TestAccServiceInstanceLifeCycle(t *testing.T) {
 
-	t.Log("Skipping TestAccServiceInstanceLifeCycle")
-	return
-
 	helper.Test(t, helper.TestCase{})
 
 	siClient, err := getServiceInstanceTestClients()
