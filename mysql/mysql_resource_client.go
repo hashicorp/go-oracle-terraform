@@ -17,6 +17,8 @@ type ResourceClient struct {
 	ServiceInstanceID   string
 }
 
+// This method calls the MySQL CS Create Service Resource REST API.
+// If successful, the API returns a HTTP 202 with a response object container the jobID and a message.
 func (c *ResourceClient) createServiceInstanceResource(requestBody interface{}, responseBody interface{}) error {
 
 	var objectPath = c.getContainerPath(c.ContainerPath)

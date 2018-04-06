@@ -6,7 +6,6 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/opc"
 	"github.com/kylelemons/godebug/pretty"
 	"testing"
-	"time"
 )
 
 var _Service_AccessRule_Name = fmt.Sprintf("test-acc-rule-%d", helper.RInt())
@@ -64,6 +63,11 @@ func TestAccAccessRuleLifeCycle(t *testing.T) {
 		t.Fatalf("Error creating AccessRule: %s", err)
 	}
 
+    // Not too sure why, but when we call delete using defer, we're getting
+	// the error Encountered HTTP (400) Error: PSM-SERVICE-0004: Unable to delete service.
+	// defer destroyAccessRule(t, aClient, instanceName, _Service_AccessRule_Name)
+
+
 	// Get Access Rule (Create only returns AccessRule name)
 	getInput := &GetAccessRuleInput{
 		ServiceInstanceID: instanceName,
@@ -116,13 +120,12 @@ func TestAccAccessRuleLifeCycle(t *testing.T) {
 		t.Fatalf("Diff creating AccessRule: (-got, +want):\n%s", diff)
 	}
 
-	// We don't explicitly test the delete, because its called
-	// using the defer.
+	// Not too sure why, but when we call delete using defer, we're getting
+	// the error Encountered HTTP (400) Error: PSM-SERVICE-0004: Unable to delete service.
+	destroyAccessRule(t, aClient, instanceName, _Service_AccessRule_Name)
 
 	// Sleep for 3 minutes to prevent failure because the resource is still
 	// locked.
-
-	destroyAccessRule(t, aClient, instanceName, _Service_AccessRule_Name)
 	time.Sleep(3 * time.Minute)
 }
 

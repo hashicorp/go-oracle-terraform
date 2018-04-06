@@ -62,6 +62,7 @@ func (c *MySQLClient) executeRequestWithContentType(method, path string, body in
 	// Set the authentication headers
 	req.Header.Add("Content-Type", contentType)
 	req.Header.Add("Accept", CONTENT_TYPE_JSON)
+	req.SetBasicAuth(*c.client.UserName, *c.client.Password)
 	req.Header.Add(TENANT_HEADER, *c.client.IdentityDomain)
 
 	resp, err := c.client.ExecuteRequest(req)
@@ -88,7 +89,7 @@ func (c *MySQLClient) getAccessRuleContainerPath(root string, serviceInstanceID 
 
 func (c *MySQLClient) getAccessRuleObjectPath(root, serviceInstanceID string, name string) string {
 	// /paas/api/v1.1/instancemgmt/{identityDomainId}/services/MySQLCS/instances/{serviceId}/accessrules/{ruleName}
-	c.client.DebugLogString(fmt.Sprintf("[DEBUG] getAccessRuleObjectPath : %s / %s / %s", c.client.IdentityDomain, serviceInstanceID, name))
+	c.client.DebugLogString(fmt.Sprintf("[DEBUG] getAccessRuleObjectPath : %v / %s / %s", c.client.IdentityDomain, serviceInstanceID, name))
 	return fmt.Sprintf(root, *c.client.IdentityDomain, serviceInstanceID, name)
 
 }

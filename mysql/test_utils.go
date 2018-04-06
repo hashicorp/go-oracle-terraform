@@ -12,17 +12,17 @@ func GetMySQLTestClient(c *opc.Config) (*MySQLClient, error) {
 	// Build up config with default values if omitted
 
 	if c.IdentityDomain == nil {
-		domain := os.Getenv("OPC_IDENTITY_DOMAIN")
+		domain := os.Getenv("ORACLEPAAS_IDENTITY_DOMAIN")
 		c.IdentityDomain = &domain
 	}
 
 	if c.Username == nil {
-		username := os.Getenv("OPC_USERNAME")
+		username := os.Getenv("ORACLEPAAS_USERNAME")
 		c.Username = &username
 	}
 
 	if c.Password == nil {
-		password := os.Getenv("OPC_PASSWORD")
+		password := os.Getenv("ORACLEPAAS_PASSWORD")
 		c.Password = &password
 	}
 

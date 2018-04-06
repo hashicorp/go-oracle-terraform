@@ -60,7 +60,6 @@ func TestAccServiceInstanceLifeCycle(t *testing.T) {
 		ServiceParameters:   serviceParameter,
 	}
 
-	t.Log("... Creating MySQL Instance")
 	_, err = siClient.CreateServiceInstance(createServiceInstance)
 	if err != nil {
 		t.Fatal(err)
@@ -72,7 +71,6 @@ func TestAccServiceInstanceLifeCycle(t *testing.T) {
 		Name: _ServiceInstanceName,
 	}
 
-	t.Log("... Verifying MySQL Instance")
 	receivedRes, err := siClient.GetServiceInstance(getInput)
 	if err != nil {
 		t.Fatal(err)
@@ -93,7 +91,6 @@ func getServiceInstanceTestClients() (*ServiceInstanceClient, error) {
 }
 
 func destroyServiceInstance(t *testing.T, client *ServiceInstanceClient, name string) {
-	t.Log("... Destroying MySQL Instance")
 	if err := client.DeleteServiceInstance(name); err != nil {
 		t.Fatal(err)
 	}
