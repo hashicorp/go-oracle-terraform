@@ -30,10 +30,13 @@ func TestAccAccessRulesLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	var instanceName string
+	var (
+		instanceName string
+		sInstance    *ServiceInstance
+	)
 	if v := os.Getenv("OPC_TEST_DB_INSTANCE"); v == "" {
 		// First Create a Service Instance
-		sInstance, err := sClient.createTestServiceInstance()
+		sInstance, err = sClient.createTestServiceInstance()
 		if err != nil {
 			t.Fatalf("Error creating Service Instance: %s", err)
 		}
@@ -66,7 +69,7 @@ func TestAccAccessRulesLifeCycle(t *testing.T) {
 	}
 
 	// Create Access Rule
-	if _, err := aClient.CreateAccessRule(input); err != nil {
+	if _, err = aClient.CreateAccessRule(input); err != nil {
 		t.Fatalf("Error creating AccessRule: %s", err)
 	}
 	defer destroyAccessRule(t, aClient, instanceName, _TestAccessRuleName)
@@ -77,8 +80,10 @@ func TestAccAccessRulesLifeCycle(t *testing.T) {
 		Name:              _TestAccessRuleName,
 	}
 
-	// Read Result
-	result, err := aClient.GetAccessRule(getInput)
+	var (
+		result *AccessRuleInfo
+	)
+	result, err = aClient.GetAccessRule(getInput)
 	if err != nil {
 		t.Fatalf("Error reading AccessRule: %s", err)
 	}
@@ -95,7 +100,7 @@ func TestAccAccessRulesLifeCycle(t *testing.T) {
 		Status:            AccessRuleEnabled,
 	}
 
-	if _, err := aClient.UpdateAccessRule(updateInput); err != nil {
+	if _, err = aClient.UpdateAccessRule(updateInput); err != nil {
 		t.Fatalf("Error updating AccessRule: %s", err)
 	}
 
@@ -120,10 +125,13 @@ func TestGetDefaultAccessRule_Basic(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	var instanceName string
+	var (
+		instanceName string
+		sInstance    *ServiceInstance
+	)
 	if v := os.Getenv("OPC_TEST_DB_INSTANCE"); v == "" {
 		// First Create a Service Instance
-		sInstance, err := sClient.createTestServiceInstance()
+		sInstance, err = sClient.createTestServiceInstance()
 		if err != nil {
 			t.Fatalf("Error creating Service Instance: %s", err)
 		}
@@ -163,10 +171,13 @@ func TestUpdateDefaultAccessRule_Basic(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	var instanceName string
+	var (
+		instanceName string
+		sInstance    *ServiceInstance
+	)
 	if v := os.Getenv("OPC_TEST_DB_INSTANCE"); v == "" {
 		// First Create a Service Instance
-		sInstance, err := sClient.createTestServiceInstance()
+		sInstance, err = sClient.createTestServiceInstance()
 		if err != nil {
 			t.Fatalf("Error creating Service Instance: %s", err)
 		}

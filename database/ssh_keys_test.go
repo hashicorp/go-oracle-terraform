@@ -28,10 +28,13 @@ func TestAccSSHKeysLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	var instanceName string
+	var (
+		instanceName string
+		sInstance    *ServiceInstance
+	)
 	if v := os.Getenv("OPC_TEST_DB_INSTANCE"); v == "" {
 		// First Create a Service Instance
-		sInstance, err := serviceClient.createTestServiceInstance()
+		sInstance, err = serviceClient.createTestServiceInstance()
 		if err != nil {
 			t.Fatalf("Error creating Service Instance: %v", err)
 		}
@@ -49,7 +52,7 @@ func TestAccSSHKeysLifeCycle(t *testing.T) {
 	}
 
 	// Create SSH Key
-	if _, err := sshClient.CreateSSHKey(input); err != nil {
+	if _, err = sshClient.CreateSSHKey(input); err != nil {
 		t.Fatalf("Error creating SSH Key: %v", err)
 	}
 
