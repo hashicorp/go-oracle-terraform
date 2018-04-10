@@ -105,7 +105,7 @@ func TestAccAccessRulesLifeCycle(t *testing.T) {
 	}
 
 	// Create Access Rule
-	if _, err := aClient.CreateAccessRule(input); err != nil {
+	if _, err = aClient.CreateAccessRule(input); err != nil {
 		t.Fatalf("Error creating AccessRule: %s", err)
 	}
 	defer destroyAccessRule(t, aClient, _ServiceInstanceName, _TestAccessRuleName)
@@ -134,7 +134,7 @@ func TestAccAccessRulesLifeCycle(t *testing.T) {
 		Status:            AccessRuleEnabled,
 	}
 
-	if _, err := aClient.UpdateAccessRule(updateInput); err != nil {
+	if _, err = aClient.UpdateAccessRule(updateInput); err != nil {
 		t.Fatalf("Error updating AccessRule: %s", err)
 	}
 
