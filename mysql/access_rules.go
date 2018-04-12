@@ -290,8 +290,7 @@ type UpdateAccessRuleInput struct {
 
 // UpdateAccessRule updates an AccessRule with the provided input struct. Returns a fully populated Info struct
 // and any errors encountered
-func (c *AccessRulesClient) UpdateAccessRule(input *UpdateAccessRuleInput,
-) (*AccessRuleInfo, error) {
+func (c *AccessRulesClient) UpdateAccessRule(input *UpdateAccessRuleInput) (*AccessRuleInfo, error) {
 	if input.ServiceInstanceID != "" {
 		c.ServiceInstanceID = input.ServiceInstanceID
 	}
