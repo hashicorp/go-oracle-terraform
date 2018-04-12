@@ -6,6 +6,7 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/opc"
 	"github.com/kylelemons/godebug/pretty"
 	"testing"
+	"time"
 )
 
 var _Service_AccessRule_Name = fmt.Sprintf("test-acc-rule-%d", helper.RInt())
