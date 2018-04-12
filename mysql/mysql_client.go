@@ -28,7 +28,6 @@ func NewMySQLClient(c *opc.Config) (*MySQLClient, error) {
 		return nil, err
 	}
 	mysqlClient.client = client
-	mysqlClient.authHeader = mysqlClient.getAuthenticationHeader()
 
 	return mysqlClient, nil
 }
