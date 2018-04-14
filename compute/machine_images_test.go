@@ -1,6 +1,7 @@
 package compute
 
 import (
+	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
@@ -28,7 +29,8 @@ func TestAccMachineImageLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	machineImageName := fmt.Sprintf("%s-%d", _MachineImageName, helper.RInt())
+	rInt := rand.Int()
+	machineImageName := fmt.Sprintf("%s-%d", _MachineImageName, rInt)
 	machineImageFile := fmt.Sprintf("%s.tar.gz", machineImageName)
 
 	// Create dummy image file for the machine image test
