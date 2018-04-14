@@ -36,7 +36,7 @@ func TestAccMachineImageLifeCycle(t *testing.T) {
 	createDummyMachineImageFile(t, sClient, machineImageFile)
 	defer deleteDummyMachineImageFile(t, sClient, machineImageFile)
 
-	account := fmt.Sprintf("/Compute-%s/cloud_storage", *client.ComputeClient.client.IdentityDomain)
+	account := fmt.Sprintf("/Compute-%s/cloud_storage", *client.Client.client.IdentityDomain)
 
 	createMachineImage := &CreateMachineImageInput{
 		Account: account,

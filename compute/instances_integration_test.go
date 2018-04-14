@@ -116,7 +116,7 @@ func TestAccInstanceLifeCycle(t *testing.T) {
 		Virtio:        false,
 	}
 
-	if err := verifyInstance(expectedInstance, receivedInstance, ipRes, ipNetwork); err != nil {
+	if err = verifyInstance(expectedInstance, receivedInstance, ipRes, ipNetwork); err != nil {
 		t.Fatal(err)
 	}
 
