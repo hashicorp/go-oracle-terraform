@@ -91,11 +91,11 @@ type ActivityLogInfo struct {
 	EndDate        string                `json:"endDate"`
 	IdentityDomain string                `json:"identityDomain"`
 	InitiatedBy    string                `json:"initiatedBy"`
-	JobId          string                `json:"jobId"` //TODO: Possible int
+	JobId          string                `json:"jobId"`
 	Messages       []ActivityMessageInfo `json:"messages"`
 	OperationId    string                `json:"operationId"`
 	OperationType  string                `json:"operationType"`
-	ServiceId      string                `json:"serviceId"` //TODO: Possible int
+	ServiceId      string                `json:"serviceId"`
 	ServiceName    string                `json:"serviceName"`
 	StartDate      string                `json:"startDate"`
 	Status         string                `json:"status"`
@@ -285,7 +285,7 @@ type MySQLParameters struct {
 	MysqlEMPort string `json:"mysqlEMPort,omitempty"`
 	// The port for the MySQL Service. The default is 3306
 	MysqlPort string `json:"mysqlPort,omitempty"`
-	
+
 	// The MySQL Server time zone. The default is SYSTEM. The value can be  given as a named time zone, such as "Europe/Paris, or "Asia/Shanghai"
 	// Although this is in the API, the REST APIS are throwing an error that the parameter is invalid
 	// MysqlTimezone string `json:"mysqlTimezone, omitempty"`
@@ -329,7 +329,7 @@ type ServiceParameters struct {
 	// The billing frequency of the service instance; either MONTHLY or HOURLY. Default: MONTHLY
 	MeteringFrequency string `json:"meteringFrequency,omitempty"`
 	// The email that will be used to send notifications to.
-//	NotificationEmail string `json:"notificationEmail,omitEmpty"`
+	//	NotificationEmail string `json:"notificationEmail,omitEmpty"`
 	// Name of the region where the MySQL Service instance is to be provisioned. This attribute is applicable only to accounts where regions are supported
 	Region string `json:"region,omitempty"`
 	// Text that provides addition information about the service instance.
@@ -376,7 +376,7 @@ func (c *ServiceInstanceClient) CreateServiceInstance(input *CreateServiceInstan
 
 // startServiceInstance calls the CreateServiceInstance method to create the MySQL Service Instance, then calls the WaitForServiceInstance to wait util the MySQL Instance is ready and accessible.
 func (c *ServiceInstanceClient) startServiceInstance(name string, input *CreateServiceInstanceInput) (*ServiceInstance, error) {
-	if err := c.createServiceInstanceResource(*input, nil); err != nil {
+	if err := c.createResource(*input, nil); err != nil {
 		return nil, err
 	}
 
@@ -405,7 +405,7 @@ type GetServiceInstanceInput struct {
 // GetServiceInstance retrieves the ServiceInstance with the given name.
 func (c *ServiceInstanceClient) GetServiceInstance(getInput *GetServiceInstanceInput) (*ServiceInstance, error) {
 	var serviceInstance ServiceInstance
-	if err := c.getServiceInstanceResource(getInput.Name, &serviceInstance); err != nil {
+	if err := c.getResource(getInput.Name, &serviceInstance); err != nil {
 		return nil, err
 	}
 
@@ -460,7 +460,7 @@ func (c *ServiceInstanceClient) DeleteServiceInstance(serviceName string) error 
 
 	deleteInput := &DeleteServiceInput{}
 
-	deleteErr := c.deleteServiceInstanceResource(serviceName, deleteInput)
+	deleteErr := c.deleteResource(serviceName, deleteInput)
 	if deleteErr != nil {
 		c.client.DebugLogString(fmt.Sprintf(": Delete Failed %s", deleteErr))
 		return deleteErr

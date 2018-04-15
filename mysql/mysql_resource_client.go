@@ -19,7 +19,7 @@ type ResourceClient struct {
 
 // This method calls the MySQL CS Create Service Resource REST API.
 // If successful, the API returns a HTTP 202 with a response object container the jobID and a message.
-func (c *ResourceClient) createServiceInstanceResource(requestBody interface{}, responseBody interface{}) error {
+func (c *ResourceClient) createResource(requestBody interface{}, responseBody interface{}) error {
 
 	var objectPath = c.getContainerPath(c.ContainerPath)
 	c.client.DebugLogString(fmt.Sprintf("[Debug] : Trying to create ServiceInstance at %s", objectPath))
@@ -32,7 +32,7 @@ func (c *ResourceClient) createServiceInstanceResource(requestBody interface{}, 
 	return nil
 }
 
-func (c *ResourceClient) getServiceInstanceResource(instanceName string, responseBody interface{}) error {
+func (c *ResourceClient) getResource(instanceName string, responseBody interface{}) error {
 
 	var objectPath = c.getObjectPath(c.ResourceRootPath, instanceName)
 
@@ -46,7 +46,7 @@ func (c *ResourceClient) getServiceInstanceResource(instanceName string, respons
 }
 
 // ServiceInstance needs a PUT and a body to be destroyed
-func (c *ResourceClient) deleteServiceInstanceResource(name string, requestBody interface{}) error {
+func (c *ResourceClient) deleteResource(name string, requestBody interface{}) error {
 	var objectPath string
 	if name != "" {
 		objectPath = c.getObjectPath(c.ResourceRootPath, name)
@@ -60,40 +60,6 @@ func (c *ResourceClient) deleteServiceInstanceResource(name string, requestBody 
 
 	// No errors and no response body to write
 	return nil
-}
-
-func (c *ResourceClient) createAccessRuleResource(requestBody interface{}, responseBody interface{}) error {
-
-	var objectPath = c.getAccessRuleContainerPath(c.ContainerPath, c.ServiceInstanceID)
-
-	_, err := c.executeRequestWithContentType("POST", objectPath, requestBody, "application/json")
-
-	if err != nil {
-		return err
-	}
-
-	return nil
-}
-
-func (c *ResourceClient) getAccessRulesResource(responseBody interface{}) error {
-
-	var objectPath = c.getAccessRuleContainerPath(c.ContainerPath, c.ServiceInstanceID)
-
-	resp, err := c.executeRequestWithContentType("GET", objectPath, nil, "application/json")
-	if err != nil {
-		return err
-	}
-
-	return c.unmarshalResponseBody(resp, responseBody)
-}
-
-func (c *ResourceClient) updateAccessRulesResource(ruleName string, requestBody interface{}, responseBody interface{}) error {
-
-	resp, err := c.executeRequestWithContentType("PUT", c.getAccessRuleObjectPath(c.ResourceRootPath, c.ServiceInstanceID, ruleName), requestBody, "application/json")
-	if err != nil {
-		return err
-	}
-	return c.unmarshalResponseBody(resp, responseBody)
 }
 
 func (c *ResourceClient) unmarshalResponseBody(resp *http.Response, iface interface{}) error {

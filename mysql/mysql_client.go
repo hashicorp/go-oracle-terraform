@@ -79,16 +79,3 @@ func (c *MySQLClient) getObjectPath(root, name string) string {
 	return fmt.Sprintf(root, *c.client.IdentityDomain, name)
 
 }
-
-func (c *MySQLClient) getAccessRuleContainerPath(root string, serviceInstanceID string) string {
-	// /paas/api/v1.1/instancemgmt/{identityDomainId}/services/MySQLCS/instances/{serviceId}/accessrules
-	c.client.DebugLogString(fmt.Sprintf("[DEBUG] getAccessRuleObjectPath : %s / %s", *c.client.IdentityDomain, serviceInstanceID))
-	return fmt.Sprintf(root, *c.client.IdentityDomain, serviceInstanceID)
-}
-
-func (c *MySQLClient) getAccessRuleObjectPath(root, serviceInstanceID string, name string) string {
-	// /paas/api/v1.1/instancemgmt/{identityDomainId}/services/MySQLCS/instances/{serviceId}/accessrules/{ruleName}
-	c.client.DebugLogString(fmt.Sprintf("[DEBUG] getAccessRuleObjectPath : %v / %s / %s", c.client.IdentityDomain, serviceInstanceID, name))
-	return fmt.Sprintf(root, *c.client.IdentityDomain, serviceInstanceID, name)
-
-}

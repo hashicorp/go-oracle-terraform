@@ -16,21 +16,15 @@ var (
 )
 
 // Default Timeout value for Access Rule operations
-const WaitForAccessRuleTimeout = time.Duration(20 * time.Second)
+const WaitForAccessRuleTimeout = time.Duration(30 * time.Second)
 
 // Default polling interval for Access Rule operations
-const WaitForAccessRulePollInterval = time.Duration(1 * time.Second)
-
-// AccessRulesClient is a client for the Service functions of the MySQL API.
-type AccessRulesClient struct {
-	ResourceClient
-	Timeout time.Duration
-}
+const WaitForAccessRulePollInterval = time.Duration(2 * time.Second)
 
 // AccessRulesClient returns a AccessRulesClient for managing Access Rules for the MySQL CS Service Instance.
-func (c *MySQLClient) AccessRulesClient() *AccessRulesClient {
+func (c *MySQLClient) AccessRules() *AccessRulesClient {
 	return &AccessRulesClient{
-		ResourceClient: ResourceClient{
+		AccessRulesResourceClient: AccessRulesResourceClient{
 			MySQLClient:      c,
 			ContainerPath:    MySQLAccessRuleContainerPath,
 			ResourceRootPath: MySQLAccessRuleRootPath,
@@ -110,7 +104,7 @@ type CreateAccessRuleInput struct {
 	// Description of the Access Rule.
 	// Required
 	Description string `json:"description"`
-	// The Destination to which traffice ia allowed.
+	// The Destination to which traffic is allowed.
 	// Required
 	Destination string `json:"destination"`
 	// The ports to allow traffic on. Can be a single port or range
@@ -144,7 +138,7 @@ func (c *AccessRulesClient) CreateAccessRule(input *CreateAccessRuleInput) error
 		c.ServiceInstanceID = input.ServiceInstanceID
 	}
 
-	if err := c.createAccessRuleResource(input, nil); err != nil {
+	if err := c.createResource(input, nil); err != nil {
 		return err
 	}
 
@@ -187,7 +181,7 @@ func (c *AccessRulesClient) GetAllAccessRules(input *GetAccessRuleInput) (*Acces
 	}
 
 	var accessRules AccessRuleList
-	if err := c.getAccessRulesResource(&accessRules); err != nil {
+	if err := c.getResource(&accessRules); err != nil {
 		return nil, err
 	}
 
@@ -206,7 +200,7 @@ func (c *AccessRulesClient) GetAccessRule(input *GetAccessRuleInput) (*AccessRul
 	}
 
 	var accessRules AccessRuleList
-	if err := c.getAccessRulesResource(&accessRules); err != nil {
+	if err := c.getResource(&accessRules); err != nil {
 		return nil, err
 	}
 
@@ -232,7 +226,7 @@ func (c *AccessRulesClient) WaitForAccessRuleReady(input *GetAccessRuleInput, po
 	err := c.client.WaitFor("access rule to be created.", pollInterval, timeoutSeconds, func() (bool, error) {
 
 		var info AccessRuleList
-		if err := c.getAccessRulesResource(&info); err != nil {
+		if err := c.getResource(&info); err != nil {
 			return false, err
 		}
 
@@ -245,15 +239,18 @@ func (c *AccessRulesClient) WaitForAccessRuleReady(input *GetAccessRuleInput, po
 
 		for _, activity := range info.Activities {
 			if activity.AccessRuleActivityInfo.RuleName == input.Name {
-				c.client.DebugLogString(fmt.Sprintf("[DEBUG] AccessRule [%s] activity status : %s", activity.AccessRuleActivityInfo.RuleName, activity.AccessRuleActivityInfo.Status))
 				switch s := strings.ToUpper(activity.AccessRuleActivityInfo.Status); s {
 				case "FAILED":
+					c.client.DebugLogString(fmt.Sprintf("AccessRule [%s] is FAILED. Status : %s", activity.AccessRuleActivityInfo.RuleName, activity.AccessRuleActivityInfo.Status))
 					return false, fmt.Errorf("Error creating Access Rule : %s", activity.AccessRuleActivityInfo.Message)
 				case "SUCCESS":
+					c.client.DebugLogString(fmt.Sprintf("AccessRule [%s] state is SUCCESS. Status : %s", activity.AccessRuleActivityInfo.RuleName, activity.AccessRuleActivityInfo.Status))
 					return true, nil
 				case "RUNNING":
+					c.client.DebugLogString(fmt.Sprintf("AccessRule [%s] state is RUNNING. Status : %s", activity.AccessRuleActivityInfo.RuleName, activity.AccessRuleActivityInfo.Status))
 					return false, nil
 				default:
+					c.client.DebugLogString(fmt.Sprintf("AccessRule [%s] state is DEFAULT. Status : %s", activity.AccessRuleActivityInfo.RuleName, activity.AccessRuleActivityInfo.Status))
 					return false, nil
 				}
 			}
@@ -299,7 +296,7 @@ func (c *AccessRulesClient) UpdateAccessRule(input *UpdateAccessRuleInput) (*Acc
 	input.Operation = AccessRuleUpdate
 	// Initialize the response struct
 	var accessRule AccessRuleInfo
-	if err := c.updateAccessRulesResource(input.Name, input, &accessRule); err != nil {
+	if err := c.updateResource(input.Name, input, &accessRule); err != nil {
 		return nil, err
 	}
 	return &accessRule, nil
@@ -332,6 +329,8 @@ func (c *AccessRulesClient) DeleteAccessRule(input *DeleteAccessRuleInput) error
 		c.ServiceInstanceID = input.ServiceInstanceID
 	}
 
+	c.client.DebugLogString(fmt.Sprintf("[DEBUG] Deleting AccessRule : %s", input.Name))
+
 	// Since this is strictly an Update call, set the Operation constant
 	input.Operation = AccessRuleDelete
 	// The Update API call with a `DELETE` operation actually returns the same access rule info
@@ -339,7 +338,7 @@ func (c *AccessRulesClient) DeleteAccessRule(input *DeleteAccessRuleInput) error
 	// However, the Update API call requires a pointer to parse, or else we throw an error during the
 	// json unmarshal
 	var result AccessRuleInfo
-	if err := c.updateAccessRulesResource(input.Name, input, &result); err != nil {
+	if err := c.updateResource(input.Name, input, &result); err != nil {
 		c.client.DebugLogString(fmt.Sprintf("[DEBUG] Failed to delete access rule : %v", err))
 		return err
 	}
@@ -371,18 +370,45 @@ func (c *AccessRulesClient) DeleteAccessRule(input *DeleteAccessRuleInput) error
 // delete an poll the API to check that the AccessRule is completely removed from the access rule list.
 func (c *AccessRulesClient) WaitForAccessRuleDeleted(input *GetAccessRuleInput, pollInterval time.Duration, timeout time.Duration) (*AccessRuleInfo, error) {
 	var info *AccessRuleInfo
-	var getErr error
+	//var getErr error
 	err := c.client.WaitFor("access rule to be deleted", pollInterval, timeout, func() (bool, error) {
-		info, getErr = c.GetAccessRule(input)
-		if getErr != nil {
-			c.client.DebugLogString(fmt.Sprintf("[DEBUG] Failed waiting for access rule delete : %v", getErr))
-			return true, nil
+		var info AccessRuleList
+		if err := c.getResource(&info); err != nil {
+			return false, err
 		}
-		if info != nil {
-			// Rule found, continue
-			return false, nil
+
+		// First level check is to see if the access rule name is still in the access rule list.
+		// If its still on the list, the operation has not completed.
+		for _, accessRule := range info.AccessRules {
+			if accessRule.RuleName == input.Name {
+				return false, nil
+			}
 		}
-		// Rule not found, return. Desired case
+
+		// If the access rule is no longer on the access rule list, we check if the activity status shows that the delete operation
+		// is still running. If the operation is still running, it blocks some other operations (like delete service instance) from
+		// being completed successfully.
+		for _, activity := range info.Activities {
+			if activity.AccessRuleActivityInfo.RuleName == input.Name {
+				switch s := strings.ToUpper(activity.AccessRuleActivityInfo.Status); s {
+				case "FAILED":
+					c.client.DebugLogString(fmt.Sprintf("AccessRule [%s] state is FAILED. Status : %s", activity.AccessRuleActivityInfo.RuleName, activity.AccessRuleActivityInfo.Status))
+					return false, fmt.Errorf("Error deleting Access Rule : %s", activity.AccessRuleActivityInfo.Message)
+				case "SUCCESS":
+					c.client.DebugLogString(fmt.Sprintf("AccessRule [%s] state is SUCCESS. Status : %s", activity.AccessRuleActivityInfo.RuleName, activity.AccessRuleActivityInfo.Status))
+					return true, nil
+				case "RUNNING":
+					c.client.DebugLogString(fmt.Sprintf("AccessRule [%s] state is RUNNING. Status : %s", activity.AccessRuleActivityInfo.RuleName, activity.AccessRuleActivityInfo.Status))
+					return false, nil
+				default:
+					c.client.DebugLogString(fmt.Sprintf("AccessRule [%s] state is DEFAULT. Status : %s", activity.AccessRuleActivityInfo.RuleName, activity.AccessRuleActivityInfo.Status))
+					return false, nil
+				}
+			}
+		}
+
+		// IF it reaches this stage, it means there is that the access rule is not in the returned result, and there are
+		// no more activities, so we can safely assume everything is ok.
 		return true, nil
 	})
 	return info, err

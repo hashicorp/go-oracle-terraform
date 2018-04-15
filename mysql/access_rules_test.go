@@ -6,13 +6,11 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/opc"
 	"github.com/kylelemons/godebug/pretty"
 	"testing"
-	"time"
+	//"time"
 )
 
-var _Service_AccessRule_Name = fmt.Sprintf("test-acc-rule-%d", helper.RInt())
-var _TestServiceInstanceName = fmt.Sprintf("test-serviceinstance-acc-rule-%d", helper.RInt())
-
 const (
+	_Service_AccessRule_Name        = "test-acc-rule"
 	_Service_AccessRule_Description = "test-mysql-accessrule"
 	_Service_AccessRule_Destination = "mysql_MASTER"
 	_Service_AccessRule_Ports       = "7000-8000"
@@ -36,45 +34,37 @@ func TestAccAccessRuleLifeCycle(t *testing.T) {
 	}
 
 	instanceName := sInstance.ServiceName
+
 	defer destroyServiceInstance(t, sClient, instanceName)
 
-	createAccessRuleInput := &CreateAccessRuleInput{
-		ServiceInstanceID: instanceName,
-		Description:       _Service_AccessRule_Description,
-		Destination:       _Service_AccessRule_Destination,
-		Ports:             _Service_AccessRule_Ports,
-		Protocol:          _Service_AccessRule_Protocol,
-		RuleName:          _Service_AccessRule_Name,
-		Source:            _Service_AccessRule_Source,
-		Status:            _Service_AccessRule_Status,
-	}
+	createAccessRuleInput1 := createAccessRuleParameters(instanceName)
+	newRuleName := createAccessRuleInput1.RuleName
 
 	expected := &AccessRuleInfo{
-		Description: _Service_AccessRule_Description,
+		Description: createAccessRuleInput1.Description,
 		Destination: _Service_AccessRule_Destination,
 		Ports:       _Service_AccessRule_Ports,
 		Protocol:    _Service_AccessRule_Protocol,
-		RuleName:    _Service_AccessRule_Name,
+		RuleName:    newRuleName,
 		Source:      _Service_AccessRule_Source,
 		Status:      _Service_AccessRule_Status,
 		RuleType:    "USER",
 	}
 
-	if err := aClient.CreateAccessRule(createAccessRuleInput); err != nil {
-		t.Fatalf("Error creating AccessRule: %s", err)
+	if err := aClient.CreateAccessRule(createAccessRuleInput1); err != nil {
+		t.Fatalf("Error creating AccessRule 1: %s", err)
 	}
 
-    // Not too sure why, but when we call delete using defer, we're getting
+	// Not too sure why, but when we call delete using defer, we're getting
 	// the error Encountered HTTP (400) Error: PSM-SERVICE-0004: Unable to delete service.
-	// defer destroyAccessRule(t, aClient, instanceName, _Service_AccessRule_Name)
-
+	defer destroyAccessRule(t, aClient, instanceName, newRuleName)
 
 	// Get Access Rule (Create only returns AccessRule name)
-	getInput := &GetAccessRuleInput{
+	getAccessRulesInput := &GetAccessRuleInput{
 		ServiceInstanceID: instanceName,
 	}
 
-	allRulesResult, err := aClient.GetAllAccessRules(getInput)
+	allRulesResult, err := aClient.GetAllAccessRules(getAccessRulesInput)
 	if err != nil {
 		t.Fatalf("Error reading ALL AccessRules : %s", err)
 	}
@@ -84,8 +74,8 @@ func TestAccAccessRuleLifeCycle(t *testing.T) {
 	}
 
 	// Read Result
-	getInput.Name = _Service_AccessRule_Name
-	ruleResult, err := aClient.GetAccessRule(getInput)
+	getAccessRulesInput.Name = newRuleName
+	ruleResult, err := aClient.GetAccessRule(getAccessRulesInput)
 
 	if err != nil {
 		t.Fatalf("Error reading AccessRule: %s", err)
@@ -97,18 +87,18 @@ func TestAccAccessRuleLifeCycle(t *testing.T) {
 	}
 
 	// Update Access Rule
-	updateInput := &UpdateAccessRuleInput{
+	updateAccessRulesInput := &UpdateAccessRuleInput{
 		ServiceInstanceID: instanceName,
-		Name:              _Service_AccessRule_Name,
+		Name:              newRuleName,
 		Status:            "disabled",
 	}
 
-	if _, err := aClient.UpdateAccessRule(updateInput); err != nil {
+	if _, err := aClient.UpdateAccessRule(updateAccessRulesInput); err != nil {
 		t.Fatalf("Error updating AccessRule: %s", err)
 	}
 
 	// Re-Read Result
-	ruleResult, err = aClient.GetAccessRule(getInput)
+	ruleResult, err = aClient.GetAccessRule(getAccessRulesInput)
 	if err != nil {
 		t.Fatalf("Error reading AccessRule: %s", err)
 	}
@@ -120,14 +110,24 @@ func TestAccAccessRuleLifeCycle(t *testing.T) {
 	if diff := pretty.Compare(ruleResult, expected); diff != "" {
 		t.Fatalf("Diff creating AccessRule: (-got, +want):\n%s", diff)
 	}
+}
 
-	// Not too sure why, but when we call delete using defer, we're getting
-	// the error Encountered HTTP (400) Error: PSM-SERVICE-0004: Unable to delete service.
-	destroyAccessRule(t, aClient, instanceName, _Service_AccessRule_Name)
+func createAccessRuleParameters(instanceName string) *CreateAccessRuleInput {
 
-	// Sleep for 3 minutes to prevent failure because the resource is still
-	// locked.
-	time.Sleep(3 * time.Minute)
+	randomInt := helper.RInt()
+
+	createAccessRuleInput := &CreateAccessRuleInput{
+		ServiceInstanceID: instanceName,
+		Description:       fmt.Sprintf("%s-%d", _Service_AccessRule_Description, randomInt),
+		Destination:       _Service_AccessRule_Destination,
+		Ports:             _Service_AccessRule_Ports,
+		Protocol:          _Service_AccessRule_Protocol,
+		RuleName:          fmt.Sprintf("%s-%d", _Service_AccessRule_Name, randomInt),
+		Source:            _Service_AccessRule_Source,
+		Status:            _Service_AccessRule_Status,
+	}
+
+	return createAccessRuleInput
 }
 
 func getAccessRulesTestClients() (*ServiceInstanceClient, *AccessRulesClient, error) {
@@ -135,7 +135,7 @@ func getAccessRulesTestClients() (*ServiceInstanceClient, *AccessRulesClient, er
 	if err != nil {
 		return nil, nil, err
 	}
-	return client.ServiceInstanceClient(), client.AccessRulesClient(), nil
+	return client.ServiceInstanceClient(), client.AccessRules(), nil
 }
 
 func (c *ServiceInstanceClient) createTestServiceInstance() (*ServiceInstance, error) {
@@ -143,7 +143,7 @@ func (c *ServiceInstanceClient) createTestServiceInstance() (*ServiceInstance, e
 	serviceParameter := ServiceParameters{
 		BackupDestination:  _ServiceInstanceBackupDestination,
 		ServiceDescription: _ServiceInstanceDesc,
-		ServiceName:        _TestServiceInstanceName,
+		ServiceName:        fmt.Sprintf("test-serviceinstance-acc-rule-%d", helper.RInt()),
 		VMPublicKeyText:    _ServiceInstancePubKey,
 	}
 
@@ -169,6 +169,7 @@ func (c *ServiceInstanceClient) createTestServiceInstance() (*ServiceInstance, e
 }
 
 func destroyAccessRule(t *testing.T, client *AccessRulesClient, serviceInstance, name string) {
+
 	input := &DeleteAccessRuleInput{
 		Name:              name,
 		ServiceInstanceID: serviceInstance,
