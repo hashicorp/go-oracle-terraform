@@ -323,8 +323,10 @@ func (c *Client) UpdateContainer(input *UpdateContainerInput) (*Container, error
 
 func (c *Client) success(rsp *http.Response, container *Container) (*Container, error) {
 	var (
-		err   error
-		value int
+		err        error
+		maxAge     int
+		quotaBytes int
+		quotaCount int
 	)
 
 	container.ReadACLs = strings.Split(rsp.Header.Get(hContainerRead), ",")
@@ -335,14 +337,14 @@ func (c *Client) success(rsp *http.Response, container *Container) (*Container, 
 	container.ExposedHeaders = strings.Split(rsp.Header.Get(hAccessControlExposeHeaders), " ")
 	container.GeoreplicationPolicy = strings.Split(rsp.Header.Get(hPolicyGeoreplication), " ")
 
-	if value, err = strconv.Atoi(rsp.Header.Get(hAccessControlMaxAge)); err == nil {
-		container.MaxAge = value
+	if maxAge, err = strconv.Atoi(rsp.Header.Get(hAccessControlMaxAge)); err == nil {
+		container.MaxAge = maxAge
 	}
-	if value, err = strconv.Atoi(rsp.Header.Get(hQuotaBytes)); err == nil {
-		container.QuotaBytes = value
+	if quotaBytes, err = strconv.Atoi(rsp.Header.Get(hQuotaBytes)); err == nil {
+		container.QuotaBytes = quotaBytes
 	}
-	if value, err = strconv.Atoi(rsp.Header.Get(hQuotaCount)); err == nil {
-		container.QuotaCount = value
+	if quotaCount, err = strconv.Atoi(rsp.Header.Get(hQuotaCount)); err == nil {
+		container.QuotaCount = quotaCount
 	}
 
 	container.CustomMetadata = make(map[string]string)

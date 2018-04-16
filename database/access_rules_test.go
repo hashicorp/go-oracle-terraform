@@ -2,6 +2,7 @@ package database
 
 import (
 	"fmt"
+	"math/rand"
 	"testing"
 
 	"os"
@@ -19,8 +20,6 @@ const (
 	_TestAccessRulePorts       = "7000-8000"
 	_TestAccessRuleSource      = "PUBLIC-INTERNET"
 )
-
-var _TestAccessRuleName = fmt.Sprintf("test-acc-rule-%d", helper.RInt())
 
 func TestAccAccessRulesLifeCycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
@@ -47,13 +46,16 @@ func TestAccAccessRulesLifeCycle(t *testing.T) {
 		instanceName = v
 	}
 
+	rInt := rand.Int()
+	testAccessRuleName := fmt.Sprintf("test-acc-rule-%d", rInt)
+
 	// Create an Access Rule that's disabled
 	input := &CreateAccessRuleInput{
 		ServiceInstanceID: instanceName,
 		Description:       _TestAccessRuleDescription,
 		Destination:       AccessRuleDefaultDestination,
 		Ports:             _TestAccessRulePorts,
-		Name:              _TestAccessRuleName,
+		Name:              testAccessRuleName,
 		Source:            _TestAccessRuleSource,
 		Status:            AccessRuleDisabled,
 	}
@@ -62,7 +64,7 @@ func TestAccAccessRulesLifeCycle(t *testing.T) {
 		Description: _TestAccessRuleDescription,
 		Destination: AccessRuleDefaultDestination,
 		Ports:       _TestAccessRulePorts,
-		Name:        _TestAccessRuleName,
+		Name:        testAccessRuleName,
 		Source:      _TestAccessRuleSource,
 		Status:      AccessRuleDisabled,
 		RuleType:    AccessRuleTypeUser,
@@ -72,12 +74,12 @@ func TestAccAccessRulesLifeCycle(t *testing.T) {
 	if _, err = aClient.CreateAccessRule(input); err != nil {
 		t.Fatalf("Error creating AccessRule: %s", err)
 	}
-	defer destroyAccessRule(t, aClient, instanceName, _TestAccessRuleName)
+	defer destroyAccessRule(t, aClient, instanceName, testAccessRuleName)
 
 	// Get Access Rule (Create only returns AccessRule name)
 	getInput := &GetAccessRuleInput{
 		ServiceInstanceID: instanceName,
-		Name:              _TestAccessRuleName,
+		Name:              testAccessRuleName,
 	}
 
 	var (
@@ -96,7 +98,7 @@ func TestAccAccessRulesLifeCycle(t *testing.T) {
 	// Update Access Rule
 	updateInput := &UpdateAccessRuleInput{
 		ServiceInstanceID: instanceName,
-		Name:              _TestAccessRuleName,
+		Name:              testAccessRuleName,
 		Status:            AccessRuleEnabled,
 	}
 
@@ -235,8 +237,9 @@ func (c *ServiceInstanceClient) createTestServiceInstance() (*ServiceInstance, e
 		UsableStorage:     _ServiceInstanceUsableStorage,
 	}
 
+	rInt := rand.Int()
 	createServiceInstance := &CreateServiceInstanceInput{
-		Name:             fmt.Sprintf("test-acc-instance-%d", helper.RInt()),
+		Name:             fmt.Sprintf("test-acc-instance-%d", rInt),
 		Edition:          _ServiceInstanceEdition,
 		Level:            _ServiceInstanceLevel,
 		Shape:            _ServiceInstanceShape,

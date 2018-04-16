@@ -87,7 +87,7 @@ func destroyMachineImage(t *testing.T, client *MachineImagesClient, name string)
 	}
 }
 
-func getStorageClient(t *testing.T) *storage.StorageClient {
+func getStorageClient(t *testing.T) *storage.Client {
 	config := &opc.Config{}
 	tr := &http.Transport{
 		Proxy:               http.ProxyFromEnvironment,
@@ -110,7 +110,7 @@ func getStorageClient(t *testing.T) *storage.StorageClient {
 }
 
 // create a dummy image file the the storage /compute_images container
-func createDummyMachineImageFile(t *testing.T, sClient *storage.StorageClient, name string) {
+func createDummyMachineImageFile(t *testing.T, sClient *storage.Client, name string) {
 	oClient := sClient.Objects()
 	body, err := os.Open(_TestFileFixturesPath + "/dummy.tar.gz")
 	if err != nil {
@@ -129,7 +129,7 @@ func createDummyMachineImageFile(t *testing.T, sClient *storage.StorageClient, n
 	}
 }
 
-func deleteDummyMachineImageFile(t *testing.T, sClient *storage.StorageClient, name string) {
+func deleteDummyMachineImageFile(t *testing.T, sClient *storage.Client, name string) {
 	oClient := sClient.Objects()
 	input := &storage.DeleteObjectInput{
 		Name:      name,
