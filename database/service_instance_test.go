@@ -134,37 +134,35 @@ func TestAccServiceInstanceUpdate(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	/*
-		parameter := ParameterInput{
-			AdminPassword:                   _ServiceInstancePassword,
-			BackupDestination:               _ServiceInstanceBackupDestinationBoth,
-			SID:                             _ServiceInstanceDBSID,
-			Type:                            _ServiceInstanceType,
-			UsableStorage:                   _ServiceInstanceUsableStorage,
-			CloudStorageContainer:           _ServiceInstanceCloudStorageContainer,
-			CreateStorageContainerIfMissing: _ServiceInstanceCloudStorageCreateIfMissing,
-		}
+	parameter := ParameterInput{
+		AdminPassword:                   _ServiceInstancePassword,
+		BackupDestination:               _ServiceInstanceBackupDestinationBoth,
+		SID:                             _ServiceInstanceDBSID,
+		Type:                            _ServiceInstanceType,
+		UsableStorage:                   _ServiceInstanceUsableStorage,
+		CloudStorageContainer:           _ServiceInstanceCloudStorageContainer,
+		CreateStorageContainerIfMissing: _ServiceInstanceCloudStorageCreateIfMissing,
+	}
 
-		createServiceInstance := &CreateServiceInstanceInput{
-			Name:             _ServiceInstanceName,
-			Edition:          _ServiceInstanceEdition,
-			Level:            _ServiceInstanceLevel,
-			Shape:            _ServiceInstanceShape,
-			SubscriptionType: _ServiceInstanceSubscription,
-			Version:          _ServiceInstanceVersion,
-			VMPublicKey:      _ServiceInstancePubKey,
-			Parameter:        parameter,
-		}
+	createServiceInstance := &CreateServiceInstanceInput{
+		Name:             _ServiceInstanceName,
+		Edition:          _ServiceInstanceEdition,
+		Level:            _ServiceInstanceLevel,
+		Shape:            _ServiceInstanceShape,
+		SubscriptionType: _ServiceInstanceSubscription,
+		Version:          _ServiceInstanceVersion,
+		VMPublicKey:      _ServiceInstancePubKey,
+		Parameter:        parameter,
+	}
 
-		_, err = siClient.CreateServiceInstance(createServiceInstance)
-		if err != nil {
-			t.Fatal(err)
-		}
-		defer destroyServiceInstance(t, siClient, _ServiceInstanceName)
-	*/
+	_, err = siClient.CreateServiceInstance(createServiceInstance)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer destroyServiceInstance(t, siClient, _ServiceInstanceName)
 
 	updateInput := &UpdateServiceInstanceInput{
-		Name:  "testing-java-instance-service3",
+		Name:  _ServiceInstanceName,
 		Shape: _ServiceInstanceUpdateShape,
 	}
 	_, err = siClient.UpdateServiceInstance(updateInput)
@@ -173,7 +171,7 @@ func TestAccServiceInstanceUpdate(t *testing.T) {
 	}
 
 	getInput := &GetServiceInstanceInput{
-		Name: "testing-java-instance-service3", // _ServiceInstanceName,
+		Name: _ServiceInstanceName,
 	}
 
 	receivedRes, err := siClient.GetServiceInstance(getInput)
