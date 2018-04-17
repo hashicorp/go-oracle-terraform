@@ -423,38 +423,29 @@ func (c *UtilityClient) GetDefaultAccessRules(input *GetDefaultAccessRuleInput) 
 }
 
 func setRuleBools(key string, rule *AccessRuleInfo, defaultAccessRules *DefaultAccessRuleInfo) {
-	if key == "EnableSSH" {
+	switch key {
+	case "EnableSSH":
 		defaultAccessRules.EnableSSH = helper.Bool(rule.Status == AccessRuleEnabled)
-	}
-	if key == "EnableHTTP" {
+	case "EnableHTTP":
 		defaultAccessRules.EnableHTTP = helper.Bool(rule.Status == AccessRuleEnabled)
-	}
-	if key == "EnableHTTPSSL" {
+	case "EnableHTTPSSL":
 		defaultAccessRules.EnableHTTPSSL = helper.Bool(rule.Status == AccessRuleEnabled)
-	}
-	if key == "EnableDBConsole" {
+	case "EnableDBConsole":
 		defaultAccessRules.EnableDBConsole = helper.Bool(rule.Status == AccessRuleEnabled)
-	}
-	if key == "EnableDBExpress" {
+	case "EnableDBExpress":
 		defaultAccessRules.EnableDBExpress = helper.Bool(rule.Status == AccessRuleEnabled)
-	}
-	if key == "EnableDBListener" {
+	case "EnableDBListener":
 		defaultAccessRules.EnableDBListener = helper.Bool(rule.Status == AccessRuleEnabled)
-	}
-	if key == "EnableEMConsole" {
+	case "EnableEMConsole":
 		defaultAccessRules.EnableEMConsole = helper.Bool(rule.Status == AccessRuleEnabled)
-	}
-	if key == "EnableRACDBListener" {
+	case "EnableRACDBListener":
 		defaultAccessRules.EnableRACDBListener = helper.Bool(rule.Status == AccessRuleEnabled)
-	}
-	if key == "EnableScanListener" {
+	case "EnableScanListener":
 		defaultAccessRules.EnableScanListener = helper.Bool(rule.Status == AccessRuleEnabled)
-	}
-	if key == "EnableRACOns" {
+	case "EnableRACOns":
 		defaultAccessRules.EnableRACOns = helper.Bool(rule.Status == AccessRuleEnabled)
 	}
 	rule = nil
-
 }
 
 // UpdateDefaultAccessRules Updates all the specified/relevant default access rules for a database service instance
