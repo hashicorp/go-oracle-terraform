@@ -6,7 +6,6 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/opc"
 	"github.com/kylelemons/godebug/pretty"
 	"testing"
-	//"time"
 )
 
 const (
