@@ -837,7 +837,7 @@ func (c *ServiceInstanceClient) UpdateServiceInstance(input *UpdateServiceInstan
 		return nil, err
 	}
 
-	// Call wait for instance ready now, as creating the instance is an eventually consistent operation
+	// Call wait for instance running now, as updating the instance is an eventually consistent operation
 	getInput := &GetServiceInstanceInput{
 		Name: input.Name,
 	}
