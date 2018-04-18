@@ -1,3 +1,7 @@
+## 0.9.0 (April 17, 2018)
+
+* mysql: Added mysql cloud functionality to the sdk [GH-129]
+
 ## 0.8.10 (March 23, 2018)
 
 * client: Add additional check for WasNotFound [GH-137]
