@@ -6,7 +6,7 @@ test: fmtcheck errcheck
 	echo $(TEST) | \
 		xargs -t -n4 go test $(TESTARGS) -timeout=60m -parallel=4
 
-testacc: 
+testacc: fmtcheck
 	ORACLE_ACC=1 go test -v $(TEST) $(TESTARGS) -timeout 120m
 
 testrace: fmtcheck
@@ -41,27 +41,4 @@ errcheck:
 
 .PHONY: tools build test testacc testrace cover vet fmt fmtcheck errcheck
 
-test-analyze:
-
-	@echo "Installing test plugins"
-	go get -u github.com/jstemmer/go-junit-report
-	go get -u github.com/axw/gocov/...
-	go get -u github.com/AlekSi/gocov-xml
-	go get -u gopkg.in/alecthomas/gometalinter.v1
-	../bin/gometalinter.v1 --install
-
-	@rm -rf reports
-	@mkdir -p ../reports/coverage
-	@mkdir -p ../reports/unit-tests
-	@mkdir -p ../reports/golint
-
-	@echo "... Running golint"
-	../bin/gometalinter.v1 --checkstyle ./... > ../reports/golint/report.xml
-
-	@echo "... Running Go Unit Tests and coverage"
-	@go test "./..." -coverprofile=../reports/coverage/cover.out -v 2>&1 | "../bin/go-junit-report" > ../reports/unit-tests/unit-test-report.xml
-
-	@echo "... Generating coverage reports"
-	@go tool cover -html=../reports/coverage/cover.out -o ../reports/coverage/coverage.html
-	@../bin/gocov convert ../reports/coverage/cover.out | ../bin/gocov-xml > ../reports/coverage/coverage.xml
 
