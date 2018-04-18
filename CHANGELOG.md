@@ -1,3 +1,9 @@
+## 0.9.2 (Unreleased)
+
+## 0.9.1 (April 18, 2018)
+
+* database: Scale database service instance [GH-140]
+
 ## 0.9.0 (April 17, 2018)
 
 * mysql: Added mysql cloud functionality to the sdk [GH-129]
