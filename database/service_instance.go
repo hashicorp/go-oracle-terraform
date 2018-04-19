@@ -56,6 +56,8 @@ type ServiceInstanceLevel string
 const (
 	// PAAS: The Oracle Database Cloud Service service level
 	ServiceInstanceLevelPAAS ServiceInstanceLevel = "PAAS"
+	// PAAS_EXADATA: The Oracle Exadata Cloud Service service level
+	ServiceInstanceLevelEXADATA ServiceInstanceLevel = "PAAS_EXADATA"
 	// BASIC: The Oracle Database Cloud Service - Virtual Image service level
 	ServiceInstanceLevelBasic ServiceInstanceLevel = "BASIC"
 )
@@ -177,6 +179,15 @@ const (
 	ServiceInstanceTerminating ServiceInstanceState = "Terminating"
 )
 
+type ServiceInstanceDatabaseTemplate string
+
+const (
+	// oltp: configures the starter database for a transactional workload
+	ServiceInstanceTemplateOLPT ServiceInstanceDatabaseTemplate = "oltp"
+	// dw: configures the starter database for a decision support or data warehouse workload
+	ServiceInstanceTemplateDW ServiceInstanceDatabaseTemplate = "dw"
+)
+
 type ServiceInstance struct {
 	// The URL to use to connect to Oracle Application Express on the service instance.
 	ApexURL string `json:"apex_url"`
@@ -191,6 +202,8 @@ type ServiceInstance struct {
 	CharSet string `json:"charset"`
 	// The Oracle Storage Cloud container for backups.
 	CloudStorageContainer string `json:"cloud_storage_container"`
+	// Name of the cluster supporting the Exadata Cloud Service database deployment.
+	ClusterName string `json:"cluster_names"`
 	// The Oracle Cloud location housing the service instance.
 	ComputeSiteName string `json:"compute_site_name"`
 	// The connection descriptor for Oracle Net Services (SQL*Net).
@@ -243,6 +256,8 @@ type ServiceInstance struct {
 	ListenerPort int `json:"listener_port"`
 	// The national character set of the database.
 	NCharSet string `json:"ncharset"`
+	// List of compute nodes that host database instances for the database deployment.
+	NodeList string `json:"nodelist"`
 	// The number of Oracle Compute Service IP reservations assigned to the service instance.
 	NumIPReservations int `json:"num_ip_reservations"`
 	// The number of compute nodes in the service instance.
@@ -269,6 +284,8 @@ type ServiceInstance struct {
 	// Applicable only in Oracle Cloud Infrastructure regions.
 	// Name of the subnet within the region where the Oracle Database Cloud Service instance is provisioned.
 	Subnet string `json:"subnet"`
+	// The subscription name
+	SubscriptionName string `json:"subscription_name"`
 	// The billing frequency of the service instance; either MONTHLY or HOURLY.
 	SubscriptionType ServiceInstanceSubscriptionType `json:"subscriptionType"`
 	// The time zone of the operating system.
@@ -286,6 +303,13 @@ type CreateServiceInstanceInput struct {
 	// Name of the availability domain within the region where the Oracle Database Cloud Service instance is to be provisioned.
 	// Optional
 	AvailabilityDomain string `json:"availabilityDomain,omitempty"`
+	// Name of the cluster supporting the Exadata Cloud Service database deployment.
+	// Optional. Exadata Cloud Service only.
+	ClusterName string `json:"clusterName,omitempty"`
+	// The template to use for the starter database. `dw` or `oltp`.
+	// Include this parameter only when creating a starter database. The starter database is the first Exadata Cloud Service database deployment that you create on your Exadata system. Subsequent databases are created with a standardized database configuration.
+	// Optional. Exadata Cloud Service only.
+	DatabaseTemplate string `json:"dbTemplate,omitempty"`
 	// Free-form text that provides additional information about the service instance.
 	// Optional.
 	Description string `json:"description,omitempty"`
@@ -300,6 +324,10 @@ type CreateServiceInstanceInput struct {
 	// When true, you must also specify notificationEmail. Valid values are true and false. Default value is false.
 	// Optional
 	EnableNotification bool `json:"enableNotification,omitempty"`
+	// Required if level is `PAAS_EXADATA`
+	// Name of the Exadata system on which to create the Exadata Cloud Service database deployment.
+	// Optional. Exadata Cloud Service only.
+	ExadataSystemName string `json:"exadataSystemName,omitempty"`
 	// Specify if you want to use an existing perpetual license to Oracle Database to establish the right to use Oracle Database on the new instance.
 	// When true, your Oracle Cloud account will be charged a lesser amount for the new instance because the right to use Oracle Database is covered by your perpetual license agreement.
 	// Valid values are true and false. Default value is false.
@@ -332,6 +360,10 @@ type CreateServiceInstanceInput struct {
 	// Must be unique within the identity domain.
 	// Required.
 	Name string `json:"serviceName"`
+	// Specifies the list of compute nodes that host database instances for the database deployment.
+	// Separate compute node names with a comma. If nodelist is not specified the database is deployed across all compute nodes
+	// Optional. Exadata Cloud Service only.
+	NodeList string `json:"nodelist,omitempty"`
 	// Required if enableNotification is set to true.
 	// The email address to send completion notifications to.
 	// This parameter is not available on Oracle Cloud at Customer.
@@ -344,7 +376,7 @@ type CreateServiceInstanceInput struct {
 	// Desired compute shape. A shape defines the number of Oracle Compute Units (OCPUs) and amount
 	// of memory (RAM).
 	// Required.
-	Shape ServiceInstanceShape `json:"shape"`
+	Shape ServiceInstanceShape `json:"shape,omitempty"`
 	// Required if region is an Oracle Cloud Infrastructure region.
 	// Name of the subnet within the region where the Oracle Database Cloud Service instance is to be provisioned.
 	// Optional
@@ -356,7 +388,7 @@ type CreateServiceInstanceInput struct {
 	SubscriptionType ServiceInstanceSubscriptionType `json:"subscriptionType"`
 	// Applicable only in Oracle Cloud Infrastructure regions.
 	// Array of one JSON object that specifies configuration details of the standby database when failoverDatabase is set to true. disasterRecovery must be set to true.
-	Standbys []StandBy `json:"standbys`
+	Standbys []StandBy `json:"standbys,omitempty"`
 	// Specify if high performance storage should be used for the Database Cloud Service instance. Default data storage will allocate your database
 	// block storage on spinning devices. By checking this box, your block storage will be allocated on solid state devices. Valid values are true and false.
 	// Default value is false.
