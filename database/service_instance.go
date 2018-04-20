@@ -698,7 +698,7 @@ func (c *ServiceInstanceClient) startServiceInstance(name string, input *CreateS
 	return serviceInstance, nil
 }
 
-// WaitForServiceInstanceRunning waits for a service instance to be completely initialized and available.
+// WaitForServiceInstanceState waits for a service instance to be in the desired state
 func (c *ServiceInstanceClient) WaitForServiceInstanceState(input *GetServiceInstanceInput, desiredState ServiceInstanceLifecycleState, pollInterval, timeoutSeconds time.Duration) (*ServiceInstance, error) {
 	var info *ServiceInstance
 	var getErr error
@@ -889,7 +889,7 @@ func (c *ServiceInstanceClient) UpdateServiceInstance(input *UpdateServiceInstan
 		return nil, err
 	}
 
-	// Call wait for instance running now, as updating the instance is an eventually consistent operation
+	// Call wait for instance state now, as updating the instance is an eventually consistent operation
 	getInput := &GetServiceInstanceInput{
 		Name: input.Name,
 	}
