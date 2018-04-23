@@ -236,7 +236,7 @@ func TestAccServiceInstanceDesiredState(t *testing.T) {
 		t.Fatal(err)
 	}
 	if receivedRes.Status != ServiceInstanceStopped {
-		t.Fatal(fmt.Errorf("Statu do not match. Wanted: %s Received: %s", ServiceInstanceStopped, receivedRes.Status))
+		t.Fatal(fmt.Errorf("Statuses do not match. Wanted: %s Received: %s", ServiceInstanceStopped, receivedRes.Status))
 	}
 }
 
