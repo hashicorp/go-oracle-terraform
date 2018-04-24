@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	_ServiceInstanceName                        = "testing-db-service-instance1"
+	_ServiceInstanceName                        = "testing-db-service-instance"
 	_ServiceInstanceEdition                     = "EE"
 	_ServiceInstanceLevel                       = "PAAS"
 	_ServiceInstanceShape                       = "oc3"
@@ -180,6 +180,63 @@ func TestAccServiceInstanceUpdate(t *testing.T) {
 	}
 	if receivedRes.Shape != _ServiceInstanceUpdateShape {
 		t.Fatal(fmt.Errorf("Shapes do not match. Wanted: %s Received: %s", _ServiceInstanceUpdateShape, receivedRes.Shape))
+	}
+}
+
+func TestAccServiceInstanceDesiredState(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
+
+	siClient, err := getServiceInstanceTestClients()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	parameter := ParameterInput{
+		AdminPassword:                   _ServiceInstancePassword,
+		BackupDestination:               _ServiceInstanceBackupDestinationBoth,
+		SID:                             _ServiceInstanceDBSID,
+		Type:                            _ServiceInstanceType,
+		UsableStorage:                   _ServiceInstanceUsableStorage,
+		CloudStorageContainer:           _ServiceInstanceCloudStorageContainer,
+		CreateStorageContainerIfMissing: _ServiceInstanceCloudStorageCreateIfMissing,
+	}
+
+	createServiceInstance := &CreateServiceInstanceInput{
+		Name:             _ServiceInstanceName,
+		Edition:          _ServiceInstanceEdition,
+		Level:            _ServiceInstanceLevel,
+		Shape:            _ServiceInstanceShape,
+		SubscriptionType: _ServiceInstanceSubscription,
+		Version:          _ServiceInstanceVersion,
+		VMPublicKey:      _ServiceInstancePubKey,
+		Parameter:        parameter,
+	}
+
+	_, err = siClient.CreateServiceInstance(createServiceInstance)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer destroyServiceInstance(t, siClient, _ServiceInstanceName)
+
+	desiredStateInput := &DesiredStateInput{
+		Name:           _ServiceInstanceName,
+		LifecycleState: ServiceInstanceLifecycleStateStop,
+	}
+	_, err = siClient.UpdateDesiredState(desiredStateInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	getInput := &GetServiceInstanceInput{
+		Name: _ServiceInstanceName,
+	}
+
+	receivedRes, err := siClient.GetServiceInstance(getInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if receivedRes.Status != ServiceInstanceStopped {
+		t.Fatal(fmt.Errorf("Statuses do not match. Wanted: %s Received: %s", ServiceInstanceStopped, receivedRes.Status))
 	}
 }
 
