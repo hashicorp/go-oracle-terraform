@@ -88,7 +88,7 @@ func TestAccContainerLifeCycle(t *testing.T) {
 	if container.QuotaCount != _ContainerQuotaCount {
 		t.Fatalf(fmt.Sprintf("Quota Count do not match Wanted: %d Recieved: %d", _ContainerQuotaCount, container.QuotaCount))
 	}
-	if reflect.DeepEqual(container.CustomMetadata, _ContainerCustomMetadata) != true {
+	if !reflect.DeepEqual(container.CustomMetadata, _ContainerCustomMetadata) {
 		t.Fatalf(fmt.Sprintf("CustomMetadata do not match Wanted: %v Recieved: %v", _ContainerCustomMetadata, container.CustomMetadata))
 	}
 
@@ -164,7 +164,7 @@ func TestAccContainerLifeCycle(t *testing.T) {
 	log.Print("Successfully retrieved Container")
 }
 
-func deleteContainer(t *testing.T, client *StorageClient, name string) {
+func deleteContainer(t *testing.T, client *Client, name string) {
 	deleteInput := DeleteContainerInput{
 		Name: name,
 	}
@@ -186,7 +186,7 @@ func Test_isCustomHeader(t *testing.T) {
 	if client.isCustomHeader("X-Container-Meta-Access-Control-Allow-Origin") {
 		t.Fatalf("X-Container-Meta-Access-Control-Allow-Origin shoud be a identified as a standard header")
 	}
-	if client.isCustomHeader("X-Container-Meta-Some-Other-Header") != true {
+	if !client.isCustomHeader("X-Container-Meta-Some-Other-Header") {
 		t.Fatalf("X-Container-Meta-Some-Other-Header shoud be a identified as a custom header")
 	}
 

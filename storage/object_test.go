@@ -181,7 +181,7 @@ func TestAccObjectLifeCycle_contentSourceID(t *testing.T) {
 		ObjectMetadata:     _TestObjectMetadata,
 	}
 
-	if err := testAssertions(object, expected); err != nil {
+	if err = testAssertions(object, expected); err != nil {
 		t.Fatal(err)
 	}
 
@@ -200,7 +200,7 @@ func TestAccObjectLifeCycle_contentSourceID(t *testing.T) {
 }
 
 // Get a container for testing objects with
-func (c *StorageClient) getTestContainer() (*Container, error) {
+func (c *Client) getTestContainer() (*Container, error) {
 	input := &CreateContainerInput{
 		Name:         _ContainerName,
 		PrimaryKey:   _ContainerPrimaryKey,

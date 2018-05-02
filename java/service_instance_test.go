@@ -13,7 +13,6 @@ const (
 	_ServiceInstanceName                        = "testingjavaserviceinstance"
 	_ServiceInstanceLevel                       = "PAAS"
 	_ServiceInstanceSubscriptionType            = "HOURLY"
-	_ServiceInstanceType                        = "weblogic"
 	_ServiceInstanceDBAUser                     = "sys"
 	_ServiceInstanceDBAPassword                 = "Test_String7"
 	_ServiceInstanceShape                       = "oc3"
