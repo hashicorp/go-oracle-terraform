@@ -1477,3 +1477,38 @@ func (c *ServiceInstanceClient) WaitForServiceInstanceDeleted(input *GetServiceI
 		}
 	})
 }
+
+// ScaleUpDownServiceInstanceInput defines the attributes for how to scale up or down the java service instance
+type ScaleUpDownServiceInstanceInput struct {
+	// Groups properties for the Oracle WebLogic Server component (WLS).
+	// Required
+	Components []ScaleUpDownComponent `json:"components"`
+}
+
+// ScaleUpDownComponent defines the attributes for the WebLogic Server components when scaling up and down
+// the service instance
+type ScaleUpDownComponent struct {
+	// Properties for the Oracle WebLogic Server (WLS) component.
+	// Required
+	WLS ScaleUpDownWLS `json:"wls"`
+}
+
+// ScaleUpDownWLS defines the properties for the Oracle WebLogic Server (WLS) component.
+type ScaleUpDownWLS struct {
+	// A single host name. Only application cluster hosts can be specified.
+	Hosts []string `json:"hosts,omitempty"`
+	// Flag that indicates whether to ignore Managed Server heap validation (true) or perform heap
+	// validation (false) before a scale down request is accepted. Default is false.
+	// When the flag is not set or is false, heap validation is performed before scaling.
+	// If a validation error is not generated, the Managed Server JVM is restarted with the new shape
+	// after scaling down.
+	// When the flag is true, heap validation is not performed. Before you set the flag to true,
+	// make sure the -Xms value is low enough for the Managed Server JVM to restart on the new shape
+	// after scaling down. The -Xms value should be lower than one-fourth the size of the memory
+	// associated with the shape. Use the WebLogic Server Administration Console to edit the value in
+	// the server start arguments, if necessary.
+	IgnoreManagedServerHeapError bool `json:"ignoreManagedServerHeapError,omitempty"`
+	// Desired compute shape for the target host.
+	// Required
+	Shape ServiceInstanceShape `json:"shape"`
+}
