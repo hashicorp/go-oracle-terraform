@@ -912,10 +912,10 @@ type UpdateServiceInstanceInput struct {
 // UpdateServiceInstance updates the specified service instance
 func (c *ServiceInstanceClient) UpdateServiceInstance(input *UpdateServiceInstanceInput) (*ServiceInstance, error) {
 	if c.PollInterval == 0 {
-		c.PollInterval = WaitForServiceInstanceReadyPollInterval
+		c.PollInterval = waitForServiceInstanceReadyPollInterval
 	}
 	if c.Timeout == 0 {
-		c.Timeout = WaitForServiceInstanceReadyTimeout
+		c.Timeout = waitForServiceInstanceReadyTimeout
 	}
 
 	if err := c.updateResource(input.Name, *input, nil, "PUT"); err != nil {
@@ -956,10 +956,10 @@ type DesiredStateInput struct {
 // UpdateDesiredState updates the specified desired state of a service instance
 func (c *ServiceInstanceClient) UpdateDesiredState(input *DesiredStateInput) (*ServiceInstance, error) {
 	if c.PollInterval == 0 {
-		c.PollInterval = WaitForServiceInstanceReadyPollInterval
+		c.PollInterval = waitForServiceInstanceReadyPollInterval
 	}
 	if c.Timeout == 0 {
-		c.Timeout = WaitForServiceInstanceReadyTimeout
+		c.Timeout = waitForServiceInstanceReadyTimeout
 	}
 
 	if err := c.updateResource(input.Name, *input, nil, "POST"); err != nil {
