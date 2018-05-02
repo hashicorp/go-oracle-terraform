@@ -33,9 +33,12 @@ fmt:
 	gofmt -w $(GOFMT_FILES)
 
 fmtcheck:
+	echo "'$(CURDIR)/scripts/gofmtcheck.sh'"
 	@sh -c "'$(CURDIR)/scripts/gofmtcheck.sh'"
 
 errcheck:
 	@sh -c "'$(CURDIR)/scripts/errcheck.sh'"
 
 .PHONY: tools build test testacc testrace cover vet fmt fmtcheck errcheck
+
+

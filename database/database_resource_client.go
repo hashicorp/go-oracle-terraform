@@ -19,6 +19,12 @@ type ResourceClient struct {
 
 func (c *ResourceClient) createResource(requestBody interface{}, responseBody interface{}) error {
 	_, err := c.executeRequest("POST", c.getContainerPath(c.ContainerPath), requestBody)
+  
+  return err
+}
+
+func (c *ResourceClient) updateResource(name string, requestBody interface{}, responseBody interface{}, method string) error {
+	_, err := c.executeRequest(method, c.getObjectPath(c.ResourceRootPath, name), requestBody)
 
 	return err
 }
