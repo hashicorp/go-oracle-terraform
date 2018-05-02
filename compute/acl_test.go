@@ -62,7 +62,7 @@ func TestAccACLLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if updateACLOutput.Enabled != true {
+	if !updateACLOutput.Enabled {
 		t.Fatal("acl was not updated to enabled")
 	}
 	log.Print("Successfully updated acl")

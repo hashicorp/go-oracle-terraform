@@ -66,7 +66,7 @@ func TestAccImageListEntriesLifeCycle(t *testing.T) {
 
 func destroyImageListEntry(t *testing.T, svc *ImageListEntriesClient, imageListEntry *ImageListEntryInfo) {
 	deleteInput := &DeleteImageListEntryInput{
-		Name:    imageListEntry.Uri,
+		Name:    imageListEntry.URI,
 		Version: imageListEntry.Version,
 	}
 	if err := svc.DeleteImageListEntry(deleteInput); err != nil {
