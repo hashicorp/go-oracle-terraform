@@ -16,7 +16,7 @@ const waitForServiceInstanceDeleteTimeout = 3600 * time.Second
 var (
 	serviceInstanceContainerPath   = "/paas/api/v1.1/instancemgmt/%s/services/jaas/instances"
 	serviceInstanceResourcePath    = "/paas/api/v1.1/instancemgmt/%s/services/jaas/instances/%s"
-	serviceInstanceScaleUpDownpath = "/hosts/scale"
+	serviceInstanceScaleUpDownPath = "/hosts/scale"
 )
 
 // ServiceInstanceClient is a client for the Service functions of the Java API.
@@ -1579,7 +1579,7 @@ func (c *ServiceInstanceClient) waitForServiceInstanceDeleted(input *GetServiceI
 	})
 }
 
-// ScaleUpDownServiceInstanceInput defines the attributes for how to scale up or down the java service instance
+// ScaleUpDownServiceInstanceInput defines the attributes for how to scale up or down the java service instance.
 type ScaleUpDownServiceInstanceInput struct {
 	// Groups properties for the Oracle WebLogic Server component (WLS).
 	// Required
@@ -1590,7 +1590,7 @@ type ScaleUpDownServiceInstanceInput struct {
 }
 
 // ScaleUpDownComponent defines the attributes for the WebLogic Server components when scaling up and down
-// the service instance
+// the service instance.
 type ScaleUpDownComponent struct {
 	// Properties for the Oracle WebLogic Server (WLS) component.
 	// Required
@@ -1619,7 +1619,7 @@ type ScaleUpDownWLS struct {
 	Shape ServiceInstanceShape `json:"shape"`
 }
 
-// ScaleUpDownServiceInstance scales the service instance up or down depending on the shape passed in
+// ScaleUpDownServiceInstance scales the service instance up or down depending on the shape passed in.
 func (c *ServiceInstanceClient) ScaleUpDownServiceInstance(input *ScaleUpDownServiceInstanceInput) error {
 	if c.PollInterval == 0 {
 		c.PollInterval = waitForServiceInstanceReadyPollInterval
@@ -1628,19 +1628,19 @@ func (c *ServiceInstanceClient) ScaleUpDownServiceInstance(input *ScaleUpDownSer
 		c.Timeout = waitForServiceInstanceReadyTimeout
 	}
 
-	if err := c.updateResource(input.Name, serviceInstanceScaleUpDownpath, "POST", input); err != nil {
+	if err := c.updateResource(input.Name, serviceInstanceScaleUpDownPath, "POST", input); err != nil {
 		return fmt.Errorf("unable to update Java Service Instance %q: %+v", input.Name, err)
 	}
 
-	// Call wait for instance ready now, as updating the instance is an eventually consistent operation
+	// Call wait for instance ready now, as updating the instance is an eventually consistent operation.
 	getInput := &GetServiceInstanceInput{
 		Name: input.Name,
 	}
 
 	// Wait for the service instance to be running and return the result
-	// Don't have to unqualify any objects, as the GetServiceInstance method will handle that
+	// Don't have to unqualify any objects, as the GetServiceInstance method will handle that.
 	serviceInstance, err := c.WaitForServiceInstanceRunning(getInput, c.PollInterval, c.Timeout)
-	// If the service instance is returned as nil if it enters a terminating state.
+	// The service instance is returned as nil if it enters a terminating state.
 	if err != nil || serviceInstance == nil {
 		return fmt.Errorf("error creating service instance %q: %+v", input.Name, err)
 	}
