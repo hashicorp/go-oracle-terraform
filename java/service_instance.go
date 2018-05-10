@@ -14,8 +14,9 @@ const waitForServiceInstanceDeletePollInterval = 60 * time.Second
 const waitForServiceInstanceDeleteTimeout = 3600 * time.Second
 
 var (
-	serviceInstanceContainerPath = "/paas/api/v1.1/instancemgmt/%s/services/jaas/instances"
-	serviceInstanceResourcePath  = "/paas/api/v1.1/instancemgmt/%s/services/jaas/instances/%s"
+	serviceInstanceContainerPath   = "/paas/api/v1.1/instancemgmt/%s/services/jaas/instances"
+	serviceInstanceResourcePath    = "/paas/api/v1.1/instancemgmt/%s/services/jaas/instances/%s"
+	serviceInstanceScaleUpDownPath = "/hosts/scale"
 )
 
 // ServiceInstanceClient is a client for the Service functions of the Java API.
@@ -573,7 +574,7 @@ type WLS struct {
 	// Oracle WebLogic Server software version
 	Version string `json:"version"`
 	// Groups details about WLS VM instances by host name. Each VM instance is a JSON object element.
-	VMInstances VMInstances `json:"vmInstances"`
+	VMInstances map[string]HostName `json:"vmInstances"`
 }
 
 // Clusters specifies the information about the clusters associated with the service instance
@@ -691,7 +692,7 @@ type VMInstances struct {
 	// Details about a specific VM instance.
 	// TODO HostName will be deprecated in the near future
 	// VMOTDs have dyanmic JSON keys that needs to be accounted for
-	VMOTD map[string]HostName `json:"vm-otd"`
+	VMOTD map[string]HostName
 }
 
 // Patching specifies information about the patches for the service instance
@@ -1576,4 +1577,73 @@ func (c *ServiceInstanceClient) waitForServiceInstanceDeleted(input *GetServiceI
 			return false, nil
 		}
 	})
+}
+
+// ScaleUpDownServiceInstanceInput defines the attributes for how to scale up or down the java service instance.
+type ScaleUpDownServiceInstanceInput struct {
+	// Groups properties for the Oracle WebLogic Server component (WLS).
+	// Required
+	Components ScaleUpDownComponent `json:"components"`
+	// Name of the Java Cloud Service instance.
+	// Required.
+	Name string `json:"-"`
+}
+
+// ScaleUpDownComponent defines the attributes for the WebLogic Server components when scaling up and down
+// the service instance.
+type ScaleUpDownComponent struct {
+	// Properties for the Oracle WebLogic Server (WLS) component.
+	// Required
+	WLS ScaleUpDownWLS `json:"WLS"`
+}
+
+// ScaleUpDownWLS defines the properties for the Oracle WebLogic Server (WLS) component.
+type ScaleUpDownWLS struct {
+	// A single host name. Only application cluster hosts can be specified.
+	// Required
+	Hosts []string `json:"hosts"`
+	// Flag that indicates whether to ignore Managed Server heap validation (true) or perform heap
+	// validation (false) before a scale down request is accepted. Default is false.
+	// When the flag is not set or is false, heap validation is performed before scaling.
+	// If a validation error is not generated, the Managed Server JVM is restarted with the new shape
+	// after scaling down.
+	// When the flag is true, heap validation is not performed. Before you set the flag to true,
+	// make sure the -Xms value is low enough for the Managed Server JVM to restart on the new shape
+	// after scaling down. The -Xms value should be lower than one-fourth the size of the memory
+	// associated with the shape. Use the WebLogic Server Administration Console to edit the value in
+	// the server start arguments, if necessary.
+	// Optional
+	IgnoreManagedServerHeapError bool `json:"ignoreManagedServerHeapError,omitempty"`
+	// Desired compute shape for the target host.
+	// Required
+	Shape ServiceInstanceShape `json:"shape"`
+}
+
+// ScaleUpDownServiceInstance scales the service instance up or down depending on the shape passed in.
+func (c *ServiceInstanceClient) ScaleUpDownServiceInstance(input *ScaleUpDownServiceInstanceInput) error {
+	if c.PollInterval == 0 {
+		c.PollInterval = waitForServiceInstanceReadyPollInterval
+	}
+	if c.Timeout == 0 {
+		c.Timeout = waitForServiceInstanceReadyTimeout
+	}
+
+	if err := c.updateResource(input.Name, serviceInstanceScaleUpDownPath, "POST", input); err != nil {
+		return fmt.Errorf("unable to update Java Service Instance %q: %+v", input.Name, err)
+	}
+
+	// Call wait for instance ready now, as updating the instance is an eventually consistent operation.
+	getInput := &GetServiceInstanceInput{
+		Name: input.Name,
+	}
+
+	// Wait for the service instance to be running and return the result
+	// Don't have to unqualify any objects, as the GetServiceInstance method will handle that.
+	serviceInstance, err := c.WaitForServiceInstanceRunning(getInput, c.PollInterval, c.Timeout)
+	// The service instance is returned as nil if it enters a terminating state.
+	if err != nil || serviceInstance == nil {
+		return fmt.Errorf("error creating service instance %q: %+v", input.Name, err)
+	}
+
+	return nil
 }

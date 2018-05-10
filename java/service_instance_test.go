@@ -1,6 +1,7 @@
 package java
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/hashicorp/go-oracle-terraform/database"
@@ -16,6 +17,7 @@ const (
 	_ServiceInstanceDBAUser                     = "sys"
 	_ServiceInstanceDBAPassword                 = "Test_String7"
 	_ServiceInstanceShape                       = "oc3"
+	_ServiceInstanceUpdateShape                 = "oc5"
 	_ServiceInstanceVersion                     = "12cRelease212"
 	_ServiceInstanceAdminUsername               = "sdk-user"
 	_ServiceInstanceAdminPassword               = "Test_String7"
@@ -188,6 +190,113 @@ func TestAccServiceInstanceLifeCycle_typeOTD(t *testing.T) {
 	}
 	assert.Equal(t, _ServiceInstanceName, receivedRes.ServiceName, "Service instance name not expected.")
 	assert.NotEmpty(t, receivedRes.OTDRoot, "Expected OTDROot to not be empty")
+}
+
+func TestAccServiceInstanceLifeCycle_ScaleUp(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
+
+	siClient, dClient, err := getServiceInstanceTestClients()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	databaseParameter := database.ParameterInput{
+		AdminPassword:                   _ServiceInstanceDBAPassword,
+		BackupDestination:               _ServiceInstanceBackupDestinationBoth,
+		SID:                             _ServiceInstanceDBSID,
+		Type:                            _ServiceInstanceDBType,
+		UsableStorage:                   _ServiceInstanceUsableStorage,
+		CloudStorageContainer:           _ServiceInstanceDBCloudStorageContainer,
+		CreateStorageContainerIfMissing: _ServiceInstanceCloudStorageCreateIfMissing,
+	}
+
+	createDatabaseServiceInstance := &database.CreateServiceInstanceInput{
+		Name:             _ServiceInstanceDatabaseName,
+		Edition:          _ServiceInstanceEdition,
+		Level:            _ServiceInstanceLevel,
+		Shape:            _ServiceInstanceDatabaseShape,
+		SubscriptionType: _ServiceInstanceSubscriptionType,
+		Version:          _ServiceInstanceDBVersion,
+		VMPublicKey:      _ServiceInstancePubKey,
+		Parameter:        databaseParameter,
+	}
+
+	_, err = dClient.CreateServiceInstance(createDatabaseServiceInstance)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer destroyDatabaseServiceInstance(t, dClient, _ServiceInstanceDatabaseName)
+
+	wlsConfig := &CreateWLS{
+		DBAName:            _ServiceInstanceDBAUser,
+		DBAPassword:        _ServiceInstanceDBAPassword,
+		DBServiceName:      _ServiceInstanceDatabaseName,
+		Shape:              _ServiceInstanceShape,
+		ManagedServerCount: _ServiceInstanceManagedServerCount,
+		AdminUsername:      _ServiceInstanceAdminUsername,
+		AdminPassword:      _ServiceInstanceAdminPassword,
+	}
+
+	createServiceInstance := &CreateServiceInstanceInput{
+		CloudStorageContainer:             _ServiceInstanceCloudStorageContainer,
+		CloudStorageContainerAutoGenerate: _ServiceInstanceCloudStorageCreateIfMissing,
+		ServiceName:                       _ServiceInstanceName,
+		ServiceLevel:                      _ServiceInstanceLevel,
+		Components:                        CreateComponents{WLS: wlsConfig},
+		VMPublicKeyText:                   _ServiceInstancePubKey,
+		Edition:                           ServiceInstanceEditionSuite,
+		ServiceVersion:                    _ServiceInstanceVersion,
+	}
+
+	_, err = siClient.CreateServiceInstance(createServiceInstance)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer destroyServiceInstance(t, siClient, _ServiceInstanceName)
+
+	getInput := &GetServiceInstanceInput{
+		Name: _ServiceInstanceName,
+	}
+
+	receivedRes, err := siClient.GetServiceInstance(getInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var hostname string
+	for _, instance := range receivedRes.Components.WLS.VMInstances {
+		hostname = instance.HostName
+	}
+
+	if hostname == "" {
+		t.Fatal(fmt.Errorf("Unable to find hostname to scale"))
+	}
+
+	wlsComponent := ScaleUpDownWLS{
+		Shape: _ServiceInstanceUpdateShape,
+		Hosts: []string{hostname},
+	}
+
+	component := ScaleUpDownComponent{
+		WLS: wlsComponent,
+	}
+
+	scaleUpInput := &ScaleUpDownServiceInstanceInput{
+		Name:       _ServiceInstanceName,
+		Components: component,
+	}
+
+	err = siClient.ScaleUpDownServiceInstance(scaleUpInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	receivedRes, err = siClient.GetServiceInstance(getInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t, _ServiceInstanceUpdateShape, receivedRes.Components.WLS.VMInstances[hostname].ShapeID, "Service instance shape not expected.")
 }
 
 func getServiceInstanceTestClients() (*ServiceInstanceClient, *database.ServiceInstanceClient, error) {

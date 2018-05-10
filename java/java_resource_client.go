@@ -36,6 +36,11 @@ func (c *ResourceClient) getResource(name string, responseBody interface{}) erro
 	return c.unmarshalResponseBody(resp, responseBody)
 }
 
+func (c *ResourceClient) updateResource(name, path, method string, requestBody interface{}) error {
+	_, err := c.executeRequest(method, fmt.Sprintf("%s%s", c.getObjectPath(c.ResourceRootPath, name), path), requestBody)
+	return err
+}
+
 // ServiceInstance needs a PUT and a body to be destroyed
 func (c *ResourceClient) deleteInstanceResource(name string, requestBody interface{}) error {
 	var objectPath string
