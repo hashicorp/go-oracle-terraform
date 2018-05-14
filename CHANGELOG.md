@@ -1,6 +1,6 @@
 ## 0.9.3 (Unreleased)
 
-* java: Scale up/down shape for java service instnace [GH-142]
+* java: Scale up/down shape for java service instance [GH-142]
 
 ## 0.9.2 (April 24, 2018)
 
