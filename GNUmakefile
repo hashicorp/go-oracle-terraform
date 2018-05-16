@@ -21,7 +21,6 @@ cover:
 	rm coverage.out
 
 vet:
-	@echo "go vet ."
 	@go vet $$(go list ./... | grep -v vendor/) ; if [ $$? -eq 1 ]; then \
 		echo ""; \
 		echo "Vet found suspicious constructs. Please check the reported constructs"; \
@@ -33,7 +32,6 @@ fmt:
 	gofmt -w $(GOFMT_FILES)
 
 fmtcheck:
-	echo "'$(CURDIR)/scripts/gofmtcheck.sh'"
 	@sh -c "'$(CURDIR)/scripts/gofmtcheck.sh'"
 
 errcheck:

@@ -110,7 +110,7 @@ func TestAccSecRuleLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if updateSecRuleOutput.Disabled != true {
+	if !updateSecRuleOutput.Disabled {
 		t.Fatal("Sec Rule was not updated to disabled")
 	}
 	log.Printf("Successfully updated Sec Rule")

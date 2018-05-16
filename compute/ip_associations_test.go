@@ -11,8 +11,8 @@ import (
 func TestAccIPAssociationLifeCycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 	var (
-		parentPool    string = "ippool:/oracle/public/ippool"
-		instanceImage string = "/oracle/public/OL_7.2_UEKR4_x86_64"
+		parentPool    = "ippool:/oracle/public/ippool"
+		instanceImage = "/oracle/public/OL_7.2_UEKR4_x86_64"
 	)
 
 	iClient, ipaClient, err := getIPAssociationsTestClients()

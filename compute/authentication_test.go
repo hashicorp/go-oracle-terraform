@@ -36,7 +36,7 @@ func TestAccObtainAuthenticationCookie(t *testing.T) {
 		req := &AuthenticationReq{}
 		unmarshalRequestBody(t, r, req)
 
-		expectedUsername := fmt.Sprintf(CMP_USERNAME, identityDomain, username)
+		expectedUsername := fmt.Sprintf(cmpUsername, identityDomain, username)
 		if req.User != expectedUsername {
 			t.Fatalf("Wrong username %s, expected %s", req.User, expectedUsername)
 		}

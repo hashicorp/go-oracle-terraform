@@ -1,4 +1,10 @@
-## 0.9.2 (Unreleased)
+## 0.9.3 (Unreleased)
+
+* java: Scale up/down shape for java service instance [GH-142]
+
+## 0.9.2 (April 24, 2018)
+
+* database: Set desired state for database service instance [GH-141]
 
 ## 0.9.1 (April 18, 2018)
 

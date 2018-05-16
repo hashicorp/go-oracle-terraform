@@ -2,6 +2,7 @@ package java
 
 import (
 	"fmt"
+	"math/rand"
 	"testing"
 
 	"github.com/hashicorp/go-oracle-terraform/database"
@@ -16,8 +17,6 @@ const (
 	_TestAccessRulePorts       = "7000-8000"
 	_TestAccessRuleSource      = "PUBLIC-INTERNET"
 )
-
-var _TestAccessRuleName = fmt.Sprintf("test-acc-rule-%d", helper.RInt())
 
 func TestAccAccessRulesLifeCycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
@@ -81,6 +80,8 @@ func TestAccAccessRulesLifeCycle(t *testing.T) {
 	}
 	defer destroyServiceInstance(t, sClient, _ServiceInstanceName)
 
+	rInt := rand.Int()
+	testAccessRuleName := fmt.Sprintf("test-acc-rule-%d", rInt)
 	// Create an Access Rule that's disabled
 	input := &CreateAccessRuleInput{
 		ServiceInstanceID: _ServiceInstanceName,
@@ -88,7 +89,7 @@ func TestAccAccessRulesLifeCycle(t *testing.T) {
 		Destination:       AccessRuleDestinationWLSAdmin,
 		Protocol:          AccessRuleProtocolTCP,
 		Ports:             _TestAccessRulePorts,
-		Name:              _TestAccessRuleName,
+		Name:              testAccessRuleName,
 		Source:            _TestAccessRuleSource,
 		Status:            AccessRuleDisabled,
 	}
@@ -98,22 +99,22 @@ func TestAccAccessRulesLifeCycle(t *testing.T) {
 		Destination: AccessRuleDestinationWLSAdmin,
 		Ports:       _TestAccessRulePorts,
 		Protocol:    AccessRuleProtocolTCP,
-		Name:        _TestAccessRuleName,
+		Name:        testAccessRuleName,
 		Source:      _TestAccessRuleSource,
 		Status:      AccessRuleDisabled,
 		RuleType:    AccessRuleTypeUser,
 	}
 
 	// Create Access Rule
-	if _, err := aClient.CreateAccessRule(input); err != nil {
+	if _, err = aClient.CreateAccessRule(input); err != nil {
 		t.Fatalf("Error creating AccessRule: %s", err)
 	}
-	defer destroyAccessRule(t, aClient, _ServiceInstanceName, _TestAccessRuleName)
+	defer destroyAccessRule(t, aClient, _ServiceInstanceName, testAccessRuleName)
 
 	// Get Access Rule (Create only returns AccessRule name)
 	getInput := &GetAccessRuleInput{
 		ServiceInstanceID: _ServiceInstanceName,
-		Name:              _TestAccessRuleName,
+		Name:              testAccessRuleName,
 	}
 
 	// Read Result
@@ -130,11 +131,11 @@ func TestAccAccessRulesLifeCycle(t *testing.T) {
 	// Update Access Rule
 	updateInput := &UpdateAccessRuleInput{
 		ServiceInstanceID: _ServiceInstanceName,
-		Name:              _TestAccessRuleName,
+		Name:              testAccessRuleName,
 		Status:            AccessRuleEnabled,
 	}
 
-	if _, err := aClient.UpdateAccessRule(updateInput); err != nil {
+	if _, err = aClient.UpdateAccessRule(updateInput); err != nil {
 		t.Fatalf("Error updating AccessRule: %s", err)
 	}
 

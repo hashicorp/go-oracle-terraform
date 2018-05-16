@@ -31,7 +31,7 @@ func TestAccSSHClient_CreateKey(t *testing.T) {
 			t.Errorf("Expected name '/Compute-test/test/test-key1', was %s", keyInfo.Name)
 		}
 
-		if keyInfo.Enabled != true {
+		if !keyInfo.Enabled {
 			t.Errorf("Key %s was not enabled", keyInfo.Name)
 		}
 

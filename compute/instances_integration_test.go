@@ -34,7 +34,8 @@ func TestAccInstanceLifeCycle(t *testing.T) {
 	}
 	defer destroyIPNetwork(t, nClient, ipNetwork.Name)
 
-	resName := fmt.Sprintf("%s-%d", _TestIPAddressResName, helper.RInt())
+	rInt := rand.Int()
+	resName := fmt.Sprintf("%s-%d", _TestIPAddressResName, rInt)
 
 	ipresInput := &CreateIPAddressReservationInput{
 		Description:   _TestIPAddressResDesc,
@@ -116,7 +117,7 @@ func TestAccInstanceLifeCycle(t *testing.T) {
 		Virtio:        false,
 	}
 
-	if err := verifyInstance(expectedInstance, receivedInstance, ipRes, ipNetwork); err != nil {
+	if err = verifyInstance(expectedInstance, receivedInstance, ipRes, ipNetwork); err != nil {
 		t.Fatal(err)
 	}
 

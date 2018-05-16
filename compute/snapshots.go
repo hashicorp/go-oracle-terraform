@@ -5,8 +5,8 @@ import (
 	"time"
 )
 
-const WaitForSnapshotCompletePollInterval = time.Duration(30 * time.Second)
-const WaitForSnapshotCompleteTimeout = time.Duration(600 * time.Second)
+const waitForSnapshotCompletePollInterval = 30 * time.Second
+const waitForSnapshotCompleteTimeout = 600 * time.Second
 
 // SnapshotsClient is a client for the Snapshot functions of the Compute API.
 type SnapshotsClient struct {
@@ -15,32 +15,39 @@ type SnapshotsClient struct {
 
 // Snapshots obtains an SnapshotsClient which can be used to access to the
 // Snapshot functions of the Compute API
-func (c *ComputeClient) Snapshots() *SnapshotsClient {
+func (c *Client) Snapshots() *SnapshotsClient {
 	return &SnapshotsClient{
 		ResourceClient: ResourceClient{
-			ComputeClient:       c,
+			Client:              c,
 			ResourceDescription: "Snapshot",
 			ContainerPath:       "/snapshot/",
 			ResourceRootPath:    "/snapshot",
 		}}
 }
 
+// SnapshotState defines the constant states a snapshot can be in
 type SnapshotState string
 
 const (
-	SnapshotActive   SnapshotState = "active"
+	// SnapshotActive - active
+	SnapshotActive SnapshotState = "active"
+	// SnapshotComplete - complete
 	SnapshotComplete SnapshotState = "complete"
-	SnapshotQueued   SnapshotState = "queued"
-	SnapshotError    SnapshotState = "error"
+	// SnapshotQueued - queued
+	SnapshotQueued SnapshotState = "queued"
+	// SnapshotError - error
+	SnapshotError SnapshotState = "error"
 )
 
+// SnapshotDelay defines the constant values snapshot delay can be
 type SnapshotDelay string
 
 const (
+	// SnapshotDelayShutdown - shutdown
 	SnapshotDelayShutdown SnapshotDelay = "shutdown"
 )
 
-// SnapshotInfo describes an existing Snapshot.
+// Snapshot describes an existing Snapshot.
 type Snapshot struct {
 	// Shows the default account for your identity domain.
 	Account string `json:"account"`
@@ -112,10 +119,10 @@ func (c *SnapshotsClient) CreateSnapshot(input *CreateSnapshotInput) (*Snapshot,
 	}
 
 	if input.PollInterval == 0 {
-		input.PollInterval = WaitForSnapshotCompletePollInterval
+		input.PollInterval = waitForSnapshotCompletePollInterval
 	}
 	if input.Timeout == 0 {
-		input.Timeout = WaitForSnapshotCompleteTimeout
+		input.Timeout = waitForSnapshotCompleteTimeout
 	}
 
 	// Wait for snapshot to be complete and return the result
@@ -163,10 +170,10 @@ func (c *SnapshotsClient) DeleteSnapshot(machineImagesClient *MachineImagesClien
 	}
 
 	if input.PollInterval == 0 {
-		input.PollInterval = WaitForSnapshotCompletePollInterval
+		input.PollInterval = waitForSnapshotCompletePollInterval
 	}
 	if input.Timeout == 0 {
-		input.Timeout = WaitForSnapshotCompleteTimeout
+		input.Timeout = waitForSnapshotCompleteTimeout
 	}
 
 	if _, err := c.WaitForSnapshotComplete(getInput, input.PollInterval, input.Timeout); err != nil {
@@ -198,10 +205,10 @@ func (c *SnapshotsClient) DeleteSnapshotResourceOnly(input *DeleteSnapshotInput)
 	}
 
 	if input.PollInterval == 0 {
-		input.PollInterval = WaitForSnapshotCompletePollInterval
+		input.PollInterval = waitForSnapshotCompletePollInterval
 	}
 	if input.Timeout == 0 {
-		input.Timeout = WaitForSnapshotCompleteTimeout
+		input.Timeout = waitForSnapshotCompleteTimeout
 	}
 
 	if _, err := c.WaitForSnapshotComplete(getInput, input.PollInterval, input.Timeout); err != nil {
