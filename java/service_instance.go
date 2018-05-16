@@ -238,6 +238,7 @@ const (
 type ServiceInstanceMiddlewareVersion string
 
 const (
+	ServiceInstanceMiddlewareVersion12c213 ServiceInstanceMiddlewareVersion = "12cRelease213"
 	ServiceInstanceMiddlewareVersion12c212 ServiceInstanceMiddlewareVersion = "12cRelease212"
 	ServiceInstanceMiddlewareVersion12cR3  ServiceInstanceMiddlewareVersion = "12cR3"
 	ServiceInstanceMiddlewareVersion11gR1  ServiceInstanceMiddlewareVersion = "11gR1"
