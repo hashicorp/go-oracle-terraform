@@ -288,6 +288,8 @@ const (
 type ServiceInstanceMiddlewareVersion string
 
 const (
+  // ServiceInstanceMiddlewareVersion12c213 - 12cRelease213
+	ServiceInstanceMiddlewareVersion12c213 ServiceInstanceMiddlewareVersion = "12cRelease213"
 	// ServiceInstanceMiddlewareVersion12c212 - 12cRelease212
 	ServiceInstanceMiddlewareVersion12c212 ServiceInstanceMiddlewareVersion = "12cRelease212"
 	// ServiceInstanceMiddlewareVersion12cR3 - 12cR3
