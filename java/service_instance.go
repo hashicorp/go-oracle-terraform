@@ -14,9 +14,10 @@ const waitForServiceInstanceDeletePollInterval = 60 * time.Second
 const waitForServiceInstanceDeleteTimeout = 3600 * time.Second
 
 var (
-	serviceInstanceContainerPath   = "/paas/api/v1.1/instancemgmt/%s/services/jaas/instances"
-	serviceInstanceResourcePath    = "/paas/api/v1.1/instancemgmt/%s/services/jaas/instances/%s"
-	serviceInstanceScaleUpDownPath = "/hosts/scale"
+	serviceInstanceContainerPath    = "/paas/api/v1.1/instancemgmt/%s/services/jaas/instances"
+	serviceInstanceResourcePath     = "/paas/api/v1.1/instancemgmt/%s/services/jaas/instances/%s"
+	serviceInstanceScaleUpDownPath  = "/hosts/scale"
+	serviceInstanceDesiredStatePath = "/hosts/%s"
 )
 
 // ServiceInstanceClient is a client for the Service functions of the Java API.
@@ -346,6 +347,18 @@ const (
 	ServiceInstanceActivityStatusDisabled ServiceInstanceActivityStatus = "DISABLED"
 	// ServiceInstanceActivityStatusTerminated - TERMINATED
 	ServiceInstanceActivityStatusTerminated ServiceInstanceActivityStatus = "TERMINATED"
+)
+
+// ServiceInstanceLifecycleState defines the constants for the lifecycle state
+type ServiceInstanceLifecycleState string
+
+const (
+	// ServiceInstanceLifecycleStateStop - stop: Stops the Database Cloud Service instance or compute node.
+	ServiceInstanceLifecycleStateStop ServiceInstanceLifecycleState = "stop"
+	// ServiceInstanceLifecycleStateStart - start: Starts the Database Cloud Service instance or compute node.
+	ServiceInstanceLifecycleStateStart ServiceInstanceLifecycleState = "start"
+	// ServiceInstanceLifecycleStateRestart - restart: Restarts the Database Cloud Service instance or compute node.
+	ServiceInstanceLifecycleStateRestart ServiceInstanceLifecycleState = "restart"
 )
 
 // ServiceInstance specifies the attributes associated with a service instance
@@ -1451,7 +1464,7 @@ func (c *ServiceInstanceClient) startServiceInstance(name string, input *CreateS
 
 	// Wait for the service instance to be running and return the result
 	// Don't have to unqualify any objects, as the GetServiceInstance method will handle that
-	serviceInstance, err := c.WaitForServiceInstanceRunning(getInput, c.PollInterval, c.Timeout)
+	serviceInstance, err := c.WaitForServiceInstanceState(getInput, ServiceInstanceLifecycleStateStart, c.PollInterval, c.Timeout)
 	// If the service instance is returned as nil if it enters a terminating state.
 	if err != nil || serviceInstance == nil {
 		return nil, fmt.Errorf("error creating service instance %q: %+v", name, err)
@@ -1459,8 +1472,8 @@ func (c *ServiceInstanceClient) startServiceInstance(name string, input *CreateS
 	return serviceInstance, nil
 }
 
-// WaitForServiceInstanceRunning waits for a service instance to be completely initialized and available.
-func (c *ServiceInstanceClient) WaitForServiceInstanceRunning(input *GetServiceInstanceInput, pollInterval, timeoutSeconds time.Duration) (*ServiceInstance, error) {
+// WaitForServiceInstanceState waits for a service instance to be in the desired state
+func (c *ServiceInstanceClient) WaitForServiceInstanceState(input *GetServiceInstanceInput, desiredState ServiceInstanceLifecycleState, pollInterval, timeoutSeconds time.Duration) (*ServiceInstance, error) {
 	var info *ServiceInstance
 	var getErr error
 	err := c.client.WaitFor("service instance to be ready", pollInterval, timeoutSeconds, func() (bool, error) {
@@ -1472,12 +1485,24 @@ func (c *ServiceInstanceClient) WaitForServiceInstanceRunning(input *GetServiceI
 		switch s := info.State; s {
 		case ServiceInstanceStatusReady: // Target State
 			c.client.DebugLogString("Service Instance Ready")
-			return true, nil
+			if desiredState == ServiceInstanceLifecycleStateStart || desiredState == ServiceInstanceLifecycleStateRestart {
+				return true, nil
+			}
+			return false, nil
 		case ServiceInstanceStatusConfiguring:
 			c.client.DebugLogString("Service Instance is being created")
 			return false, nil
 		case ServiceInstanceStatusInitializing:
 			c.client.DebugLogString("Service Instance is being initialized")
+			return false, nil
+		case ServiceInstanceStatusStopping:
+			c.client.DebugLogString("ServiceInstance is stopping")
+			return false, nil
+		case ServiceInstanceStatusStopped:
+			c.client.DebugLogString("ServiceInstance is stopped")
+			if desiredState == ServiceInstanceLifecycleStateStop {
+				return true, nil
+			}
 			return false, nil
 		case ServiceInstanceStatusTerminating:
 			c.client.DebugLogString("Service Instance creation failed, terminating")
@@ -1639,11 +1664,73 @@ func (c *ServiceInstanceClient) ScaleUpDownServiceInstance(input *ScaleUpDownSer
 
 	// Wait for the service instance to be running and return the result
 	// Don't have to unqualify any objects, as the GetServiceInstance method will handle that.
-	serviceInstance, err := c.WaitForServiceInstanceRunning(getInput, c.PollInterval, c.Timeout)
+	serviceInstance, err := c.WaitForServiceInstanceState(getInput, ServiceInstanceLifecycleStateStart, c.PollInterval, c.Timeout)
 	// The service instance is returned as nil if it enters a terminating state.
 	if err != nil || serviceInstance == nil {
 		return fmt.Errorf("error creating service instance %q: %+v", input.Name, err)
 	}
 
+	return nil
+}
+
+// DesiredStateInput defines the attributes for how to set the desired state of a java service instance.
+type DesiredStateInput struct {
+	// Flag that specifies whether to control the entire service instance.
+	// This attribute is not applicable to the restart command.
+	// Optional
+	AllServiceHosts bool `json:"allServiceHosts,omitemtpy"`
+	// Groups properties for the Oracle WebLogic Server component (WLS).
+	// Optional
+	Components *DesiredStateComponent `json:"components,omitempty"`
+	// Name of the Java Cloud Service instance.
+	// Required.
+	Name string `json:"-"`
+	// Type of the request.
+	// Required
+	LifecycleState ServiceInstanceLifecycleState `json:"-"`
+}
+
+// DesiredStateComponent groups properties for the Oracle WebLogic Server component (WLS) or the Oracle
+// Traffice Director (OTD) component.
+type DesiredStateComponent struct {
+	// Properties for the Oracle Traffic Director (OTD) component.
+	// Optional
+	OTD *DesiredStateHost `json:"OTD,omitempty"`
+	// Properties for the Oracle WebLogic Server (WLS) component.
+	// Optional
+	WLS *DesiredStateHost `json:"WLS,omitempty"`
+}
+
+// DesiredStateHost defines the properties of the hosts
+type DesiredStateHost struct {
+	// A single host name. Only application cluster hosts can be specified.
+	// Required
+	Hosts []string `json:"hosts"`
+}
+
+// UpdateDesiredState updates the specified desired state of a service instance
+func (c *ServiceInstanceClient) UpdateDesiredState(input *DesiredStateInput) error {
+	if c.PollInterval == 0 {
+		c.PollInterval = waitForServiceInstanceReadyPollInterval
+	}
+	if c.Timeout == 0 {
+		c.Timeout = waitForServiceInstanceReadyTimeout
+	}
+
+	if err := c.updateResource(input.Name, fmt.Sprintf(serviceInstanceDesiredStatePath, input.LifecycleState), "POST", input); err != nil {
+		return err
+	}
+
+	// Call wait for instance running now, as updating the instance is an eventually consistent operation
+	getInput := &GetServiceInstanceInput{
+		Name: input.Name,
+	}
+
+	// Wait for the service instance to be running and return the result
+	// Don't have to unqualify any objects, as the GetServiceInstance method will handle that
+	_, err := c.WaitForServiceInstanceState(getInput, input.LifecycleState, c.PollInterval, c.Timeout)
+	if err != nil {
+		return fmt.Errorf("Error updating Service Instance %q: %+v", input.Name, err)
+	}
 	return nil
 }
