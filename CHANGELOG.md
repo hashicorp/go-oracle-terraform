@@ -2,7 +2,7 @@
 
 * java: Scale up/down shape for java service instance [GH-142]
 
-* java: Add 12cRelease213 to the java service instance available versions
+* java: Remove Middleware Version constants to allow users to specify new versions as they come out
 
 ## 0.9.2 (April 24, 2018)
 
