@@ -284,20 +284,6 @@ const (
 	ServiceInstanceStatusTerminated ServiceInstanceStatus = "TERMINATED"
 )
 
-// ServiceInstanceMiddlewareVersion specifies the constants for the middleware version of a service instance
-type ServiceInstanceMiddlewareVersion string
-
-const (
-  // ServiceInstanceMiddlewareVersion12c213 - 12cRelease213
-	ServiceInstanceMiddlewareVersion12c213 ServiceInstanceMiddlewareVersion = "12cRelease213"
-	// ServiceInstanceMiddlewareVersion12c212 - 12cRelease212
-	ServiceInstanceMiddlewareVersion12c212 ServiceInstanceMiddlewareVersion = "12cRelease212"
-	// ServiceInstanceMiddlewareVersion12cR3 - 12cR3
-	ServiceInstanceMiddlewareVersion12cR3 ServiceInstanceMiddlewareVersion = "12cR3"
-	// ServiceInstanceMiddlewareVersion11gR1 - 11gR1
-	ServiceInstanceMiddlewareVersion11gR1 ServiceInstanceMiddlewareVersion = "11gR1"
-)
-
 // ServiceInstanceClusterType are the constances around cluster types for a service instance
 type ServiceInstanceClusterType string
 
@@ -863,7 +849,7 @@ type CreateServiceInstanceInput struct {
 	// Only 12cRelease212 is valid if you are using upperStackProductName to provision a service instance for an Oracle
 	// Fusion Middleware product.
 	// Optional
-	ServiceVersion ServiceInstanceMiddlewareVersion `json:"serviceVersion,omitempty"`
+	ServiceVersion string `json:"serviceVersion,omitempty"`
 	// This attribute is applicable only to provisioning on Oracle Cloud Infrastructure Classic.
 	// This attribute and sourceServiceName are required when you provision a clone of an existing Oracle
 	// Java Cloud Service instance (the source service instance).
