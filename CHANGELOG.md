@@ -2,7 +2,7 @@
 
 * java: Scale up/down shape for java service instance [GH-142]
 
-* java: Remove Middleware Version constants to allow users to specify new versions as they come out
+* java: Remove Middleware Version constants to allow users to specify new versions as they come out [GH-144]
 
 ## 0.9.2 (April 24, 2018)
 
