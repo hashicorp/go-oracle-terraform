@@ -21,7 +21,7 @@ const (
 )
 
 // Default Timeout value for Create
-const waitForAccessRuleTimeout = 10 * time.Second
+const waitForAccessRuleTimeout = 10 * time.Minute
 
 // Default Poll Interval value for Create
 const waitForAccessRulePollInterval = 1 * time.Second
