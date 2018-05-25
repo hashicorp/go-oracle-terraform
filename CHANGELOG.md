@@ -1,3 +1,17 @@
+## 0.9.3 (May 23, 2018)
+
+* java: Scale up/down shape for java service instance [GH-142]
+
+* java: Remove Middleware Version constants to allow users to specify new versions as they come out [GH-144]
+
+## 0.9.2 (April 24, 2018)
+
+* database: Set desired state for database service instance [GH-141]
+
+## 0.9.1 (April 18, 2018)
+
+* database: Scale database service instance [GH-140]
+
 ## 0.9.0 (April 17, 2018)
 
 * mysql: Added mysql cloud functionality to the sdk [GH-129]

@@ -129,8 +129,8 @@ func TestRoutesClient_CreateRoute(t *testing.T) {
 			t.Errorf("Wrong HTTP Method %s, expected POST", r.Method)
 		}
 
-		if r.URL.Path != RoutesContainerPath {
-			t.Errorf("Wrong HTTP Path %q, expected %q", r.URL.Path, RoutesContainerPath)
+		if r.URL.Path != routesContainerPath {
+			t.Errorf("Wrong HTTP Path %q, expected %q", r.URL.Path, routesContainerPath)
 		}
 
 		routeInput := &CreateRouteInput{}

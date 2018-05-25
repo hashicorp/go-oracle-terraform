@@ -6,10 +6,10 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/client"
 )
 
-const WaitForVolumeAttachmentDeletePollInterval = time.Duration(1 * time.Second)
-const WaitForVolumeAttachmentDeleteTimeout = time.Duration(30 * time.Second)
-const WaitForVolumeAttachmentReadyPollInterval = time.Duration(1 * time.Second)
-const WaitForVolumeAttachmentReadyTimeout = time.Duration(30 * time.Second)
+const waitForVolumeAttachmentDeletePollInterval = 1 * time.Second
+const waitForVolumeAttachmentDeleteTimeout = 30 * time.Second
+const waitForVolumeAttachmentReadyPollInterval = 1 * time.Second
+const waitForVolumeAttachmentReadyTimeout = 30 * time.Second
 
 // StorageAttachmentsClient is a client for the Storage Attachment functions of the Compute API.
 type StorageAttachmentsClient struct {
@@ -18,24 +18,30 @@ type StorageAttachmentsClient struct {
 
 // StorageAttachments obtains a StorageAttachmentsClient which can be used to access to the
 // Storage Attachment functions of the Compute API
-func (c *ComputeClient) StorageAttachments() *StorageAttachmentsClient {
+func (c *Client) StorageAttachments() *StorageAttachmentsClient {
 	return &StorageAttachmentsClient{
 		ResourceClient: ResourceClient{
-			ComputeClient:       c,
+			Client:              c,
 			ResourceDescription: "storage volume attachment",
 			ContainerPath:       "/storage/attachment/",
 			ResourceRootPath:    "/storage/attachment",
 		}}
 }
 
+// StorageAttachmentState defines all the storage attachment states
 type StorageAttachmentState string
 
 const (
-	Attaching   StorageAttachmentState = "attaching"
-	Attached    StorageAttachmentState = "attached"
-	Detaching   StorageAttachmentState = "detaching"
+	// Attaching - attaching
+	Attaching StorageAttachmentState = "attaching"
+	// Attached - attached
+	Attached StorageAttachmentState = "attached"
+	// Detaching - detaching
+	Detaching StorageAttachmentState = "detaching"
+	// Unavailable - unavailable
 	Unavailable StorageAttachmentState = "unavailable"
-	Unknown     StorageAttachmentState = "unknown"
+	// Unknown - unkown
+	Unknown StorageAttachmentState = "unknown"
 )
 
 // StorageAttachmentInfo describes an existing storage attachment.
@@ -62,6 +68,7 @@ func (c *StorageAttachmentsClient) success(attachmentInfo *StorageAttachmentInfo
 	return attachmentInfo, nil
 }
 
+// CreateStorageAttachmentInput defines the attributes to create a storage attachment
 type CreateStorageAttachmentInput struct {
 	// Index number for the volume. The allowed range is 1-10
 	// An attachment with index 1 is exposed to the instance as /dev/xvdb, an attachment with index 2 is exposed as /dev/xvdc, and so on.
@@ -94,10 +101,10 @@ func (c *StorageAttachmentsClient) CreateStorageAttachment(input *CreateStorageA
 	}
 
 	if input.PollInterval == 0 {
-		input.PollInterval = WaitForVolumeAttachmentReadyPollInterval
+		input.PollInterval = waitForVolumeAttachmentReadyPollInterval
 	}
 	if input.Timeout == 0 {
-		input.Timeout = WaitForVolumeAttachmentReadyTimeout
+		input.Timeout = waitForVolumeAttachmentReadyTimeout
 	}
 
 	return c.waitForStorageAttachmentToFullyAttach(attachmentInfo.Name, input.PollInterval, input.Timeout)
@@ -123,10 +130,10 @@ func (c *StorageAttachmentsClient) DeleteStorageAttachment(input *DeleteStorageA
 	}
 
 	if input.PollInterval == 0 {
-		input.PollInterval = WaitForVolumeAttachmentDeletePollInterval
+		input.PollInterval = waitForVolumeAttachmentDeletePollInterval
 	}
 	if input.Timeout == 0 {
-		input.Timeout = WaitForVolumeAttachmentDeleteTimeout
+		input.Timeout = waitForVolumeAttachmentDeleteTimeout
 	}
 
 	return c.waitForStorageAttachmentToBeDeleted(input.Name, input.PollInterval, input.Timeout)

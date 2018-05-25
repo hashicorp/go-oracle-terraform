@@ -1,6 +1,7 @@
 package compute
 
 import (
+	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
@@ -28,7 +29,8 @@ func TestAccMachineImageLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	machineImageName := fmt.Sprintf("%s-%d", _MachineImageName, helper.RInt())
+	rInt := rand.Int()
+	machineImageName := fmt.Sprintf("%s-%d", _MachineImageName, rInt)
 	machineImageFile := fmt.Sprintf("%s.tar.gz", machineImageName)
 
 	// Create dummy image file for the machine image test
@@ -36,7 +38,7 @@ func TestAccMachineImageLifeCycle(t *testing.T) {
 	createDummyMachineImageFile(t, sClient, machineImageFile)
 	defer deleteDummyMachineImageFile(t, sClient, machineImageFile)
 
-	account := fmt.Sprintf("/Compute-%s/cloud_storage", *client.ComputeClient.client.IdentityDomain)
+	account := fmt.Sprintf("/Compute-%s/cloud_storage", *client.Client.client.IdentityDomain)
 
 	createMachineImage := &CreateMachineImageInput{
 		Account: account,
@@ -85,7 +87,7 @@ func destroyMachineImage(t *testing.T, client *MachineImagesClient, name string)
 	}
 }
 
-func getStorageClient(t *testing.T) *storage.StorageClient {
+func getStorageClient(t *testing.T) *storage.Client {
 	config := &opc.Config{}
 	tr := &http.Transport{
 		Proxy:               http.ProxyFromEnvironment,
@@ -108,7 +110,7 @@ func getStorageClient(t *testing.T) *storage.StorageClient {
 }
 
 // create a dummy image file the the storage /compute_images container
-func createDummyMachineImageFile(t *testing.T, sClient *storage.StorageClient, name string) {
+func createDummyMachineImageFile(t *testing.T, sClient *storage.Client, name string) {
 	oClient := sClient.Objects()
 	body, err := os.Open(_TestFileFixturesPath + "/dummy.tar.gz")
 	if err != nil {
@@ -127,7 +129,7 @@ func createDummyMachineImageFile(t *testing.T, sClient *storage.StorageClient, n
 	}
 }
 
-func deleteDummyMachineImageFile(t *testing.T, sClient *storage.StorageClient, name string) {
+func deleteDummyMachineImageFile(t *testing.T, sClient *storage.Client, name string) {
 	oClient := sClient.Objects()
 	input := &storage.DeleteObjectInput{
 		Name:      name,

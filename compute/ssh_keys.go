@@ -7,17 +7,17 @@ type SSHKeysClient struct {
 
 // SSHKeys obtains an SSHKeysClient which can be used to access to the
 // SSH key functions of the Compute API
-func (c *ComputeClient) SSHKeys() *SSHKeysClient {
+func (c *Client) SSHKeys() *SSHKeysClient {
 	return &SSHKeysClient{
 		ResourceClient: ResourceClient{
-			ComputeClient:       c,
+			Client:              c,
 			ResourceDescription: "SSH key",
 			ContainerPath:       "/sshkey/",
 			ResourceRootPath:    "/sshkey",
 		}}
 }
 
-// SSHKeyInfo describes an existing SSH key.
+// SSHKey describes an existing SSH key.
 type SSHKey struct {
 	// Indicates whether the key is enabled (true) or disabled.
 	Enabled bool `json:"enabled"`
@@ -107,7 +107,7 @@ func (c *SSHKeysClient) UpdateSSHKey(updateInput *UpdateSSHKeyInput) (*SSHKey, e
 	return c.success(&keyInfo)
 }
 
-// DeleteKeyInput describes the ssh key to delete
+// DeleteSSHKeyInput describes the ssh key to delete
 type DeleteSSHKeyInput struct {
 	// The three-part name of the SSH Key (/Compute-identity_domain/user/object).
 	Name string `json:"name"`

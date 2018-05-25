@@ -3,6 +3,7 @@ package compute
 import (
 	"fmt"
 	"log"
+	"math/rand"
 	"reflect"
 	"testing"
 
@@ -63,7 +64,8 @@ func TestAccIPAddressAssociationsLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	resName := fmt.Sprintf("%s-%d", _TestIPAddressResName, helper.RInt())
+	rInt := rand.Int()
+	resName := fmt.Sprintf("%s-%d", _TestIPAddressResName, rInt)
 
 	input := &CreateIPAddressReservationInput{
 		Description:   _TestIPAddressResDesc,

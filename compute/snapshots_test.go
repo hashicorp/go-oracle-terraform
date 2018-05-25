@@ -201,7 +201,7 @@ func TestAccSnapshotLifeCycleDelay(t *testing.T) {
 		Name: createdInstance.Name,
 		ID:   createdInstance.ID,
 	}
-	if err := iClient.DeleteInstance(deleteInstanceInput); err != nil {
+	if err = iClient.DeleteInstance(deleteInstanceInput); err != nil {
 		t.Fatalf("Error deleting instance, dangling resources may occur: %v", err)
 	}
 

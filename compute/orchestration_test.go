@@ -280,8 +280,7 @@ func TestAccOrchestrationLifeCycle_badInstance(t *testing.T) {
 	}
 
 	createdOrchestration, err := orcClient.CreateOrchestration(input)
-	assert.Error(t, err, "Orchestration succeded when attempting to create a bad Orchestration: %+v",
-		createdOrchestration)
+	assert.Error(t, err, fmt.Sprintf("Orchestration succeded when attempting to create a bad Orchestration: %+v", createdOrchestration))
 }
 
 func TestAccOrchestrationLifeCycle_relationship(t *testing.T) {

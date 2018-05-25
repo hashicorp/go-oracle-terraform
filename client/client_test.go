@@ -1,11 +1,12 @@
 package client
 
 import (
-	"github.com/hashicorp/go-oracle-terraform/opc"
-	"gopkg.in/jarcoal/httpmock.v1"
 	"net/http"
 	"net/url"
 	"testing"
+
+	"github.com/hashicorp/go-oracle-terraform/opc"
+	"gopkg.in/jarcoal/httpmock.v1"
 )
 
 func TestClient_retryHTTP(t *testing.T) {
@@ -76,8 +77,8 @@ func TestClient_userAgent(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if req.Header.Get(USER_AGENT_HEADER) != userAgentString {
-		t.Fatalf("Expected UserAgent to be: %s Got: %s", userAgentString, req.Header.Get(USER_AGENT_HEADER))
+	if req.Header.Get(userAgentHeader) != userAgentString {
+		t.Fatalf("Expected UserAgent to be: %s Got: %s", userAgentString, req.Header.Get(userAgentHeader))
 	}
 
 }
