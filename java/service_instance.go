@@ -705,6 +705,12 @@ type IPReservation struct {
 
 // CreateServiceInstanceInput specifies the attributes of the service instance that will be created
 type CreateServiceInstanceInput struct {
+	// This attribute is only applicable when provisioning an Oracle Java Cloud Service
+	// instance in a region on Oracle Cloud Infrastructure Classic, and a custom IP
+	// network is specified in ipNetwork. Flag that specifies whether to assign (true)
+	// or not assign (false) public IP addresses to the nodes in your service instance.
+	// Optional.
+	AssignPublicIP string `json:"assignPublicIP,omitempty"`
 	// This attribute is available only on Oracle Cloud Infrastructure. It is required along with region and subnet.
 	// Name of a data center location in the Oracle Cloud Infrastructure region that is specified in region.
 	// A region is a localized geographic area, composed of one or more availability domains (data centers).
