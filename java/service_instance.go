@@ -12,6 +12,7 @@ const waitForServiceInstanceReadyPollInterval = 60 * time.Second
 const waitForServiceInstanceReadyTimeout = 3600 * time.Second
 const waitForServiceInstanceDeletePollInterval = 60 * time.Second
 const waitForServiceInstanceDeleteTimeout = 3600 * time.Second
+const deleteMaxRetries = 5
 
 var (
 	serviceInstanceContainerPath   = "/paas/api/v1.1/instancemgmt/%s/services/jaas/instances"
@@ -1530,9 +1531,21 @@ func (c *ServiceInstanceClient) DeleteServiceInstance(deleteInput *DeleteService
 		c.Timeout = waitForServiceInstanceDeleteTimeout
 	}
 
-	deleteErr := c.deleteInstanceResource(deleteInput.Name, deleteInput)
+	// There are times when the service instance isn't in a state to be deleted even though the api returns a ready
+	// instance. We'll wait a set amount of time for it to be ready to delete before erroring out.
+	var deleteErr error
+	for i := 0; i < deleteMaxRetries; i++ {
+		c.client.DebugLogString(fmt.Sprintf("(Iteration: %d of %d) Deleting instance with name %s", i, *c.Client.client.MaxRetries, deleteInput.Name))
+
+		deleteErr = c.deleteInstanceResource(deleteInput.Name, deleteInput)
+		if deleteErr == nil {
+			c.client.DebugLogString(fmt.Sprintf("(Iteration: %d of %d) Finished deleting instance with name %s", i, *c.Client.client.MaxRetries, deleteInput.Name))
+			break
+		}
+		time.Sleep(1 * time.Minute)
+	}
 	if deleteErr != nil {
-		return deleteErr
+		return fmt.Errorf("error submitting delete request for java service instance %q", deleteInput.Name)
 	}
 
 	// Call wait for instance deleted now, as deleting the instance is an eventually consistent operation
