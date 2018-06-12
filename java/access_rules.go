@@ -191,7 +191,7 @@ func (c *UtilityClient) CreateAccessRule(input *CreateAccessRuleInput) (*AccessR
 		Name: input.ServiceInstanceID,
 	}
 
-	serviceInstance, err := c.Client.ServiceInstanceClient().WaitForServiceInstanceRunning(getInstanceInput, pollInterval, timeout)
+	serviceInstance, err := c.Client.ServiceInstanceClient().WaitForServiceInstanceState(getInstanceInput, ServiceInstanceLifecycleStateStart, pollInterval, timeout)
 	if err != nil || serviceInstance == nil {
 		return nil, fmt.Errorf("error waiting for service instance to be ready %q: %+v", input.ServiceInstanceID, err)
 	}
@@ -285,7 +285,7 @@ func (c *UtilityClient) UpdateAccessRule(input *UpdateAccessRuleInput,
 		Name: input.ServiceInstanceID,
 	}
 
-	serviceInstance, err := c.Client.ServiceInstanceClient().WaitForServiceInstanceRunning(getInstanceInput, waitForAccessRulePollInterval, waitForAccessRulePollInterval)
+	serviceInstance, err := c.Client.ServiceInstanceClient().WaitForServiceInstanceState(getInstanceInput, ServiceInstanceLifecycleStateStart, waitForAccessRulePollInterval, waitForAccessRuleTimeout)
 	if err != nil || serviceInstance == nil {
 		return nil, fmt.Errorf("error waiting for service instance to be ready %q: %+v", input.ServiceInstanceID, err)
 	}
@@ -349,7 +349,7 @@ func (c *UtilityClient) DeleteAccessRule(input *DeleteAccessRuleInput) error {
 		Name: input.ServiceInstanceID,
 	}
 
-	serviceInstance, err := c.Client.ServiceInstanceClient().WaitForServiceInstanceRunning(getInstanceInput, pollInterval, timeout)
+	serviceInstance, err := c.Client.ServiceInstanceClient().WaitForServiceInstanceState(getInstanceInput, ServiceInstanceLifecycleStateStart, pollInterval, timeout)
 	if err != nil || serviceInstance == nil {
 		return fmt.Errorf("error waiting for service instance to be ready %q: %+v", input.ServiceInstanceID, err)
 	}
