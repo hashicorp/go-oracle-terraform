@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	_ServiceInstanceName                        = "testingjavaserviceinstance"
+	_ServiceInstanceName                        = "testingjavaserviceinstance1"
 	_ServiceInstanceLevel                       = "PAAS"
 	_ServiceInstanceSubscriptionType            = "HOURLY"
 	_ServiceInstanceDBAUser                     = "sys"
@@ -27,7 +27,7 @@ const (
 	_ServiceInstanceManagedServerCount          = 0
 	_ServiceInstanceProvisionOTD                = true
 	// Database specific configuration
-	_ServiceInstanceDatabaseName            = "testing-java-instance-service3"
+	_ServiceInstanceDatabaseName            = "testing-java-instance-service1"
 	_ServiceInstanceBackupDestinationBoth   = "BOTH"
 	_ServiceInstanceDBSID                   = "ORCL"
 	_ServiceInstanceDBType                  = "db"
@@ -297,6 +297,198 @@ func TestAccServiceInstanceLifeCycle_ScaleUp(t *testing.T) {
 	}
 
 	assert.Equal(t, _ServiceInstanceUpdateShape, receivedRes.Components.WLS.VMInstances[hostname].ShapeID, "Service instance shape not expected.")
+}
+
+func TestAccServiceInstanceLifeCycle_Stop(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
+
+	siClient, dClient, err := getServiceInstanceTestClients()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	databaseParameter := database.ParameterInput{
+		AdminPassword:                   _ServiceInstanceDBAPassword,
+		BackupDestination:               _ServiceInstanceBackupDestinationBoth,
+		SID:                             _ServiceInstanceDBSID,
+		Type:                            _ServiceInstanceDBType,
+		UsableStorage:                   _ServiceInstanceUsableStorage,
+		CloudStorageContainer:           _ServiceInstanceDBCloudStorageContainer,
+		CreateStorageContainerIfMissing: _ServiceInstanceCloudStorageCreateIfMissing,
+	}
+
+	createDatabaseServiceInstance := &database.CreateServiceInstanceInput{
+		Name:             _ServiceInstanceDatabaseName,
+		Edition:          _ServiceInstanceEdition,
+		Level:            _ServiceInstanceLevel,
+		Shape:            _ServiceInstanceDatabaseShape,
+		SubscriptionType: _ServiceInstanceSubscriptionType,
+		Version:          _ServiceInstanceDBVersion,
+		VMPublicKey:      _ServiceInstancePubKey,
+		Parameter:        databaseParameter,
+	}
+
+	_, err = dClient.CreateServiceInstance(createDatabaseServiceInstance)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer destroyDatabaseServiceInstance(t, dClient, _ServiceInstanceDatabaseName)
+
+	wlsConfig := &CreateWLS{
+		DBAName:            _ServiceInstanceDBAUser,
+		DBAPassword:        _ServiceInstanceDBAPassword,
+		DBServiceName:      _ServiceInstanceDatabaseName,
+		Shape:              _ServiceInstanceShape,
+		ManagedServerCount: _ServiceInstanceManagedServerCount,
+		AdminUsername:      _ServiceInstanceAdminUsername,
+		AdminPassword:      _ServiceInstanceAdminPassword,
+	}
+
+	createServiceInstance := &CreateServiceInstanceInput{
+		CloudStorageContainer:             _ServiceInstanceCloudStorageContainer,
+		CloudStorageContainerAutoGenerate: _ServiceInstanceCloudStorageCreateIfMissing,
+		ServiceName:                       _ServiceInstanceName,
+		ServiceLevel:                      _ServiceInstanceLevel,
+		Components:                        CreateComponents{WLS: wlsConfig},
+		VMPublicKeyText:                   _ServiceInstancePubKey,
+		Edition:                           ServiceInstanceEditionSuite,
+		ServiceVersion:                    _ServiceInstanceVersion,
+	}
+
+	_, err = siClient.CreateServiceInstance(createServiceInstance)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer destroyServiceInstance(t, siClient, _ServiceInstanceName)
+
+	getInput := &GetServiceInstanceInput{
+		Name: _ServiceInstanceName,
+	}
+
+	desiredStateInput := &DesiredStateInput{
+		Name:            _ServiceInstanceName,
+		AllServiceHosts: true,
+		LifecycleState:  ServiceInstanceLifecycleStateStop,
+	}
+
+	err = siClient.UpdateDesiredState(desiredStateInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	receivedRes, err := siClient.GetServiceInstance(getInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t, ServiceInstanceStatusStopped, receivedRes.State, "Service instance status not expected.")
+}
+
+func TestAccServiceInstanceLifeCycle_RestartHost(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
+
+	siClient, dClient, err := getServiceInstanceTestClients()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	databaseParameter := database.ParameterInput{
+		AdminPassword:                   _ServiceInstanceDBAPassword,
+		BackupDestination:               _ServiceInstanceBackupDestinationBoth,
+		SID:                             _ServiceInstanceDBSID,
+		Type:                            _ServiceInstanceDBType,
+		UsableStorage:                   _ServiceInstanceUsableStorage,
+		CloudStorageContainer:           _ServiceInstanceDBCloudStorageContainer,
+		CreateStorageContainerIfMissing: _ServiceInstanceCloudStorageCreateIfMissing,
+	}
+
+	createDatabaseServiceInstance := &database.CreateServiceInstanceInput{
+		Name:             _ServiceInstanceDatabaseName,
+		Edition:          _ServiceInstanceEdition,
+		Level:            _ServiceInstanceLevel,
+		Shape:            _ServiceInstanceDatabaseShape,
+		SubscriptionType: _ServiceInstanceSubscriptionType,
+		Version:          _ServiceInstanceDBVersion,
+		VMPublicKey:      _ServiceInstancePubKey,
+		Parameter:        databaseParameter,
+	}
+
+	_, err = dClient.CreateServiceInstance(createDatabaseServiceInstance)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer destroyDatabaseServiceInstance(t, dClient, _ServiceInstanceDatabaseName)
+
+	wlsConfig := &CreateWLS{
+		DBAName:            _ServiceInstanceDBAUser,
+		DBAPassword:        _ServiceInstanceDBAPassword,
+		DBServiceName:      _ServiceInstanceDatabaseName,
+		Shape:              _ServiceInstanceShape,
+		ManagedServerCount: _ServiceInstanceManagedServerCount,
+		AdminUsername:      _ServiceInstanceAdminUsername,
+		AdminPassword:      _ServiceInstanceAdminPassword,
+	}
+
+	createServiceInstance := &CreateServiceInstanceInput{
+		CloudStorageContainer:             _ServiceInstanceCloudStorageContainer,
+		CloudStorageContainerAutoGenerate: _ServiceInstanceCloudStorageCreateIfMissing,
+		ServiceName:                       _ServiceInstanceName,
+		ServiceLevel:                      _ServiceInstanceLevel,
+		Components:                        CreateComponents{WLS: wlsConfig},
+		VMPublicKeyText:                   _ServiceInstancePubKey,
+		Edition:                           ServiceInstanceEditionSuite,
+		ServiceVersion:                    _ServiceInstanceVersion,
+	}
+
+	_, err = siClient.CreateServiceInstance(createServiceInstance)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer destroyServiceInstance(t, siClient, _ServiceInstanceName)
+
+	getInput := &GetServiceInstanceInput{
+		Name: _ServiceInstanceName,
+	}
+
+	receivedRes, err := siClient.GetServiceInstance(getInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var hostname string
+	for _, instance := range receivedRes.Components.WLS.VMInstances {
+		hostname = instance.HostName
+	}
+
+	if hostname == "" {
+		t.Fatal(fmt.Errorf("Unable to find hostname to scale"))
+	}
+
+	wlsComponent := &DesiredStateHost{
+		Hosts: []string{hostname},
+	}
+
+	component := &DesiredStateComponent{
+		WLS: wlsComponent,
+	}
+
+	desiredStateInput := &DesiredStateInput{
+		Name:           _ServiceInstanceName,
+		Components:     component,
+		LifecycleState: ServiceInstanceLifecycleStateRestart,
+	}
+
+	err = siClient.UpdateDesiredState(desiredStateInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	receivedRes, err = siClient.GetServiceInstance(getInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t, ServiceInstanceStatusReady, receivedRes.State, "Service instance status not expected.")
 }
 
 func getServiceInstanceTestClients() (*ServiceInstanceClient, *database.ServiceInstanceClient, error) {

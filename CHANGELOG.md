@@ -1,3 +1,13 @@
+## 0.9.5 (Unreleased)
+
+## 0.9.4 (June 12, 2018)
+
+* java: Assign public ip to service instance
+
+* java: Set service instance desired state 
+
+* java: Check for desired state when deleting access rules
+
 ## 0.9.3 (May 23, 2018)
 
 * java: Scale up/down shape for java service instance [GH-142]
