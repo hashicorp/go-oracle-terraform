@@ -204,7 +204,6 @@ func (c *Client) BuildMultipartFormRequest(method, path string, files map[string
 	if err != nil {
 		return nil, err
 	}
-	return nil, fmt.Errorf("%+v", body)
 
 	req, err := http.NewRequest("POST", c.formatURL(urlPath), body)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
