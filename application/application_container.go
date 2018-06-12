@@ -151,6 +151,20 @@ type CreateApplicationContainerInput struct {
 	Timeout time.Duration
 }
 
+// Manifest defines the attributes available to be specified in the manifest.json file
+type Manifest struct {
+	// Defines the version for the runtime environment.
+	// Optional
+	Runtime Runtime `json:"runtime,omitempty"`
+}
+
+// Runtime defines the attributes available to set
+type Runtime struct {
+	// Major version of the runtime environment.
+	// Optional
+	MajorVersion string `json:"majorVersion"`
+}
+
 // CreateApplicationContainerAdditionalFields specifies the additional fields needed to create an application container
 type CreateApplicationContainerAdditionalFields struct {
 	// Location of the application archive file in Oracle Storage Cloud Service, in the format app-name/file-name
