@@ -4,13 +4,14 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"testing"
 	"time"
 
 	"github.com/hashicorp/go-oracle-terraform/opc"
 )
 
-// GetLoadBalancerTestClient obtains a client for testing purposes
-func GetLoadBalancerTestClient(c *opc.Config) (*Client, error) {
+// GetTestClient obtains a client for testing purposes
+func GetTestClient(c *opc.Config) (*Client, error) {
 	// Build up config with default values if omitted
 
 	if c.Username == nil {
@@ -40,4 +41,10 @@ func GetLoadBalancerTestClient(c *opc.Config) (*Client, error) {
 	}
 
 	return NewClient(c)
+}
+
+func compare(t *testing.T, attrName, respValue, expectedValue string) {
+	if respValue != expectedValue {
+		t.Fatalf("%s %s in response does to match expected value of %s", attrName, respValue, expectedValue)
+	}
 }

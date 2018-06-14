@@ -1,18 +1,31 @@
 package lbaas
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"net/http"
 
 	"github.com/hashicorp/go-oracle-terraform/client"
 	"github.com/hashicorp/go-oracle-terraform/opc"
+	"github.com/mitchellh/mapstructure"
 )
 
 const CONTENT_TYPE_VLBR_JSON = "application/vnd.com.oracle.oracloud.lbaas.VLBR+json"
+const CONTENT_TYPE_LISTENER_JSON = "application/vnd.com.oracle.oracloud.lbaas.Listener+json"
+const CONTENT_TYPE_ORIGIN_SERVER_POOL_JSON = "application/vnd.com.oracle.oracloud.lbaas.OriginServerPool+json"
+const CONTENT_TYPE_APP_COOKIE_STICKINESS_POLICY_JSON = "application/vnd.com.oracle.oracloud.lbaas.AppCookieStickinessPolicy+json"
+const CONTENT_TYPE_LB_COOKIE_STICKINESS_POLICY_JSON = "application/vnd.com.oracle.oracloud.lbaas.LBCookieStickinessPolicy+json"
+const CONTENT_TYPE_RESOURCE_ACCESS_CONTROL_POLICY_JSON = "application/vnd.com.oracle.oracloud.lbaas.ResourceAccessControlPolicy+json"
+const CONTENT_TYPE_REDIRECT_POLICY_JSON = "application/vnd.com.oracle.oracloud.lbaas.RedirectPolicy+json"
+const CONTENT_TYPE_SSL_NEGOTIATION_POLICY_JSON = "application/vnd.com.oracle.oracloud.lbaas.SSLNegotiationPolicy+json"
+const CONTENT_TYPE_SET_REQUEST_HEADER_POLICY_JSON = "application/vnd.com.oracle.oracloud.lbaas.SetRequestHeaderPolicy+json"
+const CONTENT_TYPE_TRUSTED_CERTIFICATE_POLICY_JSON = "application/vnd.com.oracle.oracloud.lbaas.TrustedCertPolicy+json"
 
 // Client implementation for Oracle Cloud Infrastructure Load Balancing Classic */
 type Client struct {
-	client *client.Client
+	client      *client.Client
+	ContentType string
 }
 
 // NewClient returns a new LBaaSClient
@@ -40,9 +53,9 @@ func (c *Client) executeRequest(method, path string, body interface{}) (*http.Re
 	}
 
 	debugReqString := fmt.Sprintf("HTTP %s Req (%s)", method, path)
-	req.Header.Add("Accept", CONTENT_TYPE_VLBR_JSON)
+	req.Header.Add("Accept", c.ContentType)
 	if body != nil {
-		req.Header.Set("Content-Type", CONTENT_TYPE_VLBR_JSON)
+		req.Header.Set("Content-Type", c.ContentType)
 		// Debug the body for database services
 		debugReqString = fmt.Sprintf("%s:\nBody: %+v", debugReqString, string(reqBody))
 	}
@@ -59,10 +72,40 @@ func (c *Client) executeRequest(method, path string, body interface{}) (*http.Re
 	return resp, nil
 }
 
-func (c *Client) getContainerPath(root string) string {
-	return fmt.Sprintf(root)
+func (c *Client) getContainerPath(root, lbRegion, lbName string) string {
+	return fmt.Sprintf(root, lbRegion, lbName)
 }
 
-func (c *Client) getObjectPath(root, region, name string) string {
-	return fmt.Sprintf(root, region, name)
+func (c *Client) getObjectPath(root, lbRegion, lbName, name string) string {
+	return fmt.Sprintf(root, lbRegion, lbName, name)
+}
+
+func (c *Client) unmarshalResponseBody(resp *http.Response, iface interface{}) error {
+	buf := new(bytes.Buffer)
+	_, err := buf.ReadFrom(resp.Body)
+	if err != nil {
+		return err
+	}
+	c.client.DebugLogString(fmt.Sprintf("HTTP Resp (%d): %s", resp.StatusCode, buf.String()))
+	// JSON decode response into interface
+	var tmp interface{}
+	dcd := json.NewDecoder(buf)
+	if err = dcd.Decode(&tmp); err != nil {
+		return err
+	}
+
+	// Use mapstructure to weakly decode into the resulting interface
+	msdcd, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
+		WeaklyTypedInput: true,
+		Result:           iface,
+		TagName:          "json",
+	})
+	if err != nil {
+		return err
+	}
+
+	if err := msdcd.Decode(tmp); err != nil {
+		return err
+	}
+	return nil
 }

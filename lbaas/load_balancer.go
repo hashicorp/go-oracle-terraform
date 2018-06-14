@@ -1,38 +1,5 @@
 package lbaas
 
-import (
-	"time"
-)
-
-var (
-	serviceInstanceContainerPath = "/vlbrs"
-	serviceInstanceResourcePath  = "/vlbrs/%s/%s/"
-)
-
-const waitForServiceInstanceReadyPollInterval = 10 * time.Second
-const waitForServiceInstanceReadyTimeout = 300 * time.Second
-const waitForServiceInstanceDeletePollInterval = 10 * time.Second
-const waitForServiceInstanceDeleteTimeout = 300 * time.Second
-
-// LoadBalancerClient is a client for the Load Balancer service instance.
-type LoadBalancerClient struct {
-	ResourceClient
-	PollInterval time.Duration
-	Timeout      time.Duration
-}
-
-// LoadBalancerClient returns an ServiceInstanceClient which is used to access the
-// Load Balancer API
-func (c *Client) LoadBalancerClient() *LoadBalancerClient {
-	return &LoadBalancerClient{
-		ResourceClient: ResourceClient{
-			Client:           c,
-			ContainerPath:    serviceInstanceContainerPath,
-			ResourceRootPath: serviceInstanceResourcePath,
-		},
-	}
-}
-
 // LoadBalancerScheme Scheme types
 type LoadBalancerScheme string
 
@@ -122,16 +89,6 @@ type HealthCheckInfo struct {
 	UnhealthyThreshold int    `json:"unhealthy_threshold"`
 }
 
-type ListenerInfo struct {
-	BalancerProtocol     string `json:"balancer_protocol"`
-	Disabled             string `json:"disabled"`
-	EffectiveState       string `json:"effective_state"`
-	Name                 string `json:"name"`
-	OriginServerProtocol string `json:"origin_server_protocol"`
-	Port                 string `json:"port"`
-	URI                  string `json:"uri"`
-}
-
 type RestURIInfo struct {
 	Type string `json:"type"`
 	URI  string `json:"uri"`
@@ -142,45 +99,60 @@ type CreateLoadBalancerInput struct {
 	Description        string               `json:"description,omitempty"`
 	Disabled           LoadBalancerDisabled `json:"disabled"`
 	Name               string               `json:"name"`
+	ParentLoadBalancer string               `json:"parent_vlbr,omitempty"`
+	PermittedClients   []string             `json:"permitted_clients,omitempty"`
+	PermittedMethods   []string             `json:"permitted_methods,omitempty"`
+	Policies           []string             `json:"policies,omitempty"`
 	Region             string               `json:"region"`
 	Scheme             LoadBalancerScheme   `json:"scheme"`
+	ServerPool         string               `json:"server_pool,omitempty"`
+	Tags               []string             `json:"tags,omitempty"`
+}
+
+// UpdateLoadBalancerInput specifies the create request for a load balancer service instance
+type UpdateLoadBalancerInput struct {
+	Description        string               `json:"description,omitempty"`
+	Disabled           LoadBalancerDisabled `json:"disabled,omitempty"`
+	Name               string               `json:"name,omitempty"`
 	ParentLoadBalancer string               `json:"parent_vlbr,omitempty"`
-}
-
-// GetLoadBalancerInput request attributes required to Get a Load Balancer instance
-type GetLoadBalancerInput struct {
-	Name   string `json:"name"`
-	Region string `json:"region"`
-}
-
-// DeleteLoadBalancerInput request attributes to required to Delete a Load Balancer instance
-type DeleteLoadBalancerInput struct {
-	Name   string `json:"name"`
-	Region string `json:"region"`
+	PermittedClients   []string             `json:"permitted_clients,omitempty"`
+	PermittedMethods   []string             `json:"permitted_methods,omitempty"`
+	Policies           []string             `json:"policies,omitempty"`
+	ServerPool         string               `json:"server_pool,omitempty"`
+	Tags               []string             `json:"tags,omitempty"`
 }
 
 // CreateLoadBalancer creates a new Load Balancer instance
 func (c *LoadBalancerClient) CreateLoadBalancer(input *CreateLoadBalancerInput) (*LoadBalancerInfo, error) {
 	var info LoadBalancerInfo
-	if err := c.createResource(input.Region, input.Name, &input, &info); err != nil {
+	if err := c.createResource(&input, &info); err != nil {
 		return nil, err
 	}
 	return &info, nil
 }
 
 // DeleteLoadBalancer deletes the service instance with the specified input
-func (c *LoadBalancerClient) DeleteLoadBalancer(input *DeleteLoadBalancerInput) (*LoadBalancerInfo, error) {
+func (c *LoadBalancerClient) DeleteLoadBalancer(region, name string) (*LoadBalancerInfo, error) {
 	var info LoadBalancerInfo
-	if err := c.deleteResource(input.Region, input.Name, &info); err != nil {
+	if err := c.deleteResource(region, name, &info); err != nil {
 		return nil, err
 	}
 	return &info, nil
 }
 
 // GetLoadBalancer fetchs the instance details of the Load Balancer
-func (c *LoadBalancerClient) GetLoadBalancer(input *GetLoadBalancerInput) (*LoadBalancerInfo, error) {
+func (c *LoadBalancerClient) GetLoadBalancer(region, name string) (*LoadBalancerInfo, error) {
 	var info LoadBalancerInfo
-	if err := c.getResource(input.Region, input.Name, &info); err != nil {
+	if err := c.getResource(region, name, &info); err != nil {
+		return nil, err
+	}
+	return &info, nil
+}
+
+// UpdateLoadBalancer fetchs the instance details of the Load Balancer
+func (c *LoadBalancerClient) UpdateLoadBalancer(region, name string, input *UpdateLoadBalancerInput) (*LoadBalancerInfo, error) {
+	var info LoadBalancerInfo
+	if err := c.updateResource(region, name, &input, &info); err != nil {
 		return nil, err
 	}
 	return &info, nil
