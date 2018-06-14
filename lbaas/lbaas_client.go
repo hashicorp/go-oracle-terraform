@@ -23,10 +23,22 @@ const CONTENT_TYPE_SET_REQUEST_HEADER_POLICY_JSON = "application/vnd.com.oracle.
 const CONTENT_TYPE_TRUSTED_CERTIFICATE_POLICY_JSON = "application/vnd.com.oracle.oracloud.lbaas.TrustedCertPolicy+json"
 const CONTENT_TYPE_SERVER_CERTIFICATE_JSON = "application/vnd.com.oracle.oracloud.lbaas.ServerCertificate+json"
 
+// Projections can be specified when retrieving collection of resources as well as when retrieving a specific resource.
+// There are of four types : MINIMAL, CONSOLE, FULL, and DETAILED
+type QueryProjection string
+
+const (
+	QueryMinimal  QueryProjection = "MINIMAL"
+	QueryConsol   QueryProjection = "CONSOLE"
+	QueryFull     QueryProjection = "FULL"
+	QueryDetailed QueryProjection = "DETAILED"
+)
+
 // Client implementation for Oracle Cloud Infrastructure Load Balancing Classic */
 type Client struct {
 	client      *client.Client
 	ContentType string
+	Accept      string
 }
 
 // NewClient returns a new LBaaSClient
@@ -54,11 +66,11 @@ func (c *Client) executeRequest(method, path string, body interface{}) (*http.Re
 	}
 
 	debugReqString := fmt.Sprintf("HTTP %s Req (%s)", method, path)
-	req.Header.Add("Accept", c.ContentType)
+	req.Header.Add("Accept", c.Accept)
 	if body != nil {
 		req.Header.Set("Content-Type", c.ContentType)
 		// Debug the body for database services
-		debugReqString = fmt.Sprintf("%s:\nBody: %+v", debugReqString, string(reqBody))
+		debugReqString = fmt.Sprintf("%s:\nContent-Type: %+v\nAccept: %+v\nBody: %+v", debugReqString, c.ContentType, c.Accept, string(reqBody))
 	}
 	// Log the request before the authentication header, so as not to leak credentials
 	c.client.DebugLogString(debugReqString)

@@ -14,6 +14,7 @@ type ListenerClient struct {
 // Load Balancer Listener API
 func (c *Client) ListenerClient() *ListenerClient {
 	c.ContentType = CONTENT_TYPE_LISTENER_JSON
+	c.Accept = CONTENT_TYPE_LISTENER_JSON
 	return &ListenerClient{
 		LBaaSResourceClient: LBaaSResourceClient{
 			Client:           c,

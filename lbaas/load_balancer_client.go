@@ -18,6 +18,7 @@ type LoadBalancerClient struct {
 // Load Balancer API
 func (c *Client) LoadBalancerClient() *LoadBalancerClient {
 	c.ContentType = CONTENT_TYPE_VLBR_JSON
+	c.Accept = CONTENT_TYPE_VLBR_JSON
 	return &LoadBalancerClient{
 		Client:           c,
 		ContainerPath:    loadBalancerContainerPath,

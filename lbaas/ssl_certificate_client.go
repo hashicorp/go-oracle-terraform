@@ -18,6 +18,7 @@ type SSLCertificateClient struct {
 // Load Balancer API
 func (c *Client) SSLCertificateClient() *SSLCertificateClient {
 	c.ContentType = CONTENT_TYPE_SERVER_CERTIFICATE_JSON
+	c.Accept = CONTENT_TYPE_SERVER_CERTIFICATE_JSON
 	return &SSLCertificateClient{
 		Client:           c,
 		ContainerPath:    sslCertificateContainerPath,

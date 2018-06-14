@@ -1,5 +1,7 @@
 package lbaas
 
+import "fmt"
+
 // The LBaaSResourceClient is the general client used for the majority of the Load Balancer
 // Service child resources (Listeners, Origin Servier Pools and Policies) which have the common URI
 // format https://{api_endpoint}/{lb_name}/{lb_region}/{resource_type}/{resource_name}
@@ -12,6 +14,7 @@ type LBaaSResourceClient struct {
 	*Client
 	ContainerPath    string
 	ResourceRootPath string
+	Projection       string
 }
 
 // executes the Create requests to the LBaaS API
@@ -36,7 +39,11 @@ func (c *LBaaSResourceClient) updateResource(lbRegion, lbName, name string, requ
 // executes the Get requests to the LBaaS API
 func (c *LBaaSResourceClient) getResource(lbRegion, lbName, name string, responseBody interface{}) error {
 	objectPath := c.getObjectPath(c.ResourceRootPath, lbRegion, lbName, name)
-	resp, err := c.executeRequest("GET", objectPath, nil)
+	queryParams := ""
+	if c.Projection != "" {
+		queryParams = fmt.Sprintf("?projection=%s" + c.Projection)
+	}
+	resp, err := c.executeRequest("GET", objectPath+queryParams, nil)
 	if err != nil {
 		return err
 	}

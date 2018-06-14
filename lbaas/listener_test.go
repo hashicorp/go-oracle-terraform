@@ -7,9 +7,9 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/opc"
 )
 
-// Test the Listener lifecycle the create, get, delete a Listener
+// Test the Listener lifecycle to create, get, delete a Listener
 // instance and validate the fields are set as expected.
-func TestAccListnerLifeCycle(t *testing.T) {
+func TestAccListenerLifeCycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
 	// CREATE Parent Load Balancer Service Instance
@@ -20,7 +20,7 @@ func TestAccListnerLifeCycle(t *testing.T) {
 	}
 
 	createLoadBalancerInput := &CreateLoadBalancerInput{
-		Name:        "acc-test-lb2",
+		Name:        "acc-test-lb-listener1",
 		Region:      "uscom-central-1",
 		Description: "Terraformed Load Balancer Test",
 		Scheme:      LoadBalancerSchemeInternetFacing,

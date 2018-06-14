@@ -47,6 +47,26 @@ const (
 	LoadBalancerStateResume                 LoadBalancerState = "RESUME"
 )
 
+// HttpMethods
+type HttpMethod string
+
+const (
+	HttpCOPY      HttpMethod = "COPY"
+	HttpDELETE    HttpMethod = "DELETE"
+	HttpGET       HttpMethod = "GET"
+	HttpHEAD      HttpMethod = "HEAD"
+	HttpLOCK      HttpMethod = "LOCK"
+	HttpMKCOL     HttpMethod = "MKCOL"
+	HttpMOVE      HttpMethod = "MOVE"
+	HttpOPTIONS   HttpMethod = "OPTIONS"
+	HttpPATCH     HttpMethod = "PATCH"
+	HttpPOST      HttpMethod = "POST"
+	HttpPROPFIND  HttpMethod = "PROPFIND"
+	HttpPROPPATCH HttpMethod = "PROPPATCH"
+	HttpPUT       HttpMethod = "PUT"
+	HttpUNLOCK    HttpMethod = "UNLOCK"
+)
+
 // LoadBalancerInfo specifies the Load Balancer obtained from a GET request
 type LoadBalancerInfo struct {
 	BalancerVIPs             []string                       `json:"balancer_vips"`
@@ -65,6 +85,7 @@ type LoadBalancerInfo struct {
 	ModifiedOn               string                         `json:"modified_on"`
 	Name                     string                         `json:"name"`
 	Owner                    string                         `json:"owner"`
+	PermittedMethods         []HttpMethod                   `json:"permitted_methods"`
 	Region                   string                         `json:"region"`
 	RestURIs                 []RestURIInfo                  `json:"rest_uri"`
 	Scheme                   LoadBalancerScheme             `json:"scheme"`
@@ -80,13 +101,14 @@ type ComputeSecurityArtifactsInfo struct {
 }
 
 type HealthCheckInfo struct {
-	Enabled            string `json:"enabled"`
-	HealthyThreshold   int    `json:"healthy_threshold"`
-	Interval           int    `json:"interval"`
-	Path               string `json:"path"`
-	Timeout            int    `json:"timeout"`
-	Type               string `json:"type"`
-	UnhealthyThreshold int    `json:"unhealthy_threshold"`
+	AcceptedReturnCodes []string `json:accepted_return_codes`
+	Enabled             string   `json:"enabled"`
+	HealthyThreshold    int      `json:"healthy_threshold"`
+	Interval            int      `json:"interval"`
+	Path                string   `json:"path"`
+	Timeout             int      `json:"timeout"`
+	Type                string   `json:"type"`
+	UnhealthyThreshold  int      `json:"unhealthy_threshold"`
 }
 
 type RestURIInfo struct {
@@ -98,10 +120,11 @@ type RestURIInfo struct {
 type CreateLoadBalancerInput struct {
 	Description        string               `json:"description,omitempty"`
 	Disabled           LoadBalancerDisabled `json:"disabled"`
+	IPNetworkName      string               `json:"ip_network_name,omitempty"`
 	Name               string               `json:"name"`
 	ParentLoadBalancer string               `json:"parent_vlbr,omitempty"`
 	PermittedClients   []string             `json:"permitted_clients,omitempty"`
-	PermittedMethods   []string             `json:"permitted_methods,omitempty"`
+	PermittedMethods   []HttpMethod         `json:"permitted_methods,omitempty"`
 	Policies           []string             `json:"policies,omitempty"`
 	Region             string               `json:"region"`
 	Scheme             LoadBalancerScheme   `json:"scheme"`
@@ -113,6 +136,7 @@ type CreateLoadBalancerInput struct {
 type UpdateLoadBalancerInput struct {
 	Description        string               `json:"description,omitempty"`
 	Disabled           LoadBalancerDisabled `json:"disabled,omitempty"`
+	IPNetworkName      string               `json:"ip_network_name,omitempty"`
 	Name               string               `json:"name,omitempty"`
 	ParentLoadBalancer string               `json:"parent_vlbr,omitempty"`
 	PermittedClients   []string             `json:"permitted_clients,omitempty"`
