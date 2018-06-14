@@ -21,6 +21,7 @@ const CONTENT_TYPE_REDIRECT_POLICY_JSON = "application/vnd.com.oracle.oracloud.l
 const CONTENT_TYPE_SSL_NEGOTIATION_POLICY_JSON = "application/vnd.com.oracle.oracloud.lbaas.SSLNegotiationPolicy+json"
 const CONTENT_TYPE_SET_REQUEST_HEADER_POLICY_JSON = "application/vnd.com.oracle.oracloud.lbaas.SetRequestHeaderPolicy+json"
 const CONTENT_TYPE_TRUSTED_CERTIFICATE_POLICY_JSON = "application/vnd.com.oracle.oracloud.lbaas.TrustedCertPolicy+json"
+const CONTENT_TYPE_SERVER_CERTIFICATE_JSON = "application/vnd.com.oracle.oracloud.lbaas.ServerCertificate+json"
 
 // Client implementation for Oracle Cloud Infrastructure Load Balancing Classic */
 type Client struct {
