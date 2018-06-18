@@ -2,10 +2,12 @@ package mysql
 
 import (
 	"fmt"
+	"math/rand"
+	"testing"
+
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
 	"github.com/kylelemons/godebug/pretty"
-	"testing"
 )
 
 const (
@@ -113,7 +115,7 @@ func TestAccAccessRuleLifeCycle(t *testing.T) {
 
 func createAccessRuleParameters(instanceName string) *CreateAccessRuleInput {
 
-	randomInt := helper.RInt()
+	randomInt := rand.Intn(100)
 
 	createAccessRuleInput := &CreateAccessRuleInput{
 		ServiceInstanceID: instanceName,
@@ -142,7 +144,7 @@ func (c *ServiceInstanceClient) createTestServiceInstance() (*ServiceInstance, e
 	serviceParameter := ServiceParameters{
 		BackupDestination:  _ServiceInstanceBackupDestination,
 		ServiceDescription: _ServiceInstanceDesc,
-		ServiceName:        fmt.Sprintf("test-serviceinstance-acc-rule-%d", helper.RInt()),
+		ServiceName:        fmt.Sprintf("test-serviceinstance-acc-rule-%d", rand.Intn(100)),
 		VMPublicKeyText:    _ServiceInstancePubKey,
 	}
 
