@@ -2,19 +2,17 @@ package mysql
 
 import (
 	"fmt"
-	"math/rand"
 	"testing"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
 )
 
-var _ServiceInstanceName = fmt.Sprintf("testserviceinstance%d", rand.Intn(100))
-
 const (
 	_ServiceInstanceDesc              = "MySQL Terraform Test Instance"
 	_ServiceInstancePubKey            = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC3QxPp0BFK+ligB9m1FBcFELyvN5EdNUoSwTCe4Zv2b51OIO6wGM/dvTr/yj2ltNA/Vzl9tqf9AUBL8tKjAOk8uukip6G7rfigby+MvoJ9A8N0AC2te3TI+XCfB5Ty2M2OmKJjPOPCd6+OdzhT4cWnPOM+OAiX0DP7WCkO4Kx2kntf8YeTEurTCspOrRjGdo+zZkJxEydMt31asu9zYOTLmZPwLCkhel8vY6SnZhDTNSNkRzxZFv+Mh2VGmqu4SSxfVXr4tcFM6/MbAXlkA8jo+vHpy5sC79T4uNaPu2D8Ed7uC3yDdO3KRVdzZCfWHj4NjixdMs2CtK6EmyeVOPuiYb8/mcTybrb4F/CqA4jydAU6Ok0j0bIqftLyxNgfS31hR1Y3/GNPzly4+uUIgZqmsuVFh5h0L7qc1jMv7wRHphogo5snIp45t9jWNj8uDGzQgWvgbFP5wR7Nt6eS0kaCeGQbxWBDYfjQE801IrwhgMfmdmGw7FFveCH0tFcPm6td/8kMSyg/OewczZN3T62ETQYVsExOxEQl2t4SZ/yqklg+D9oGM+ILTmBRzIQ2m/xMmsbowiTXymjgVmvrWuc638X6dU2fKJ7As4hxs3rA1BA5sOt0XyqfHQhtYrL/Ovb1iV+C7MRhKicTyoNTc7oVcDDG0VW785d8CPqttDi50w=="
 	_ServiceInstanceBackupDestination = "NONE"
+	_ServiceInstanceName              = "testserviceinstance1"
 
 	_Service_MySQLDBName              = "demo_db"
 	_Service_MySQLStorage             = "25"
@@ -40,8 +38,6 @@ func TestAccServiceInstanceLifeCycle(t *testing.T) {
 		ServiceDescription: _ServiceInstanceDesc,
 		ServiceName:        _ServiceInstanceName,
 		VMPublicKeyText:    _ServiceInstancePubKey,
-		NotificationEmail:  _ServiceInstanceNotificationEmail,
-		EnableNotification: true,
 	}
 
 	mySQLParameter := MySQLParameters{
