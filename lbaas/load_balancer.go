@@ -85,10 +85,11 @@ type LoadBalancerInfo struct {
 	ModifiedOn               string                         `json:"modified_on"`
 	Name                     string                         `json:"name"`
 	Owner                    string                         `json:"owner"`
-	PermittedMethods         []HttpMethod                   `json:"permitted_methods"`
+	PermittedMethods         []string                       `json:"permitted_methods"`
 	Region                   string                         `json:"region"`
 	RestURIs                 []RestURIInfo                  `json:"rest_uri"`
 	Scheme                   LoadBalancerScheme             `json:"scheme"`
+	ServerPool               string                         `json:"server_pool"`
 	State                    LoadBalancerState              `json:"state"`
 	Tags                     []string                       `json:"tags"`
 	URI                      string                         `json:"uri"`
@@ -124,7 +125,7 @@ type CreateLoadBalancerInput struct {
 	Name               string               `json:"name"`
 	ParentLoadBalancer string               `json:"parent_vlbr,omitempty"`
 	PermittedClients   []string             `json:"permitted_clients,omitempty"`
-	PermittedMethods   []HttpMethod         `json:"permitted_methods,omitempty"`
+	PermittedMethods   []string             `json:"permitted_methods,omitempty"`
 	Policies           []string             `json:"policies,omitempty"`
 	Region             string               `json:"region"`
 	Scheme             LoadBalancerScheme   `json:"scheme"`

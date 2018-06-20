@@ -49,6 +49,7 @@ type CreateOriginServerPoolInput struct {
 	OriginServers []OriginServerInfo `json:"origin_servers,omitempty"`
 	Status        string             `json:"status,omitempty"`
 	Tags          []string           `json:"tags,omitempty"`
+	VnicSetName   string             `json:"vnic_set_name"`
 }
 
 type UpdateOriginServerPoolInput struct {
