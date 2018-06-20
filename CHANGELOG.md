@@ -1,4 +1,6 @@
-## 0.9.7 (Unreleased)
+## 0.9.7 (June 19,2019)
+
+* mysql: Add omitempty to Notification Email [GH-150]
 
 ## 0.9.6 (June 19, 2018)
 
