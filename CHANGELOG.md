@@ -1,4 +1,8 @@
-## 0.9.7 (June 19,2019)
+## 0.9.8 (June 20, 2018
+
+* mysql: Add additional logging [GH-152]
+
+## 0.9.7 (June 19, 2018)
 
 * mysql: Add omitempty to Notification Email [GH-150]
 
