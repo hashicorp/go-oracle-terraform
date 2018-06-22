@@ -29,7 +29,7 @@ func (c *LBaaSResourceClient) createResource(lbRegion, lbName string, requestBod
 // executes the Update requests to the LBaaS API
 func (c *LBaaSResourceClient) updateResource(lbRegion, lbName, name string, requestBody interface{}, responseBody interface{}) error {
 	objectPath := c.getObjectPath(c.ResourceRootPath, lbRegion, lbName, name)
-	resp, err := c.executeRequest("POST", objectPath, requestBody)
+	resp, err := c.executeRequest("PUT", objectPath, requestBody)
 	if err != nil {
 		return err
 	}

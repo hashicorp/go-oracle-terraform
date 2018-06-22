@@ -8,10 +8,10 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/client"
 )
 
-const waitForPolicyReadyPollInterval = 1 * time.Second   // 10 second
-const waitForPolicyReadyTimeout = 5 * time.Minute        // 5 minutes
+const waitForPolicyReadyPollInterval = 10 * time.Second  // 10 seconds
+const waitForPolicyReadyTimeout = 30 * time.Minute       // 30 minutes
 const waitForPolicyDeletePollInterval = 10 * time.Second // 10 seconds
-const waitForPolicyDeleteTimeout = 5 * time.Minute       // 5 minutes
+const waitForPolicyDeleteTimeout = 30 * time.Minute      // 30 minutes
 
 var (
 	policyContainerPath = "/vlbrs/%s/%s/policies"

@@ -42,7 +42,7 @@ func (c *LoadBalancerClient) createResource(requestBody interface{}, responseBod
 // executes the Update requests to the Load Balancer API
 func (c *LoadBalancerClient) updateResource(region, name string, requestBody interface{}, responseBody interface{}) error {
 	objectPath := c.getObjectPath(c.ResourceRootPath, region, name)
-	resp, err := c.executeRequest("POST", objectPath, requestBody)
+	resp, err := c.executeRequest("PUT", objectPath, requestBody)
 	if err != nil {
 		return err
 	}

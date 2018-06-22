@@ -85,22 +85,26 @@ func TestAccPolicyLifeCycle(t *testing.T) {
 
 	// UPDATE
 
-	// TODO updates throw a HTTP 405 Error "Method not allowed"
+	updateInput := &UpdatePolicyInput{
+		Name:       createPolicyInput.Name,
+		HeaderName: createPolicyInput.HeaderName,
+		Value:      "http://updatedurl.example.com",
+	}
 
-	// updateInput := &UpdatePolicyInput{
-	// 	Value: "http://myurl.example.com",
-	// }
-	//
-	// resp, err = policyClient.UpdatePolicy(createLoadBalancerInput.Region, createLoadBalancerInput.Name, createPolicyInput.Name, createPolicyInput.Type, updateInput)
-	// if err != nil {
-	// 	t.Fatal(err)
-	// }
-	//
-	// expected = &PolicyInfo{
-	// 	Value: updateInput.Value,
-	// }
-	//
-	// compare(t, "Value", resp.Value, expected.Value)
+	resp, err = policyClient.UpdatePolicy(lb, createPolicyInput.Name, createPolicyInput.Type, updateInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expected = &PolicyInfo{
+		Name:       updateInput.Name,
+		HeaderName: updateInput.HeaderName,
+		Value:      updateInput.Value,
+	}
+
+	compare(t, "Name", resp.Name, expected.Name)
+	compare(t, "HeaderName", resp.HeaderName, expected.HeaderName)
+	compare(t, "Value", resp.Value, expected.Value)
 
 }
 

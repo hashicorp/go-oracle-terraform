@@ -13,9 +13,9 @@ var (
 )
 
 const waitForListenerReadyPollInterval = 10 * time.Second  // 10 seconds
-const waitForListenerReadyTimeout = 10 * time.Minute       // 10 minutes
+const waitForListenerReadyTimeout = 30 * time.Minute       // 30 minutes
 const waitForListenerDeletePollInterval = 10 * time.Second // 10 seconds
-const waitForListenerDeleteTimeout = 10 * time.Minute      // 10 minutes
+const waitForListenerDeleteTimeout = 30 * time.Minute      // 30 minutes
 
 // ListenerClient is a client for the Load Balancer Listener resources.
 type ListenerClient struct {
@@ -95,10 +95,12 @@ type CreateListenerInput struct {
 type UpdateListenerInput struct {
 	BalancerProtocol     Protocol      `json:"balancer_protocol,omitempty"`
 	Disabled             LBaaSDisabled `json:"disabled,omitempty"`
+	Name                 string        `json:"name"`
 	OriginServerPool     string        `json:"origin_server_pool,omitempty"`
 	OriginServerProtocol Protocol      `json:"origin_server_protocol,omitempty"`
 	PathPrefixes         []string      `json:"path_prefixes,omitempty"`
 	Policies             []string      `json:"policies,omitempty"`
+	Port                 int           `json:"port,omitempty"`
 	SSLCerts             []string      `json:"ssl_cert,omitempty"`
 	Tags                 []string      `json:"tags,omitempty"`
 	VirtualHosts         []string      `json:"virtual_hosts,omitempty"`

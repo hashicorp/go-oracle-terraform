@@ -83,31 +83,30 @@ func TestAccListenerLifeCycle(t *testing.T) {
 
 	// UPDATE
 
-	// TODO updates throw a HTTP 405 Error "Method not allowed"
+	updateInput := &UpdateListenerInput{
+		Name:                 createListenerInput.Name,
+		Port:                 8081,
+		BalancerProtocol:     ProtocolHTTPS,
+		OriginServerProtocol: ProtocolHTTPS,
+	}
 
-	// updateInput := &UpdateListenerInput{
-	// 	Port:                 8081,
-	// 	BalancerProtocol:     ProtocolHTTPS,
-	// 	OriginServerProtocol: ProtocolHTTPS,
-	// }
-	//
-	// resp, err = listenerClient.UpdateListener(createLoadBalancerInput.Region, createLoadBalancerInput.Name, createListenerInput.Name, updateInput)
-	// if err != nil {
-	// 	t.Fatal(err)
-	// }
-	//
-	// expected = &ListenerInfo{
-	// 	Name:                 createListenerInput.Name,
-	// 	Port:                 updateInput.Port,
-	// 	BalancerProtocol:     updateInput.BalancerProtocol,
-	// 	OriginServerProtocol: updateInput.OriginServerProtocol,
-	// }
-	//
-	// compare(t, "Name", resp.Name, expected.Name)
-	// compare(t, "Port", string(resp.Port), string(expected.Port))
-	// compare(t, "BalancerProtocol", string(resp.BalancerProtocol), string(expected.BalancerProtocol))
-	// compare(t, "OriginServerProtocol", string(resp.OriginServerProtocol), string(expected.OriginServerProtocol))
-	//
+	resp, err = listenerClient.UpdateListener(lb, createListenerInput.Name, updateInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expected = &ListenerInfo{
+		Name:                 createListenerInput.Name,
+		Port:                 updateInput.Port,
+		BalancerProtocol:     updateInput.BalancerProtocol,
+		OriginServerProtocol: updateInput.OriginServerProtocol,
+	}
+
+	compare(t, "Name", resp.Name, expected.Name)
+	compare(t, "Port", string(resp.Port), string(expected.Port))
+	compare(t, "BalancerProtocol", string(resp.BalancerProtocol), string(expected.BalancerProtocol))
+	compare(t, "OriginServerProtocol", string(resp.OriginServerProtocol), string(expected.OriginServerProtocol))
+
 }
 
 func getListenerClient() (*ListenerClient, error) {

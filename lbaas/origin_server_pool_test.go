@@ -75,17 +75,69 @@ func TestAccOriginServerPoolLifeCycle(t *testing.T) {
 
 	expected := &OriginServerPoolInfo{
 		Name: createOriginServerPoolInput.Name,
-		// Status: createOriginServerPoolInput.Status,
-		// Tags:   createOriginServerPoolInput.Tags,
+		OriginServers: []OriginServerInfo{
+			OriginServerInfo{
+				Status:   "ENABLED",
+				Hostname: "example.com",
+				Port:     3691,
+			},
+		},
+		Status: createOriginServerPoolInput.Status,
+		Tags:   createOriginServerPoolInput.Tags,
 	}
 
 	// compare resp to expected
 	compare(t, "Name", resp.Name, expected.Name)
-	// compare(t, "Status", string(resp.Status), string(expected.Status))
+	// TODO compare OriginServers
+	// TODO compare Status
+	// TODO compare Tags
 
 	// UPDATE
 
-	// TODO
+	updateInput := &UpdateOriginServerPoolInput{
+		Name: createOriginServerPoolInput.Name,
+		OriginServers: []CreateOriginServerInput{
+			CreateOriginServerInput{
+				Status:   "ENABLED",
+				Hostname: "example.com",
+				Port:     3691,
+			},
+			CreateOriginServerInput{
+				Status:   "ENABLED",
+				Hostname: "example.com",
+				Port:     8080,
+			},
+		},
+		Status: LBaaSStatusDisabled,
+		Tags:   []string{"TAGA", "TAGB", "TAGC"},
+	}
+
+	resp, err = serverPoolClient.UpdateOriginServerPool(lb, createOriginServerPoolInput.Name, updateInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expected = &OriginServerPoolInfo{
+		Name: updateInput.Name,
+		OriginServers: []OriginServerInfo{
+			OriginServerInfo{
+				Status:   "ENABLED",
+				Hostname: "example.com",
+				Port:     3691,
+			},
+			OriginServerInfo{
+				Status:   "ENABLED",
+				Hostname: "example.com",
+				Port:     8080,
+			},
+		}, Status: updateInput.Status,
+		Tags: updateInput.Tags,
+	}
+
+	compare(t, "Name", resp.Name, expected.Name)
+	// TODO compare OriginServers
+	// TODO compare Status
+	// TODO compare Tags
 
 }
 

@@ -39,16 +39,6 @@ func (c *SSLCertificateClient) createResource(requestBody interface{}, responseB
 	return c.unmarshalResponseBody(resp, responseBody)
 }
 
-// executes the Update requests to the Load Balancer API
-func (c *SSLCertificateClient) updateResource(name string, requestBody interface{}, responseBody interface{}) error {
-	objectPath := c.getObjectPath(c.ResourceRootPath, name)
-	resp, err := c.executeRequest("POST", objectPath, requestBody)
-	if err != nil {
-		return err
-	}
-	return c.unmarshalResponseBody(resp, responseBody)
-}
-
 // executes the Get requests to the Load Balancer API
 func (c *SSLCertificateClient) getResource(name string, responseBody interface{}) error {
 	objectPath := c.getObjectPath(c.ResourceRootPath, name)

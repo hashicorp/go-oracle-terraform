@@ -8,9 +8,9 @@ import (
 )
 
 const waitForOriginServerPoolReadyPollInterval = 10 * time.Second  // 10 seconds
-const waitForOriginServerPoolReadyTimeout = 5 * time.Minute        // 5 minutes
+const waitForOriginServerPoolReadyTimeout = 30 * time.Minute       // 30 minutes
 const waitForOriginServerPoolDeletePollInterval = 10 * time.Second // 10 seconds
-const waitForOriginServerPoolDeleteTimeout = 5 * time.Minute       // 5 minutes
+const waitForOriginServerPoolDeleteTimeout = 30 * time.Minute      // 30 minutes
 
 var (
 	originserverpoolContainerPath = "/vlbrs/%s/%s/originserverpools"
@@ -71,9 +71,11 @@ type CreateOriginServerPoolInput struct {
 }
 
 type UpdateOriginServerPoolInput struct {
+	Name          string                    `json:"name"`
 	OriginServers []CreateOriginServerInput `json:"origin_servers,omitempty"`
 	Status        LBaaSStatus               `json:"status,omitempty"`
 	Tags          []string                  `json:"tags,omitempty"`
+	VnicSetName   string                    `json:"vnic_set_name,omitempty"`
 }
 
 // CreateOriginServerPool creates a new server pool

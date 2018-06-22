@@ -66,34 +66,33 @@ func TestAccLoadBalancerLifeCycle(t *testing.T) {
 
 	// UPDATE
 
-	// TODO updates throw a HTTP 405 Error "Method not allowed"
+	updateInput := &UpdateLoadBalancerInput{
+		Name:        createLoadBalancerInput.Name,
+		Description: "Updated Description",
+		Tags:        []string{"TAGA", "TAGB", "TAGC"},
+		// TODO add updateable attributes
+	}
 
-	// updateInput := &UpdateLoadBalancerInput{
-	// 	Description: "Updated Description",
-	// 	Tags:        []string{"TAGA", "TAGB", "TAGC"},
-	// 	// TODO add updateable attributes
-	// }
-	//
-	// resp, err = lbClient.UpdateLoadBalancer(createLoadBalancerInput.Region, createLoadBalancerInput.Name, updateInput)
-	// if err != nil {
-	// 	t.Fatal(err)
-	// }
-	//
-	// expected = &LoadBalancerInfo{
-	// 	Name:        createLoadBalancerInput.Name,
-	// 	Region:      createLoadBalancerInput.Region,
-	// 	Description: updateInput.Description,
-	// 	Disabled:    createLoadBalancerInput.Disabled,
-	// 	Scheme:      createLoadBalancerInput.Scheme,
-	// 	Tags:        updateInput.Tags,
-	// }
-	//
-	// compare(t, "Name", resp.Name, expected.Name)
-	// compare(t, "Region", resp.Region, expected.Region)
-	// compare(t, "Description", resp.Description, expected.Description)
-	// compare(t, "Scheme", string(resp.Scheme), string(expected.Scheme))
-	// compare(t, "Disabled", string(resp.Disabled), string(expected.Disabled))
-	// // TODO compare(t, "Tags", string(resp.Tags), string(expected.Tags))
+	resp, err = lbClient.UpdateLoadBalancer(lb, updateInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expected = &LoadBalancerInfo{
+		Name:        createLoadBalancerInput.Name,
+		Region:      createLoadBalancerInput.Region,
+		Description: updateInput.Description,
+		Disabled:    createLoadBalancerInput.Disabled,
+		Scheme:      createLoadBalancerInput.Scheme,
+		Tags:        updateInput.Tags,
+	}
+
+	compare(t, "Name", resp.Name, expected.Name)
+	compare(t, "Region", resp.Region, expected.Region)
+	compare(t, "Description", resp.Description, expected.Description)
+	compare(t, "Scheme", string(resp.Scheme), string(expected.Scheme))
+	compare(t, "Disabled", string(resp.Disabled), string(expected.Disabled))
+	// TODO compare(t, "Tags", string(resp.Tags), string(expected.Tags))
 
 }
 
