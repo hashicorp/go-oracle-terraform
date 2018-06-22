@@ -33,11 +33,16 @@ func TestAccLoadBalancerLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	defer destroyLoadBalancer(t, lbClient, createLoadBalancerInput.Region, createLoadBalancerInput.Name)
+	lb := LoadBalancerContext{
+		Region: createLoadBalancerInput.Region,
+		Name:   createLoadBalancerInput.Name,
+	}
+
+	defer destroyLoadBalancer(t, lbClient, lb)
 
 	// FETCH
 
-	resp, err := lbClient.GetLoadBalancer(createLoadBalancerInput.Region, createLoadBalancerInput.Name)
+	resp, err := lbClient.GetLoadBalancer(lb)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -100,8 +105,8 @@ func getLoadBalancerClient() (*LoadBalancerClient, error) {
 	return client.LoadBalancerClient(), nil
 }
 
-func destroyLoadBalancer(t *testing.T, client *LoadBalancerClient, region, name string) {
-	if _, err := client.DeleteLoadBalancer(region, name); err != nil {
+func destroyLoadBalancer(t *testing.T, client *LoadBalancerClient, lb LoadBalancerContext) {
+	if _, err := client.DeleteLoadBalancer(lb); err != nil {
 		t.Fatal(err)
 	}
 }

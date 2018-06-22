@@ -147,6 +147,12 @@ type UpdateLoadBalancerInput struct {
 	Tags               []string             `json:"tags,omitempty"`
 }
 
+// LoadBalancerContext represents a specific loadbalancer instnace by region/name context
+type LoadBalancerContext struct {
+	Region string
+	Name   string
+}
+
 // CreateLoadBalancer creates a new Load Balancer instance
 func (c *LoadBalancerClient) CreateLoadBalancer(input *CreateLoadBalancerInput) (*LoadBalancerInfo, error) {
 	var info LoadBalancerInfo
@@ -157,27 +163,27 @@ func (c *LoadBalancerClient) CreateLoadBalancer(input *CreateLoadBalancerInput) 
 }
 
 // DeleteLoadBalancer deletes the service instance with the specified input
-func (c *LoadBalancerClient) DeleteLoadBalancer(region, name string) (*LoadBalancerInfo, error) {
+func (c *LoadBalancerClient) DeleteLoadBalancer(lb LoadBalancerContext) (*LoadBalancerInfo, error) {
 	var info LoadBalancerInfo
-	if err := c.deleteResource(region, name, &info); err != nil {
+	if err := c.deleteResource(lb.Region, lb.Name, &info); err != nil {
 		return nil, err
 	}
 	return &info, nil
 }
 
 // GetLoadBalancer fetchs the instance details of the Load Balancer
-func (c *LoadBalancerClient) GetLoadBalancer(region, name string) (*LoadBalancerInfo, error) {
+func (c *LoadBalancerClient) GetLoadBalancer(lb LoadBalancerContext) (*LoadBalancerInfo, error) {
 	var info LoadBalancerInfo
-	if err := c.getResource(region, name, &info); err != nil {
+	if err := c.getResource(lb.Region, lb.Name, &info); err != nil {
 		return nil, err
 	}
 	return &info, nil
 }
 
 // UpdateLoadBalancer fetchs the instance details of the Load Balancer
-func (c *LoadBalancerClient) UpdateLoadBalancer(region, name string, input *UpdateLoadBalancerInput) (*LoadBalancerInfo, error) {
+func (c *LoadBalancerClient) UpdateLoadBalancer(lb LoadBalancerContext, input *UpdateLoadBalancerInput) (*LoadBalancerInfo, error) {
 	var info LoadBalancerInfo
-	if err := c.updateResource(region, name, &input, &info); err != nil {
+	if err := c.updateResource(lb.Region, lb.Name, &input, &info); err != nil {
 		return nil, err
 	}
 	return &info, nil

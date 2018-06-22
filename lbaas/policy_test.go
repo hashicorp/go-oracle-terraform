@@ -32,7 +32,12 @@ func TestAccPolicyLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	defer destroyLoadBalancer(t, lbClient, createLoadBalancerInput.Region, createLoadBalancerInput.Name)
+	lb := LoadBalancerContext{
+		Region: createLoadBalancerInput.Region,
+		Name:   createLoadBalancerInput.Name,
+	}
+
+	defer destroyLoadBalancer(t, lbClient, lb)
 
 	// CREATE Policy
 
@@ -49,16 +54,16 @@ func TestAccPolicyLifeCycle(t *testing.T) {
 		Value:      "http://myurl.example.com",
 	}
 
-	_, err = policyClient.CreatePolicy(createLoadBalancerInput.Region, createLoadBalancerInput.Name, createPolicyInput)
+	_, err = policyClient.CreatePolicy(lb, createPolicyInput)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	defer destroyPolicy(t, policyClient, createLoadBalancerInput.Region, createLoadBalancerInput.Name, createPolicyInput.Name)
+	defer destroyPolicy(t, policyClient, lb, createPolicyInput.Name)
 
 	// FETCH
 
-	resp, err := policyClient.GetPolicy(createLoadBalancerInput.Region, createLoadBalancerInput.Name, createPolicyInput.Name)
+	resp, err := policyClient.GetPolicy(lb, createPolicyInput.Name)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -107,8 +112,8 @@ func getPolicyClient() (*PolicyClient, error) {
 	return client.PolicyClient(), nil
 }
 
-func destroyPolicy(t *testing.T, client *PolicyClient, lbRegion, lbName, name string) {
-	if _, err := client.DeletePolicy(lbRegion, lbName, name); err != nil {
+func destroyPolicy(t *testing.T, client *PolicyClient, lb LoadBalancerContext, name string) {
+	if _, err := client.DeletePolicy(lb, name); err != nil {
 		t.Fatal(err)
 	}
 }

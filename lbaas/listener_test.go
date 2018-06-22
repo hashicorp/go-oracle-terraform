@@ -32,7 +32,12 @@ func TestAccListenerLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	defer destroyLoadBalancer(t, lbClient, createLoadBalancerInput.Region, createLoadBalancerInput.Name)
+	lb := LoadBalancerContext{
+		Region: createLoadBalancerInput.Region,
+		Name:   createLoadBalancerInput.Name,
+	}
+
+	defer destroyLoadBalancer(t, lbClient, lb)
 
 	// CREATE Listener
 
@@ -48,16 +53,16 @@ func TestAccListenerLifeCycle(t *testing.T) {
 		OriginServerProtocol: ProtocolHTTP,
 	}
 
-	_, err = listenerClient.CreateListener(createLoadBalancerInput.Region, createLoadBalancerInput.Name, createListenerInput)
+	_, err = listenerClient.CreateListener(lb, createListenerInput)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	defer destroyListener(t, listenerClient, createLoadBalancerInput.Region, createLoadBalancerInput.Name, createListenerInput.Name)
+	defer destroyListener(t, listenerClient, lb, createListenerInput.Name)
 
 	// FETCH
 
-	resp, err := listenerClient.GetListener(createLoadBalancerInput.Region, createLoadBalancerInput.Name, createListenerInput.Name)
+	resp, err := listenerClient.GetListener(lb, createListenerInput.Name)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -112,8 +117,8 @@ func getListenerClient() (*ListenerClient, error) {
 	return client.ListenerClient(), nil
 }
 
-func destroyListener(t *testing.T, client *ListenerClient, lbRegion, lbName, name string) {
-	if _, err := client.DeleteListener(lbRegion, lbName, name); err != nil {
+func destroyListener(t *testing.T, client *ListenerClient, lb LoadBalancerContext, name string) {
+	if _, err := client.DeleteListener(lb, name); err != nil {
 		t.Fatal(err)
 	}
 }

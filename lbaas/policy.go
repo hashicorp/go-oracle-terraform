@@ -67,38 +67,38 @@ type UpdatePolicyInput struct {
 }
 
 // CreatePolicy creates a new listener
-func (c *PolicyClient) CreatePolicy(lbRegion, lbName string, input *CreatePolicyInput) (*PolicyInfo, error) {
+func (c *PolicyClient) CreatePolicy(lb LoadBalancerContext, input *CreatePolicyInput) (*PolicyInfo, error) {
 	var info PolicyInfo
 	c.ContentType = CONTENT_TYPE_SET_REQUEST_HEADER_POLICY_JSON
-	if err := c.createResource(lbRegion, lbName, &input, &info); err != nil {
+	if err := c.createResource(lb.Region, lb.Name, &input, &info); err != nil {
 		return nil, err
 	}
 	return &info, nil
 }
 
 // DeletePolicy deletes the listener with the specified input
-func (c *PolicyClient) DeletePolicy(lbRegion, lbName, name string) (*PolicyInfo, error) {
+func (c *PolicyClient) DeletePolicy(lb LoadBalancerContext, name string) (*PolicyInfo, error) {
 	var info PolicyInfo
-	if err := c.deleteResource(lbRegion, lbName, name, &info); err != nil {
+	if err := c.deleteResource(lb.Region, lb.Name, name, &info); err != nil {
 		return nil, err
 	}
 	return &info, nil
 }
 
 // GetPolicy fetchs the listener details
-func (c *PolicyClient) GetPolicy(lbRegion, lbName, name string) (*PolicyInfo, error) {
+func (c *PolicyClient) GetPolicy(lb LoadBalancerContext, name string) (*PolicyInfo, error) {
 	var info PolicyInfo
-	if err := c.getResource(lbRegion, lbName, name, &info); err != nil {
+	if err := c.getResource(lb.Region, lb.Name, name, &info); err != nil {
 		return nil, err
 	}
 	return &info, nil
 }
 
 // GetPolicy fetchs the listener details
-func (c *PolicyClient) UpdatePolicy(lbRegion, lbName, name, policyType string, input *UpdatePolicyInput) (*PolicyInfo, error) {
+func (c *PolicyClient) UpdatePolicy(lb LoadBalancerContext, name, policyType string, input *UpdatePolicyInput) (*PolicyInfo, error) {
 	c.ContentType = c.getContentTypeForPolicyType(policyType)
 	var info PolicyInfo
-	if err := c.updateResource(lbRegion, lbName, name, &input, &info); err != nil {
+	if err := c.updateResource(lb.Region, lb.Name, name, &input, &info); err != nil {
 		return nil, err
 	}
 	return &info, nil

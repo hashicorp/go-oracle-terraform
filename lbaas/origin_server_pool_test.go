@@ -32,7 +32,12 @@ func TestAccOriginServerPoolLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	defer destroyLoadBalancer(t, lbClient, createLoadBalancerInput.Region, createLoadBalancerInput.Name)
+	lb := LoadBalancerContext{
+		Region: createLoadBalancerInput.Region,
+		Name:   createLoadBalancerInput.Name,
+	}
+
+	defer destroyLoadBalancer(t, lbClient, lb)
 
 	// CREATE Origin Server Pool
 
@@ -55,18 +60,18 @@ func TestAccOriginServerPoolLifeCycle(t *testing.T) {
 	}
 
 	// _, err = serverPoolClient.CreateOriginServerPool("uscom-central-1", "my-test-lb", createOriginServerPoolInput)
-	_, err = serverPoolClient.CreateOriginServerPool(createLoadBalancerInput.Region, createLoadBalancerInput.Name, createOriginServerPoolInput)
+	_, err = serverPoolClient.CreateOriginServerPool(lb, createOriginServerPoolInput)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	// defer destroyOriginServerPool(t, serverPoolClient, "uscom-central-1", "my-test-lb", createOriginServerPoolInput.Name)
-	defer destroyOriginServerPool(t, serverPoolClient, createLoadBalancerInput.Region, createLoadBalancerInput.Name, createOriginServerPoolInput.Name)
+	defer destroyOriginServerPool(t, serverPoolClient, lb, createOriginServerPoolInput.Name)
 
 	// FETCH
 
 	// resp, err := serverPoolClient.GetOriginServerPool("uscom-central-1", "my-test-lb", createOriginServerPoolInput.Name)
-	resp, err := serverPoolClient.GetOriginServerPool(createLoadBalancerInput.Region, createLoadBalancerInput.Name, createOriginServerPoolInput.Name)
+	resp, err := serverPoolClient.GetOriginServerPool(lb, createOriginServerPoolInput.Name)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -95,8 +100,8 @@ func getOriginServerPoolClient() (*OriginServerPoolClient, error) {
 	return client.OriginServerPoolClient(), nil
 }
 
-func destroyOriginServerPool(t *testing.T, client *OriginServerPoolClient, lbRegion, lbName, name string) {
-	if _, err := client.DeleteOriginServerPool(lbRegion, lbName, name); err != nil {
+func destroyOriginServerPool(t *testing.T, client *OriginServerPoolClient, lb LoadBalancerContext, name string) {
+	if _, err := client.DeleteOriginServerPool(lb, name); err != nil {
 		t.Fatal(err)
 	}
 }

@@ -93,41 +93,41 @@ type UpdateListenerInput struct {
 }
 
 // CreateListener creates a new listener
-func (c *ListenerClient) CreateListener(lbRegion, lbName string, input *CreateListenerInput) (*ListenerInfo, error) {
+func (c *ListenerClient) CreateListener(lb LoadBalancerContext, input *CreateListenerInput) (*ListenerInfo, error) {
 	var info ListenerInfo
-	if err := c.createResource(lbRegion, lbName, &input, &info); err != nil {
+	if err := c.createResource(lb.Region, lb.Name, &input, &info); err != nil {
 		return nil, err
 	}
 	return &info, nil
 }
 
 // DeleteListener deletes the listener with the specified input
-func (c *ListenerClient) DeleteListener(lbRegion, lbName, name string) (*ListenerInfo, error) {
+func (c *ListenerClient) DeleteListener(lb LoadBalancerContext, name string) (*ListenerInfo, error) {
 	var info ListenerInfo
-	if err := c.deleteResource(lbRegion, lbName, name, &info); err != nil {
+	if err := c.deleteResource(lb.Region, lb.Name, name, &info); err != nil {
 		return nil, err
 	}
 	return &info, nil
 }
 
 // GetListener fetchs the listener details
-func (c *ListenerClient) GetListener(lbRegion, lbName, name string) (*ListenerInfo, error) {
+func (c *ListenerClient) GetListener(lb LoadBalancerContext, name string) (*ListenerInfo, error) {
 	// TODO
 	// Query Parameters projection(optional): string
 	// Projections can be specified when retrieving collection of resources as well
 	// as when retrieving a specific resource. They are of four types : MINIMAL, CONSOL, FULL, and DETAILED.
 
 	var info ListenerInfo
-	if err := c.getResource(lbRegion, lbName, name, &info); err != nil {
+	if err := c.getResource(lb.Region, lb.Name, name, &info); err != nil {
 		return nil, err
 	}
 	return &info, nil
 }
 
 // GetListener fetchs the listener details
-func (c *ListenerClient) UpdateListener(lbRegion, lbName, name string, input *UpdateListenerInput) (*ListenerInfo, error) {
+func (c *ListenerClient) UpdateListener(lb LoadBalancerContext, name string, input *UpdateListenerInput) (*ListenerInfo, error) {
 	var info ListenerInfo
-	if err := c.updateResource(lbRegion, lbName, name, &input, &info); err != nil {
+	if err := c.updateResource(lb.Region, lb.Name, name, &input, &info); err != nil {
 		return nil, err
 	}
 	return &info, nil
