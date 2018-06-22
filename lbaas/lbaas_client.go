@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/hashicorp/go-oracle-terraform/client"
 	"github.com/hashicorp/go-oracle-terraform/opc"
@@ -23,6 +24,26 @@ const CONTENT_TYPE_SET_REQUEST_HEADER_POLICY_JSON = "application/vnd.com.oracle.
 const CONTENT_TYPE_TRUSTED_CERTIFICATE_POLICY_JSON = "application/vnd.com.oracle.oracloud.lbaas.TrustedCertPolicy+json"
 const CONTENT_TYPE_SERVER_CERTIFICATE_JSON = "application/vnd.com.oracle.oracloud.lbaas.ServerCertificate+json"
 
+type LBaaSState string
+
+const (
+	LBaaSStateCreationInProgress              LBaaSState = "CREATION_IN_PROGRESS"
+	LBaaSStateCreated                         LBaaSState = "CREATED"
+	LBaaSStateHealthy                         LBaaSState = "HEALTHY"
+	LBaaSStateAdministratorInterventionNeeded LBaaSState = "ADMINISTRATOR_INTERVENTION_NEEDED"
+	LBaaSStateDeletionInProgress              LBaaSState = "DELETION_IN_PROGRESS"
+	LBaaSStateDeleted                         LBaaSState = "DELETED"
+	LBaaSStateModificationInProgress          LBaaSState = "MODIFICATION_IN_PROGRESS"
+	LBaaSStateCreationFailed                  LBaaSState = "CREATION_FAILED"
+	LBaaSStateModificaitonFailed              LBaaSState = "MODIFICATION_FAILED"
+	LBaaSStateDeletionFailed                  LBaaSState = "DELETION_FAILED"
+	LBaaSStateAccessDenied                    LBaaSState = "ACCESS_DENIED"
+	LBaaSStateAbandon                         LBaaSState = "ABANDON"
+	LBaaSStatePause                           LBaaSState = "PAUSE"
+	LBaaSStateForcePaused                     LBaaSState = "FORCE_PAUSED"
+	LBaaSStateResume                          LBaaSState = "RESUME"
+)
+
 // Projections can be specified when retrieving collection of resources as well as when retrieving a specific resource.
 // There are of four types : MINIMAL, CONSOLE, FULL, and DETAILED
 type QueryProjection string
@@ -36,9 +57,11 @@ const (
 
 // Client implementation for Oracle Cloud Infrastructure Load Balancing Classic */
 type Client struct {
-	client      *client.Client
-	ContentType string
-	Accept      string
+	client       *client.Client
+	ContentType  string
+	Accept       string
+	PollInterval time.Duration
+	Timeout      time.Duration
 }
 
 // NewClient returns a new LBaaSClient
@@ -121,4 +144,14 @@ func (c *Client) unmarshalResponseBody(resp *http.Response, iface interface{}) e
 		return err
 	}
 	return nil
+}
+
+// return true if a given LBaaSState is in a List of LBaaSStates
+func isStateInLBaaSStates(state LBaaSState, list []LBaaSState) bool {
+	for _, s := range list {
+		if LBaaSState(s) == state {
+			return true
+		}
+	}
+	return false
 }

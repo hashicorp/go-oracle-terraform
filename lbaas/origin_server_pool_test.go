@@ -48,29 +48,25 @@ func TestAccOriginServerPoolLifeCycle(t *testing.T) {
 
 	createOriginServerPoolInput := &CreateOriginServerPoolInput{
 		Name: "acc-test-server-pool1",
-		OriginServers: []OriginServerInfo{
-			OriginServerInfo{
+		OriginServers: []CreateOriginServerInput{
+			CreateOriginServerInput{
 				Hostname: "example.com",
 				Port:     3691,
-				Status:   "ENABLED",
 			},
 		},
 		Status: "ENABLED",
 		Tags:   []string{"tag3", "tag2", "tag1"},
 	}
 
-	// _, err = serverPoolClient.CreateOriginServerPool("uscom-central-1", "my-test-lb", createOriginServerPoolInput)
 	_, err = serverPoolClient.CreateOriginServerPool(lb, createOriginServerPoolInput)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	// defer destroyOriginServerPool(t, serverPoolClient, "uscom-central-1", "my-test-lb", createOriginServerPoolInput.Name)
 	defer destroyOriginServerPool(t, serverPoolClient, lb, createOriginServerPoolInput.Name)
 
 	// FETCH
 
-	// resp, err := serverPoolClient.GetOriginServerPool("uscom-central-1", "my-test-lb", createOriginServerPoolInput.Name)
 	resp, err := serverPoolClient.GetOriginServerPool(lb, createOriginServerPoolInput.Name)
 	if err != nil {
 		t.Fatal(err)

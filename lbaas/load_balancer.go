@@ -1,5 +1,17 @@
 package lbaas
 
+import (
+	"fmt"
+	"time"
+
+	"github.com/hashicorp/go-oracle-terraform/client"
+)
+
+const waitForLoadBalancerReadyPollInterval = 30 * time.Second  // 30 seconds
+const waitForLoadBalancerReadyTimeout = 30 * time.Minute       // 30 minutes
+const waitForLoadBalancerDeletePollInterval = 30 * time.Second // 30 seconds
+const waitForLoadBalancerDeleteTimeout = 30 * time.Minute      // 30 minutes
+
 // LoadBalancerScheme Scheme types
 type LoadBalancerScheme string
 
@@ -155,20 +167,73 @@ type LoadBalancerContext struct {
 
 // CreateLoadBalancer creates a new Load Balancer instance
 func (c *LoadBalancerClient) CreateLoadBalancer(input *CreateLoadBalancerInput) (*LoadBalancerInfo, error) {
+
+	if c.PollInterval == 0 {
+		c.PollInterval = waitForLoadBalancerReadyPollInterval
+	}
+	if c.Timeout == 0 {
+		c.Timeout = waitForLoadBalancerReadyTimeout
+	}
+
 	var info LoadBalancerInfo
 	if err := c.createResource(&input, &info); err != nil {
 		return nil, err
 	}
-	return &info, nil
+
+	createdStates := []LBaaSState{LBaaSStateCreationInProgress, LBaaSStateCreated, LBaaSStateHealthy}
+	erroredStates := []LBaaSState{LBaaSStateCreationFailed, LBaaSStateDeletionInProgress, LBaaSStateDeleted, LBaaSStateDeletionFailed, LBaaSStateAccessDenied, LBaaSStateAdministratorInterventionNeeded}
+
+	// check the initial response
+	ready, err := c.checkLoadBalancerState(&info, createdStates, erroredStates)
+	if err != nil {
+		return nil, err
+	}
+	if ready {
+		return &info, nil
+	}
+	// else poll till ready
+	lb := LoadBalancerContext{
+		Region: input.Region,
+		Name:   input.Name,
+	}
+	err = c.WaitForLoadBalancerState(lb, createdStates, erroredStates, c.PollInterval, c.Timeout, &info)
+	return &info, err
 }
 
 // DeleteLoadBalancer deletes the service instance with the specified input
 func (c *LoadBalancerClient) DeleteLoadBalancer(lb LoadBalancerContext) (*LoadBalancerInfo, error) {
+
+	if c.PollInterval == 0 {
+		c.PollInterval = waitForLoadBalancerDeletePollInterval
+	}
+	if c.Timeout == 0 {
+		c.Timeout = waitForLoadBalancerDeleteTimeout
+	}
+
 	var info LoadBalancerInfo
 	if err := c.deleteResource(lb.Region, lb.Name, &info); err != nil {
 		return nil, err
 	}
-	return &info, nil
+
+	// deletedStates := []LBaaSState{LBaaSStateDeletionInProgress, LBaaSStateDeleted}
+	deletedStates := []LBaaSState{LBaaSStateDeleted}
+	erroredStates := []LBaaSState{LBaaSStateDeletionFailed, LBaaSStateAccessDenied, LBaaSStateAdministratorInterventionNeeded}
+
+	// check the initial response
+	deleted, err := c.checkLoadBalancerState(&info, deletedStates, erroredStates)
+	if err != nil {
+		return nil, err
+	}
+	if deleted {
+		return &info, nil
+	}
+	// else poll till deleted
+	err = c.WaitForLoadBalancerState(lb, deletedStates, erroredStates, c.PollInterval, c.Timeout, &info)
+	if err != nil && client.WasNotFoundError(err) {
+		// resource could not be found, thus deleted
+		return nil, nil
+	}
+	return &info, err
 }
 
 // GetLoadBalancer fetchs the instance details of the Load Balancer
@@ -182,9 +247,66 @@ func (c *LoadBalancerClient) GetLoadBalancer(lb LoadBalancerContext) (*LoadBalan
 
 // UpdateLoadBalancer fetchs the instance details of the Load Balancer
 func (c *LoadBalancerClient) UpdateLoadBalancer(lb LoadBalancerContext, input *UpdateLoadBalancerInput) (*LoadBalancerInfo, error) {
+
+	if c.PollInterval == 0 {
+		c.PollInterval = waitForLoadBalancerReadyPollInterval
+	}
+	if c.Timeout == 0 {
+		c.Timeout = waitForLoadBalancerReadyTimeout
+	}
+
 	var info LoadBalancerInfo
 	if err := c.updateResource(lb.Region, lb.Name, &input, &info); err != nil {
 		return nil, err
 	}
-	return &info, nil
+
+	updatedStates := []LBaaSState{LBaaSStateModificationInProgress, LBaaSStateHealthy}
+	erroredStates := []LBaaSState{LBaaSStateModificaitonFailed, LBaaSStateAccessDenied, LBaaSStateAdministratorInterventionNeeded}
+
+	// check the initial response
+	ready, err := c.checkLoadBalancerState(&info, updatedStates, erroredStates)
+	if err != nil {
+		return nil, err
+	}
+	if ready {
+		return &info, nil
+	}
+	// else poll till ready
+
+	err = c.WaitForLoadBalancerState(lb, updatedStates, erroredStates, c.PollInterval, c.Timeout, &info)
+	return &info, err
+}
+
+// WaitForLoadBalancerState waits for the resource to be in one of a set of desired states
+func (c *LoadBalancerClient) WaitForLoadBalancerState(lb LoadBalancerContext, desiredStates, errorStates []LBaaSState, pollInterval, timeoutSeconds time.Duration, info *LoadBalancerInfo) error {
+
+	var getErr error
+	err := c.client.WaitFor("Load Balancer to be ready", pollInterval, timeoutSeconds, func() (bool, error) {
+		info, getErr = c.GetLoadBalancer(lb)
+		if getErr != nil {
+			return false, getErr
+		}
+
+		return c.checkLoadBalancerState(info, desiredStates, errorStates)
+	})
+	return err
+}
+
+// check the State, returns in desired state (true), not ready yet (false) or errored state (error)
+func (c *LoadBalancerClient) checkLoadBalancerState(info *LoadBalancerInfo, desiredStates, errorStates []LBaaSState) (bool, error) {
+
+	c.client.DebugLogString(fmt.Sprintf("Load Balancer %v state is %v", info.Name, info.State))
+
+	state := LBaaSState(info.State)
+
+	if isStateInLBaaSStates(state, desiredStates) {
+		// we're good, return okay
+		return true, nil
+	}
+	if isStateInLBaaSStates(state, errorStates) {
+		// not good, return error
+		return false, fmt.Errorf("Load Balancer %v in errored state %v", info.Name, info.State)
+	}
+	// not ready lifecycleTimeout
+	return false, nil
 }
