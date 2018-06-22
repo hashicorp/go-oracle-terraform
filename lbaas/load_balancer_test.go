@@ -24,7 +24,7 @@ func TestAccLoadBalancerLifeCycle(t *testing.T) {
 		Region:      "uscom-central-1",
 		Description: "Terraformed Load Balancer Test",
 		Scheme:      LoadBalancerSchemeInternetFacing,
-		Disabled:    LoadBalancerDisabledFalse,
+		Disabled:    LBaaSDisabledTrue,
 		Tags:        []string{"tag3", "tag2", "tag1"},
 	}
 

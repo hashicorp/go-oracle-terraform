@@ -7,10 +7,10 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/client"
 )
 
-const waitForOriginServerPoolReadyPollInterval = 1 * time.Second  // 1 second
-const waitForOriginServerPoolReadyTimeout = 5 * time.Minute       // 5 minutes
-const waitForOriginServerPoolDeletePollInterval = 1 * time.Second // 1 second
-const waitForOriginServerPoolDeleteTimeout = 5 * time.Minute      // 5 minutes
+const waitForOriginServerPoolReadyPollInterval = 10 * time.Second  // 10 seconds
+const waitForOriginServerPoolReadyTimeout = 5 * time.Minute        // 5 minutes
+const waitForOriginServerPoolDeletePollInterval = 10 * time.Second // 10 seconds
+const waitForOriginServerPoolDeleteTimeout = 5 * time.Minute       // 5 minutes
 
 var (
 	originserverpoolContainerPath = "/vlbrs/%s/%s/originserverpools"
@@ -37,46 +37,55 @@ func (c *Client) OriginServerPoolClient() *OriginServerPoolClient {
 }
 
 type OriginServerInfo struct {
-	Hostname string `json:"hostname"`
-	Port     int    `json:"port"`
-	Status   string `json:"status"`
+	Hostname string        `json:"hostname"`
+	Port     int           `json:"port"`
+	Status   LBaaSDisabled `json:"status"`
 }
 
 type CreateOriginServerInput struct {
-	Hostname string `json:"hostname"`
-	Port     int    `json:"port"`
+	Status   LBaaSStatus `json:"status"`
+	Hostname string      `json:"hostname"`
+	Port     int         `json:"port"`
 }
 
 type OriginServerPoolInfo struct {
-	Consumers          string               `json:"consumers"`
-	HealthCheck        HealthCheckInfo      `json:"health_check"`
-	Name               string               `json:"name"`
-	OperationDetails   string               `json:"operation_details"`
-	OriginServers      []OriginServerInfo   `json:"origin_servers"`
-	ReasonForDisabling string               `json:"reason_for_disabling"`
-	State              string               `json:"state"`
-	Status             LoadBalancerDisabled `json:"status"`
-	Tags               []string             `json:"tags"`
-	URI                string               `json:"uri"`
-	VnicSetName        string               `json:"vnic_set_name"`
+	Consumers          string             `json:"consumers"`
+	HealthCheck        HealthCheckInfo    `json:"health_check"`
+	Name               string             `json:"name"`
+	OperationDetails   string             `json:"operation_details"`
+	OriginServers      []OriginServerInfo `json:"origin_servers"`
+	ReasonForDisabling string             `json:"reason_for_disabling"`
+	State              LBaaSState         `json:"state"`
+	Status             LBaaSStatus        `json:"status"`
+	Tags               []string           `json:"tags"`
+	URI                string             `json:"uri"`
+	VnicSetName        string             `json:"vnic_set_name"`
 }
 
 type CreateOriginServerPoolInput struct {
 	Name          string                    `json:"name"`
 	OriginServers []CreateOriginServerInput `json:"origin_servers,omitempty"`
-	Status        LoadBalancerDisabled      `json:"status,omitempty"`
+	Status        LBaaSStatus               `json:"status,omitempty"`
 	Tags          []string                  `json:"tags,omitempty"`
 	VnicSetName   string                    `json:"vnic_set_name,omitempty"`
 }
 
 type UpdateOriginServerPoolInput struct {
 	OriginServers []CreateOriginServerInput `json:"origin_servers,omitempty"`
-	Status        LoadBalancerDisabled      `json:"status,omitempty"`
+	Status        LBaaSStatus               `json:"status,omitempty"`
 	Tags          []string                  `json:"tags,omitempty"`
 }
 
 // CreateOriginServerPool creates a new server pool
 func (c *OriginServerPoolClient) CreateOriginServerPool(lb LoadBalancerContext, input *CreateOriginServerPoolInput) (*OriginServerPoolInfo, error) {
+
+	// The Create Origin Server Pool API iscan be be temprimenta, returning HTTP 500
+	// errors on creation, workaround is to just keep retrying.
+	// Force high number of max retires.
+	maxRetries := 20
+	if *c.client.MaxRetries < maxRetries {
+		c.client.MaxRetries = &maxRetries
+	}
 
 	if c.PollInterval == 0 {
 		c.PollInterval = waitForOriginServerPoolReadyPollInterval
@@ -90,8 +99,9 @@ func (c *OriginServerPoolClient) CreateOriginServerPool(lb LoadBalancerContext, 
 		return nil, err
 	}
 
-	createdStates := []LBaaSState{LBaaSStateCreationInProgress, LBaaSStateCreated}
-	erroredStates := []LBaaSState{LBaaSStateCreationFailed, LBaaSStateDeletionInProgress, LBaaSStateDeleted, LBaaSStateDeletionFailed}
+	createdStates := []LBaaSState{LBaaSStateCreationInProgress, LBaaSStateCreated, LBaaSStateHealthy}
+	// createdStates := []LBaaSState{LBaaSStateCreated, LBaaSStateHealthy}
+	erroredStates := []LBaaSState{LBaaSStateCreationFailed, LBaaSStateDeletionInProgress, LBaaSStateDeleted, LBaaSStateDeletionFailed, LBaaSStateAbandon, LBaaSStateAutoAbandoned}
 
 	// check the initial response
 	ready, err := c.checkOriginServerPoolState(&info, createdStates, erroredStates)
@@ -122,7 +132,8 @@ func (c *OriginServerPoolClient) DeleteOriginServerPool(lb LoadBalancerContext, 
 	}
 
 	deletedStates := []LBaaSState{LBaaSStateDeletionInProgress, LBaaSStateDeleted}
-	erroredStates := []LBaaSState{LBaaSStateDeletionFailed}
+	// deletedStates := []LBaaSState{LBaaSStateDeleted}
+	erroredStates := []LBaaSState{LBaaSStateDeletionFailed, LBaaSStateAbandon, LBaaSStateAutoAbandoned}
 
 	// check the initial response
 	deleted, err := c.checkOriginServerPoolState(&info, deletedStates, erroredStates)
@@ -165,8 +176,9 @@ func (c *OriginServerPoolClient) UpdateOriginServerPool(lb LoadBalancerContext, 
 		return nil, err
 	}
 
-	updatedStates := []LBaaSState{LBaaSStateModificationInProgress, LBaaSStateHealthy}
-	erroredStates := []LBaaSState{LBaaSStateModificaitonFailed}
+	// updatedStates := []LBaaSState{LBaaSStateModificationInProgress, LBaaSStateHealthy}
+	updatedStates := []LBaaSState{LBaaSStateHealthy}
+	erroredStates := []LBaaSState{LBaaSStateModificaitonFailed, LBaaSStateAbandon, LBaaSStateAutoAbandoned}
 
 	// check the initial response
 	ready, err := c.checkOriginServerPoolState(&info, updatedStates, erroredStates)
@@ -185,7 +197,7 @@ func (c *OriginServerPoolClient) UpdateOriginServerPool(lb LoadBalancerContext, 
 func (c *OriginServerPoolClient) WaitForOriginServerPoolState(lb LoadBalancerContext, name string, desiredStates, errorStates []LBaaSState, pollInterval, timeoutSeconds time.Duration, info *OriginServerPoolInfo) error {
 
 	var getErr error
-	err := c.client.WaitFor("Origin Server Pool to be ready", pollInterval, timeoutSeconds, func() (bool, error) {
+	err := c.client.WaitFor("Origin Server Pool status update", pollInterval, timeoutSeconds, func() (bool, error) {
 		info, getErr = c.GetOriginServerPool(lb, name)
 		if getErr != nil {
 			return false, getErr

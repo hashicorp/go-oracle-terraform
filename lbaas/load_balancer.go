@@ -20,15 +20,6 @@ const (
 	LoadBalancerSchemeInternal       LoadBalancerScheme = "INTERNAL"
 )
 
-// LoadBalancerDisabled
-type LoadBalancerDisabled string
-
-const (
-	LoadBalancerDisabledTrue        LoadBalancerDisabled = "TRUE"
-	LoadBalancerDisabledFalse       LoadBalancerDisabled = "FALSE"
-	LoadBalancerDisabledMaintenance LoadBalancerDisabled = "MAINTENANCE_MODE"
-)
-
 // LoadBalancerEffectiveState
 type LoadBalancerEffectiveState string
 
@@ -36,27 +27,6 @@ const (
 	LoadBalancerEffectiveStateTrue        LoadBalancerEffectiveState = "TRUE"
 	LoadBalancerEffectiveStateFalse       LoadBalancerEffectiveState = "FALSE"
 	LoadBalancerEffectiveStateMaintenance LoadBalancerEffectiveState = "MAINTENANCE_MODE"
-)
-
-// LoadBalancerState
-type LoadBalancerState string
-
-const (
-	LoadBalancerStateCreationInProgress     LoadBalancerState = "CREATION_IN_PROGRESS"
-	LoadBalancerStateCreated                LoadBalancerState = "CREATED"
-	LoadBalancerStateHealthy                LoadBalancerState = "HEALTHY"
-	LoadBalancerStateInterventionNeeded     LoadBalancerState = "ADMINISTRATOR_INTERVENTION_NEEDED"
-	LoadBalancerStateDeletionInProgress     LoadBalancerState = "DELETION_IN_PROGRESS"
-	LoadBalancerStateDeleted                LoadBalancerState = "DELETED"
-	LoadBalancerStateModificationInProgress LoadBalancerState = "MODIFICATION_IN_PROGRESS"
-	LoadBalancerStateCreationFailed         LoadBalancerState = "CREATION_FAILED"
-	LoadBalancerStateModificationFailed     LoadBalancerState = "MODIFICATION_FAILED"
-	LoadBalancerStateDeletionFailed         LoadBalancerState = "DELETION_FAILED"
-	LoadBalancerStateAccessDenied           LoadBalancerState = "ACCESS_DENIED"
-	LoadBalancerStateAbandon                LoadBalancerState = "ABANDON"
-	LoadBalancerStatePause                  LoadBalancerState = "PAUSE"
-	LoadBalancerStateForcePaused            LoadBalancerState = "FORCE_PAUSED"
-	LoadBalancerStateResume                 LoadBalancerState = "RESUME"
 )
 
 // HttpMethods
@@ -88,7 +58,7 @@ type LoadBalancerInfo struct {
 	ComputeSite              string                         `json:"compute_site"`
 	CreatedOn                string                         `json:"created_on"`
 	Description              string                         `json:"description"`
-	Disabled                 LoadBalancerDisabled           `json:"disabled"`
+	Disabled                 LBaaSDisabled                  `json:"disabled"`
 	DisplayName              string                         `json:"display_name"`
 	HealthCheck              HealthCheckInfo                `json:"health_check"`
 	IPNetworkName            string                         `json:"ip_network_name"`
@@ -102,7 +72,7 @@ type LoadBalancerInfo struct {
 	RestURIs                 []RestURIInfo                  `json:"rest_uri"`
 	Scheme                   LoadBalancerScheme             `json:"scheme"`
 	ServerPool               string                         `json:"server_pool"`
-	State                    LoadBalancerState              `json:"state"`
+	State                    LBaaSState                     `json:"state"`
 	Tags                     []string                       `json:"tags"`
 	URI                      string                         `json:"uri"`
 }
@@ -131,32 +101,32 @@ type RestURIInfo struct {
 
 // CreateLoadBalancerInput specifies the create request for a load balancer service instance
 type CreateLoadBalancerInput struct {
-	Description        string               `json:"description,omitempty"`
-	Disabled           LoadBalancerDisabled `json:"disabled"`
-	IPNetworkName      string               `json:"ip_network_name,omitempty"`
-	Name               string               `json:"name"`
-	ParentLoadBalancer string               `json:"parent_vlbr,omitempty"`
-	PermittedClients   []string             `json:"permitted_clients,omitempty"`
-	PermittedMethods   []string             `json:"permitted_methods,omitempty"`
-	Policies           []string             `json:"policies,omitempty"`
-	Region             string               `json:"region"`
-	Scheme             LoadBalancerScheme   `json:"scheme"`
-	ServerPool         string               `json:"server_pool,omitempty"`
-	Tags               []string             `json:"tags,omitempty"`
+	Description        string             `json:"description,omitempty"`
+	Disabled           LBaaSDisabled      `json:"disabled"`
+	IPNetworkName      string             `json:"ip_network_name,omitempty"`
+	Name               string             `json:"name"`
+	ParentLoadBalancer string             `json:"parent_vlbr,omitempty"`
+	PermittedClients   []string           `json:"permitted_clients,omitempty"`
+	PermittedMethods   []string           `json:"permitted_methods,omitempty"`
+	Policies           []string           `json:"policies,omitempty"`
+	Region             string             `json:"region"`
+	Scheme             LoadBalancerScheme `json:"scheme"`
+	ServerPool         string             `json:"server_pool,omitempty"`
+	Tags               []string           `json:"tags,omitempty"`
 }
 
 // UpdateLoadBalancerInput specifies the create request for a load balancer service instance
 type UpdateLoadBalancerInput struct {
-	Description        string               `json:"description,omitempty"`
-	Disabled           LoadBalancerDisabled `json:"disabled,omitempty"`
-	IPNetworkName      string               `json:"ip_network_name,omitempty"`
-	Name               string               `json:"name,omitempty"`
-	ParentLoadBalancer string               `json:"parent_vlbr,omitempty"`
-	PermittedClients   []string             `json:"permitted_clients,omitempty"`
-	PermittedMethods   []string             `json:"permitted_methods,omitempty"`
-	Policies           []string             `json:"policies,omitempty"`
-	ServerPool         string               `json:"server_pool,omitempty"`
-	Tags               []string             `json:"tags,omitempty"`
+	Description        string        `json:"description,omitempty"`
+	Disabled           LBaaSDisabled `json:"disabled,omitempty"`
+	IPNetworkName      string        `json:"ip_network_name,omitempty"`
+	Name               string        `json:"name,omitempty"`
+	ParentLoadBalancer string        `json:"parent_vlbr,omitempty"`
+	PermittedClients   []string      `json:"permitted_clients,omitempty"`
+	PermittedMethods   []string      `json:"permitted_methods,omitempty"`
+	Policies           []string      `json:"policies,omitempty"`
+	ServerPool         string        `json:"server_pool,omitempty"`
+	Tags               []string      `json:"tags,omitempty"`
 }
 
 // LoadBalancerContext represents a specific loadbalancer instnace by region/name context
@@ -181,7 +151,7 @@ func (c *LoadBalancerClient) CreateLoadBalancer(input *CreateLoadBalancerInput) 
 	}
 
 	createdStates := []LBaaSState{LBaaSStateCreationInProgress, LBaaSStateCreated, LBaaSStateHealthy}
-	erroredStates := []LBaaSState{LBaaSStateCreationFailed, LBaaSStateDeletionInProgress, LBaaSStateDeleted, LBaaSStateDeletionFailed, LBaaSStateAccessDenied, LBaaSStateAdministratorInterventionNeeded}
+	erroredStates := []LBaaSState{LBaaSStateCreationFailed, LBaaSStateDeletionInProgress, LBaaSStateDeleted, LBaaSStateDeletionFailed, LBaaSStateAbandon, LBaaSStateAutoAbandoned, LBaaSStateAccessDenied, LBaaSStateAdministratorInterventionNeeded}
 
 	// check the initial response
 	ready, err := c.checkLoadBalancerState(&info, createdStates, erroredStates)
@@ -196,7 +166,7 @@ func (c *LoadBalancerClient) CreateLoadBalancer(input *CreateLoadBalancerInput) 
 		Region: input.Region,
 		Name:   input.Name,
 	}
-	err = c.WaitForLoadBalancerState(lb, createdStates, erroredStates, c.PollInterval, c.Timeout, &info)
+	err = c.WaitForLoadBalancerState(lb, createdStates, erroredStates, &info)
 	return &info, err
 }
 
@@ -217,7 +187,7 @@ func (c *LoadBalancerClient) DeleteLoadBalancer(lb LoadBalancerContext) (*LoadBa
 
 	// deletedStates := []LBaaSState{LBaaSStateDeletionInProgress, LBaaSStateDeleted}
 	deletedStates := []LBaaSState{LBaaSStateDeleted}
-	erroredStates := []LBaaSState{LBaaSStateDeletionFailed, LBaaSStateAccessDenied, LBaaSStateAdministratorInterventionNeeded}
+	erroredStates := []LBaaSState{LBaaSStateDeletionFailed, LBaaSStateAbandon, LBaaSStateAutoAbandoned, LBaaSStateAccessDenied, LBaaSStateAdministratorInterventionNeeded}
 
 	// check the initial response
 	deleted, err := c.checkLoadBalancerState(&info, deletedStates, erroredStates)
@@ -228,7 +198,7 @@ func (c *LoadBalancerClient) DeleteLoadBalancer(lb LoadBalancerContext) (*LoadBa
 		return &info, nil
 	}
 	// else poll till deleted
-	err = c.WaitForLoadBalancerState(lb, deletedStates, erroredStates, c.PollInterval, c.Timeout, &info)
+	err = c.WaitForLoadBalancerState(lb, deletedStates, erroredStates, &info)
 	if err != nil && client.WasNotFoundError(err) {
 		// resource could not be found, thus deleted
 		return nil, nil
@@ -260,8 +230,9 @@ func (c *LoadBalancerClient) UpdateLoadBalancer(lb LoadBalancerContext, input *U
 		return nil, err
 	}
 
-	updatedStates := []LBaaSState{LBaaSStateModificationInProgress, LBaaSStateHealthy}
-	erroredStates := []LBaaSState{LBaaSStateModificaitonFailed, LBaaSStateAccessDenied, LBaaSStateAdministratorInterventionNeeded}
+	// updatedStates := []LBaaSState{LBaaSStateModificationInProgress, LBaaSStateHealthy}
+	updatedStates := []LBaaSState{LBaaSStateHealthy}
+	erroredStates := []LBaaSState{LBaaSStateModificaitonFailed, LBaaSStateAbandon, LBaaSStateAutoAbandoned, LBaaSStateAccessDenied, LBaaSStateAdministratorInterventionNeeded}
 
 	// check the initial response
 	ready, err := c.checkLoadBalancerState(&info, updatedStates, erroredStates)
@@ -273,15 +244,15 @@ func (c *LoadBalancerClient) UpdateLoadBalancer(lb LoadBalancerContext, input *U
 	}
 	// else poll till ready
 
-	err = c.WaitForLoadBalancerState(lb, updatedStates, erroredStates, c.PollInterval, c.Timeout, &info)
+	err = c.WaitForLoadBalancerState(lb, updatedStates, erroredStates, &info)
 	return &info, err
 }
 
 // WaitForLoadBalancerState waits for the resource to be in one of a set of desired states
-func (c *LoadBalancerClient) WaitForLoadBalancerState(lb LoadBalancerContext, desiredStates, errorStates []LBaaSState, pollInterval, timeoutSeconds time.Duration, info *LoadBalancerInfo) error {
+func (c *LoadBalancerClient) WaitForLoadBalancerState(lb LoadBalancerContext, desiredStates, errorStates []LBaaSState, info *LoadBalancerInfo) error {
 
 	var getErr error
-	err := c.client.WaitFor("Load Balancer to be ready", pollInterval, timeoutSeconds, func() (bool, error) {
+	err := c.client.WaitFor("Load Balancer status update", c.PollInterval, c.Timeout, func() (bool, error) {
 		info, getErr = c.GetLoadBalancer(lb)
 		if getErr != nil {
 			return false, getErr

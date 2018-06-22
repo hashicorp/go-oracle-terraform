@@ -24,7 +24,7 @@ func TestAccPolicyLifeCycle(t *testing.T) {
 		Region:      "uscom-central-1",
 		Description: "Terraformed Load Balancer Test",
 		Scheme:      LoadBalancerSchemeInternetFacing,
-		Disabled:    LoadBalancerDisabledFalse,
+		Disabled:    LBaaSDisabledTrue,
 	}
 
 	_, err = lbClient.CreateLoadBalancer(createLoadBalancerInput)

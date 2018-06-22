@@ -24,6 +24,7 @@ const CONTENT_TYPE_SET_REQUEST_HEADER_POLICY_JSON = "application/vnd.com.oracle.
 const CONTENT_TYPE_TRUSTED_CERTIFICATE_POLICY_JSON = "application/vnd.com.oracle.oracloud.lbaas.TrustedCertPolicy+json"
 const CONTENT_TYPE_SERVER_CERTIFICATE_JSON = "application/vnd.com.oracle.oracloud.lbaas.ServerCertificate+json"
 
+// LBaaSState common State type for all LBaaS service resources
 type LBaaSState string
 
 const (
@@ -39,9 +40,27 @@ const (
 	LBaaSStateDeletionFailed                  LBaaSState = "DELETION_FAILED"
 	LBaaSStateAccessDenied                    LBaaSState = "ACCESS_DENIED"
 	LBaaSStateAbandon                         LBaaSState = "ABANDON"
+	LBaaSStateAutoAbandoned                   LBaaSState = "AUTO_ABANDONED"
 	LBaaSStatePause                           LBaaSState = "PAUSE"
 	LBaaSStateForcePaused                     LBaaSState = "FORCE_PAUSED"
 	LBaaSStateResume                          LBaaSState = "RESUME"
+)
+
+// LBaaaSStatus common Status type for all LBaaS service resources
+type LBaaSStatus string
+
+const (
+	LBaaSStatusEnabled  LBaaSStatus = "ENABLED"
+	LBaaSStatusDisabled LBaaSStatus = "DISABLED"
+)
+
+// LBaaSDisabled common Disabled State type for all LBaaS service resources
+type LBaaSDisabled string
+
+const (
+	LBaaSDisabledTrue        LBaaSDisabled = "TRUE"
+	LBaaSDisabledFalse       LBaaSDisabled = "FALSE"
+	LBaaSDisabledMaintenance LBaaSDisabled = "MAINTENANCE_MODE"
 )
 
 // Projections can be specified when retrieving collection of resources as well as when retrieving a specific resource.

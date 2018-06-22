@@ -24,7 +24,7 @@ func TestAccOriginServerPoolLifeCycle(t *testing.T) {
 		Region:      "uscom-central-1",
 		Description: "Terraformed Load Balancer Test",
 		Scheme:      LoadBalancerSchemeInternetFacing,
-		Disabled:    LoadBalancerDisabledFalse,
+		Disabled:    LBaaSDisabledTrue,
 	}
 
 	_, err = lbClient.CreateLoadBalancer(createLoadBalancerInput)
@@ -50,12 +50,13 @@ func TestAccOriginServerPoolLifeCycle(t *testing.T) {
 		Name: "acc-test-server-pool1",
 		OriginServers: []CreateOriginServerInput{
 			CreateOriginServerInput{
+				Status:   "ENABLED",
 				Hostname: "example.com",
 				Port:     3691,
 			},
 		},
-		Status: "ENABLED",
 		Tags:   []string{"tag3", "tag2", "tag1"},
+		Status: "ENABLED",
 	}
 
 	_, err = serverPoolClient.CreateOriginServerPool(lb, createOriginServerPoolInput)

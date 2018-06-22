@@ -24,7 +24,7 @@ func TestAccListenerLifeCycle(t *testing.T) {
 		Region:      "uscom-central-1",
 		Description: "Terraformed Load Balancer Test",
 		Scheme:      LoadBalancerSchemeInternetFacing,
-		Disabled:    LoadBalancerDisabledFalse,
+		Disabled:    LBaaSDisabledTrue,
 	}
 
 	_, err = lbClient.CreateLoadBalancer(createLoadBalancerInput)
@@ -51,6 +51,7 @@ func TestAccListenerLifeCycle(t *testing.T) {
 		Port:                 8080,
 		BalancerProtocol:     ProtocolHTTP,
 		OriginServerProtocol: ProtocolHTTP,
+		Disabled:             LBaaSDisabledTrue,
 	}
 
 	_, err = listenerClient.CreateListener(lb, createListenerInput)
