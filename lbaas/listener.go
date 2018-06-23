@@ -61,7 +61,7 @@ type ListenerInfo struct {
 	BalancerProtocol       Protocol                   `json:"balancer_protocol"`
 	Disabled               LBaaSDisabled              `json:"disabled"`
 	EffectiveOriginServers EffectiveOriginServersInfo `json:"effective_origin_servers"`
-	EffectiveState         LoadBalancerEffectiveState `json:"effective_state"`
+	EffectiveState         LBaaSDisabled              `json:"effective_state"`
 	InlinePolicies         []string                   `json:"inline_policies"`
 	Name                   string                     `json:"name"`
 	OperationDetails       string                     `json:"operation_details"`
@@ -121,8 +121,8 @@ func (c *ListenerClient) CreateListener(lb LoadBalancerContext, input *CreateLis
 		return nil, err
 	}
 
-	createdStates := []LBaaSState{LBaaSStateCreationInProgress, LBaaSStateCreated, LBaaSStateHealthy}
-	// createdStates := []LBaaSState{LBaaSStateCreated, LBaaSStateHealthy}
+	// createdStates := []LBaaSState{LBaaSStateCreationInProgress, LBaaSStateCreated, LBaaSStateHealthy}
+	createdStates := []LBaaSState{LBaaSStateCreated, LBaaSStateHealthy}
 	erroredStates := []LBaaSState{LBaaSStateCreationFailed, LBaaSStateDeletionInProgress, LBaaSStateDeleted, LBaaSStateDeletionFailed, LBaaSStateAbandon, LBaaSStateAutoAbandoned}
 
 	// check the initial response

@@ -42,8 +42,8 @@ func (c *SSLCertificateClient) CreateSSLCertificate(input *CreateSSLCertificateI
 		return nil, err
 	}
 
-	createdStates := []LBaaSState{LBaaSStateCreationInProgress, LBaaSStateCreated, LBaaSStateHealthy}
-	// createdStates := []LBaaSState{LBaaSStateCreated, LBaaSStateHealthy}
+	// createdStates := []LBaaSState{LBaaSStateCreationInProgress, LBaaSStateCreated, LBaaSStateHealthy}
+	createdStates := []LBaaSState{LBaaSStateCreated, LBaaSStateHealthy}
 	erroredStates := []LBaaSState{LBaaSStateCreationFailed, LBaaSStateDeletionInProgress, LBaaSStateDeleted, LBaaSStateDeletionFailed, LBaaSStateAbandon, LBaaSStateAutoAbandoned}
 
 	// check the initial response

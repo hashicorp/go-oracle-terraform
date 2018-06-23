@@ -129,7 +129,7 @@ type UpdateLoadBalancerInput struct {
 	Tags               []string      `json:"tags,omitempty"`
 }
 
-// LoadBalancerContext represents a specific loadbalancer instnace by region/name context
+// LoadBalancerContext represents a specific loadbalancer instance by region/name context
 type LoadBalancerContext struct {
 	Region string
 	Name   string
@@ -150,7 +150,8 @@ func (c *LoadBalancerClient) CreateLoadBalancer(input *CreateLoadBalancerInput) 
 		return nil, err
 	}
 
-	createdStates := []LBaaSState{LBaaSStateCreationInProgress, LBaaSStateCreated, LBaaSStateHealthy}
+	// createdStates := []LBaaSState{LBaaSStateCreationInProgress, LBaaSStateCreated, LBaaSStateHealthy}
+	createdStates := []LBaaSState{LBaaSStateCreated, LBaaSStateHealthy}
 	erroredStates := []LBaaSState{LBaaSStateCreationFailed, LBaaSStateDeletionInProgress, LBaaSStateDeleted, LBaaSStateDeletionFailed, LBaaSStateAbandon, LBaaSStateAutoAbandoned, LBaaSStateAccessDenied, LBaaSStateAdministratorInterventionNeeded}
 
 	// check the initial response
