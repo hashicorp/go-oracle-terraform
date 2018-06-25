@@ -47,11 +47,13 @@ func TestAccPolicyLifeCycle(t *testing.T) {
 	}
 
 	createPolicyInput := &CreatePolicyInput{
-		Name:       "acc-test-policy1",
-		Action:     "OVERWRITE",
-		HeaderName: "internal",
-		Type:       "SetRequestHeaderPolicy",
-		Value:      "http://myurl.example.com",
+		Name: "acc-test-policy1",
+		Type: "SetRequestHeaderPolicy",
+		SetRequestHeaderPolicyInfo: SetRequestHeaderPolicyInfo{
+			ActionWhenHeaderExists: "OVERWRITE",
+			HeaderName:             "internal",
+			Value:                  "http://myurl.example.com",
+		},
 	}
 
 	_, err = policyClient.CreatePolicy(lb, createPolicyInput)
@@ -69,16 +71,16 @@ func TestAccPolicyLifeCycle(t *testing.T) {
 	}
 
 	expected := &PolicyInfo{
-		Name:       createPolicyInput.Name,
-		Action:     createPolicyInput.Action,
-		HeaderName: createPolicyInput.HeaderName,
-		Type:       createPolicyInput.Type,
-		Value:      createPolicyInput.Value,
+		Name:                   createPolicyInput.Name,
+		Type:                   createPolicyInput.Type,
+		HeaderName:             createPolicyInput.SetRequestHeaderPolicyInfo.HeaderName,
+		ActionWhenHeaderExists: createPolicyInput.SetRequestHeaderPolicyInfo.ActionWhenHeaderExists,
+		Value: createPolicyInput.SetRequestHeaderPolicyInfo.Value,
 	}
 
 	// compare resp to expected
 	compare(t, "Name", resp.Name, expected.Name)
-	compare(t, "Action", resp.Action, expected.Action)
+	compare(t, "ActionWhenHeaderExists", resp.ActionWhenHeaderExists, expected.ActionWhenHeaderExists)
 	compare(t, "HeaderName", resp.HeaderName, expected.HeaderName)
 	compare(t, "Type", resp.Type, expected.Type)
 	compare(t, "Value", resp.Value, expected.Value)
@@ -86,9 +88,10 @@ func TestAccPolicyLifeCycle(t *testing.T) {
 	// UPDATE
 
 	updateInput := &UpdatePolicyInput{
-		Name:       createPolicyInput.Name,
-		HeaderName: createPolicyInput.HeaderName,
-		Value:      "http://updatedurl.example.com",
+		Name: createPolicyInput.Name,
+		SetRequestHeaderPolicyInfo: SetRequestHeaderPolicyInfo{
+			Value: "http://updatedurl.example.com",
+		},
 	}
 
 	resp, err = policyClient.UpdatePolicy(lb, createPolicyInput.Name, createPolicyInput.Type, updateInput)
@@ -97,13 +100,14 @@ func TestAccPolicyLifeCycle(t *testing.T) {
 	}
 
 	expected = &PolicyInfo{
-		Name:       updateInput.Name,
-		HeaderName: updateInput.HeaderName,
-		Value:      updateInput.Value,
+		Name:                   updateInput.Name,
+		Type:                   createPolicyInput.Type,
+		HeaderName:             createPolicyInput.SetRequestHeaderPolicyInfo.HeaderName,
+		ActionWhenHeaderExists: createPolicyInput.SetRequestHeaderPolicyInfo.ActionWhenHeaderExists,
+		Value: updateInput.SetRequestHeaderPolicyInfo.Value,
 	}
 
 	compare(t, "Name", resp.Name, expected.Name)
-	compare(t, "HeaderName", resp.HeaderName, expected.HeaderName)
 	compare(t, "Value", resp.Value, expected.Value)
 
 }

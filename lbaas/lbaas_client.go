@@ -12,17 +12,23 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
+// Resource Content Types
 const CONTENT_TYPE_VLBR_JSON = "application/vnd.com.oracle.oracloud.lbaas.VLBR+json"
 const CONTENT_TYPE_LISTENER_JSON = "application/vnd.com.oracle.oracloud.lbaas.Listener+json"
 const CONTENT_TYPE_ORIGIN_SERVER_POOL_JSON = "application/vnd.com.oracle.oracloud.lbaas.OriginServerPool+json"
-const CONTENT_TYPE_APP_COOKIE_STICKINESS_POLICY_JSON = "application/vnd.com.oracle.oracloud.lbaas.AppCookieStickinessPolicy+json"
-const CONTENT_TYPE_LB_COOKIE_STICKINESS_POLICY_JSON = "application/vnd.com.oracle.oracloud.lbaas.LBCookieStickinessPolicy+json"
-const CONTENT_TYPE_RESOURCE_ACCESS_CONTROL_POLICY_JSON = "application/vnd.com.oracle.oracloud.lbaas.ResourceAccessControlPolicy+json"
-const CONTENT_TYPE_REDIRECT_POLICY_JSON = "application/vnd.com.oracle.oracloud.lbaas.RedirectPolicy+json"
-const CONTENT_TYPE_SSL_NEGOTIATION_POLICY_JSON = "application/vnd.com.oracle.oracloud.lbaas.SSLNegotiationPolicy+json"
-const CONTENT_TYPE_SET_REQUEST_HEADER_POLICY_JSON = "application/vnd.com.oracle.oracloud.lbaas.SetRequestHeaderPolicy+json"
-const CONTENT_TYPE_TRUSTED_CERTIFICATE_POLICY_JSON = "application/vnd.com.oracle.oracloud.lbaas.TrustedCertPolicy+json"
 const CONTENT_TYPE_SERVER_CERTIFICATE_JSON = "application/vnd.com.oracle.oracloud.lbaas.ServerCertificate+json"
+
+// Policy Specific Content Types
+const CONTENT_TYPE_APP_COOKIE_STICKINESS_POLICY_JSON = "application/vnd.com.oracle.oracloud.lbaas.AppCookieStickinessPolicy+json"
+const CONTENT_TYPE_CLOUDGATE_POLICY_JSON = "application/vnd.com.oracle.oracloud.lbaas.CloudGatePolicy+json"
+const CONTENT_TYPE_LB_COOKIE_STICKINESS_POLICY_JSON = "application/vnd.com.oracle.oracloud.lbaas.LBCookieStickinessPolicy+json"
+const CONTENT_TYPE_LOADBALANCING_MECHANISM_POLICY_JSON = "application/vnd.com.oracle.oracloud.lbaas.LoadBalancingMechanismPolicy+json"
+const CONTENT_TYPE_RATE_LIMITING_REQUEST_POLICY_JSON = "application/vnd.com.oracle.oracloud.lbaas.RateLimitingRequestPolicy+json"
+const CONTENT_TYPE_REDIRECT_POLICY_JSON = "application/vnd.com.oracle.oracloud.lbaas.RedirectPolicy+json"
+const CONTENT_TYPE_RESOURCE_ACCESS_CONTROL_POLICY_JSON = "application/vnd.com.oracle.oracloud.lbaas.ResourceAccessControlPolicy+json"
+const CONTENT_TYPE_SET_REQUEST_HEADER_POLICY_JSON = "application/vnd.com.oracle.oracloud.lbaas.SetRequestHeaderPolicy+json"
+const CONTENT_TYPE_SSL_NEGOTIATION_POLICY_JSON = "application/vnd.com.oracle.oracloud.lbaas.SSLNegotiationPolicy+json"
+const CONTENT_TYPE_TRUSTED_CERTIFICATE_POLICY_JSON = "application/vnd.com.oracle.oracloud.lbaas.TrustedCertPolicy+json"
 
 // LBaaSState common State type for all LBaaS service resources
 type LBaaSState string
