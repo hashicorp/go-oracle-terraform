@@ -55,7 +55,7 @@ func TestAccApplicationContainerLifeCycle_Basic(t *testing.T) {
 	assert.Equal(t, "RUNNING", applicationContainer.Status)
 }
 
-func TestAccApplicationContainerLifeCycle_Manifest(t *testing.T) {
+func TestAccApplicationContainerLifeCycle_ManifestFile(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
 	aClient, err := getApplicationContainerTestClients()
@@ -71,6 +71,107 @@ func TestAccApplicationContainerLifeCycle_Manifest(t *testing.T) {
 	createApplicationContainerInput := &CreateApplicationContainerInput{
 		AdditionalFields: createApplicationContainerAdditionalFields,
 		Manifest:         _ApplicationContainerManifestFile,
+	}
+
+	createdApplicationContainer, err := aClient.CreateApplicationContainer(createApplicationContainerInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	log.Printf("Successfully created Application Container: %+v", createdApplicationContainer)
+	defer deleteTestApplicationContainer(t, aClient, _ApplicationContainerTestName)
+
+	getInput := &GetApplicationContainerInput{
+		Name: _ApplicationContainerTestName,
+	}
+
+	applicationContainer, err := aClient.GetApplicationContainer(getInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	log.Printf("Application Container Retrieved: %+v", applicationContainer)
+	assert.NotEmpty(t, applicationContainer.Name, "Expected Application Container name not to be empty")
+	assert.Equal(t, _ApplicationContainerTestName, applicationContainer.Name, "Expected Application Container and name to match.")
+	assert.Equal(t, "RUNNING", applicationContainer.Status)
+}
+
+func TestAccApplicationContainerLifeCycle_TwoManifest(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
+
+	aClient, err := getApplicationContainerTestClients()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	manifest := &ManifestAttributes{
+		Command: "sh target/bin/start",
+		Notes:   "notes related to release",
+		Mode:    "rolling",
+		Runtime: Runtime{MajorVersion: "7"},
+		Release: Release{Build: "150520.1154",
+			Commit:  "d8c2596364d9584050461",
+			Version: "15.1.0"},
+	}
+
+	createApplicationContainerAdditionalFields := CreateApplicationContainerAdditionalFields{
+		Name:    _ApplicationContainerTestName,
+		Runtime: _ApplicationContainerRuntimeJava,
+	}
+
+	createApplicationContainerInput := &CreateApplicationContainerInput{
+		AdditionalFields:   createApplicationContainerAdditionalFields,
+		ManifestAttributes: manifest,
+		Manifest:           _ApplicationContainerManifestFile,
+	}
+
+	createdApplicationContainer, err := aClient.CreateApplicationContainer(createApplicationContainerInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	log.Printf("Successfully created Application Container: %+v", createdApplicationContainer)
+	defer deleteTestApplicationContainer(t, aClient, _ApplicationContainerTestName)
+
+	getInput := &GetApplicationContainerInput{
+		Name: _ApplicationContainerTestName,
+	}
+
+	applicationContainer, err := aClient.GetApplicationContainer(getInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	log.Printf("Application Container Retrieved: %+v", applicationContainer)
+	assert.NotEmpty(t, applicationContainer.Name, "Expected Application Container name not to be empty")
+	assert.Equal(t, _ApplicationContainerTestName, applicationContainer.Name, "Expected Application Container and name to match.")
+	assert.Equal(t, "RUNNING", applicationContainer.Status)
+}
+
+func TestAccApplicationContainerLifeCycle_ManifestAttr(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
+
+	aClient, err := getApplicationContainerTestClients()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	manifest := &ManifestAttributes{
+		Command: "sh target/bin/start",
+		Notes:   "notes related to release",
+		Mode:    "rolling",
+		Runtime: Runtime{MajorVersion: "7"},
+		Release: Release{Build: "150520.1154",
+			Commit:  "d8c2596364d9584050461",
+			Version: "15.1.0"},
+	}
+
+	createApplicationContainerAdditionalFields := CreateApplicationContainerAdditionalFields{
+		Name:    _ApplicationContainerTestName,
+		Runtime: _ApplicationContainerRuntimeJava,
+	}
+
+	createApplicationContainerInput := &CreateApplicationContainerInput{
+		AdditionalFields:   createApplicationContainerAdditionalFields,
+		ManifestAttributes: manifest,
 	}
 
 	createdApplicationContainer, err := aClient.CreateApplicationContainer(createApplicationContainerInput)

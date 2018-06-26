@@ -28,7 +28,7 @@ func getApplicationTestClient(c *opc.Config) (*Client, error) {
 	}
 
 	if c.APIEndpoint == nil {
-		apiEndpoint, err := url.Parse(os.Getenv("OPC_APPLICATION_ENDPOINT"))
+		apiEndpoint, err := url.Parse(os.Getenv("ORACLEPAAS_APPLICATION_ENDPOINT"))
 		if err != nil {
 			return nil, err
 		}

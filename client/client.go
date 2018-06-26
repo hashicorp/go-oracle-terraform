@@ -144,8 +144,8 @@ func (c *Client) BuildNonJSONRequest(method, path string, body io.Reader) (*http
 	return req, nil
 }
 
-// BuildMultipartFormRequest builds a new HTTP Request for a multipart form request
-func (c *Client) BuildMultipartFormRequest(method, path string, files map[string]string, parameters map[string]interface{}) (*http.Request, error) {
+// BuildMultipartFormRequestFromFiles builds a new HTTP Request for a multipart form request from specifies files
+func (c *Client) BuildMultipartFormRequestFromFiles(method, path string, files map[string]string, parameters map[string]interface{}) (*http.Request, error) {
 	urlPath, err := url.Parse(path)
 	if err != nil {
 		return nil, err
@@ -188,10 +188,56 @@ func (c *Client) BuildMultipartFormRequest(method, path string, files map[string
 		if err != nil {
 			return nil, err
 		}
+
 		_, err = part.Write(fileContents)
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	// Add additional parameters to the writer
+	for key, val := range parameters {
+		if val.(string) != "" {
+			_ = writer.WriteField(strings.ToLower(key), val.(string))
+		}
+	}
+	err = writer.Close()
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest("POST", c.formatURL(urlPath), body)
+	req.Header.Set("Content-Type", writer.FormDataContentType())
+
+	return req, err
+}
+
+// BuildMultipartFormRequest builds a new HTTP Request for a multipart form request from specifies attributes
+func (c *Client) BuildMultipartFormRequest(method, path string, manifestBody interface{}, parameters map[string]interface{}) (*http.Request, error) {
+
+	urlPath, err := url.Parse(path)
+	if err != nil {
+		return nil, err
+	}
+
+	body := new(bytes.Buffer)
+	writer := multipart.NewWriter(body)
+
+	var (
+		part io.Writer
+	)
+
+	part, err = writer.CreateFormFile("manifest", "manifest.json")
+	if err != nil {
+		return nil, err
+	}
+	manifestBytes, err := c.MarshallRequestBody(manifestBody)
+	if err != nil {
+		return nil, err
+	}
+	_, err = part.Write(manifestBytes)
+	if err != nil {
+		return nil, err
 	}
 
 	// Add additional parameters to the writer

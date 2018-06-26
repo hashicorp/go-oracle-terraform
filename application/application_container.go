@@ -85,6 +85,24 @@ const (
 	applicationContainerStatusDestroyPending containerStatus = "DESTROY_PENDING"
 )
 
+// ManifestType determines whether an application is public or private:
+type ManifestType string
+
+const (
+	// ManifestTypeWeb specifies a public application, which you can access using a public URL, the public REST API, or the command-line interface.
+	ManifestTypeWeb ManifestType = "web"
+	// ManifestTypeWorker specifies a worker application, which is private and runs in the background. The isClustered parameter should be set to true in some cases.
+	ManifestTypeWorker ManifestType = "worker"
+)
+
+// ManifestMode details the optional modes for restarting the application container
+type ManifestMode string
+
+const (
+	// ManifestModeRolling performs a rolling restart
+	ManifestModeRolling ManifestMode = "rolling"
+)
+
 // Container container information about the application container
 type Container struct {
 	// ID of the application
@@ -145,6 +163,8 @@ type CreateApplicationContainerInput struct {
 	// Name of the manifest file, required if this file is not packaged with the application
 	// Optional
 	Manifest string
+	// Manifest Attributes
+	ManifestAttributes *ManifestAttributes
 	// Time to wait between checks on application container status
 	PollInterval time.Duration
 	// Timeout for creating an application container
@@ -182,9 +202,78 @@ type CreateApplicationContainerAdditionalFields struct {
 	SubscriptionType string //ApplicationSubscriptionType
 }
 
+// ManifestAttributes details the available attributes in a manifest file
+type ManifestAttributes struct {
+	// Optional
+	Runtime Runtime `json:"runtime,omitempty"`
+	// Determines whether an application is public or private
+	// Default is `worker`
+	// Optional
+	Type ManifestType `json:"type,omitempty"`
+	// Launch command to execute after the application has been uploaded.
+	// Optional
+	Command string `json:"command,omitempty"`
+	// Release attributes of a specific build.
+	// Optional
+	Release Release `json:"release,omitempty"`
+	// Maximum time in seconds to wait for the application to start. Allowed values are between 10 and 600. The default is 30.
+	// If the application doesn’t start in the time specified, the application is deemed to have failed to start and is terminated.
+	// For example, if your application takes two minutes to start, set startupTime to at least 120.
+	// Optional
+	StartupTime string `json:"startupTime,omitempty"`
+	// Maximum time in seconds to wait for the application to stop. Allowed values are between 0 and 600.
+	// The default is 0. This allows the application to close connections and free up resources gracefully.
+	// For example, if your application takes two minutes to shut down, set shutdownTime to at least 120.
+	// Optional
+	ShutdownTime string `json:"shutdownTime,omitempty"`
+	// Comments
+	// Optional
+	Notes string `json:"notes,omitempty"`
+	// Restart mode for application instances when the application is restarted. The only allowed option is rolling for a rolling restart.
+	// Omit this parameter to be prompted for a rolling or concurrent restart.
+	// Optional
+	Mode ManifestMode `json:"mode,omitempty"`
+	// Must be set to true for application instances to act as a cluster, with failover capability.
+	// Optional
+	IsClustered bool `json:"isClustered,omitempty"`
+	// Context root of the application. The value of the home parameter is appended to the application URL.
+	// Optional
+	Home string `json:"home,omitempty"`
+	// Allows you to define a URL for your application that the system uses for health checks. The URL must return an HTTP response of 200 OK to indicate that the application is healthy.
+	// Optional
+	HealthCheck HealthCheck `json:"healthcheck,omitempty"`
+}
+
+// Release details the attributes for a specific release for the application container.
+type Release struct {
+	// User-specified value of build.
+	// Required
+	Build string `json:"build"`
+	// User-specified value of commit.
+	// Required
+	Commit string `json:"commit"`
+	// User-specified application version.
+	// Required
+	Version string `json:"version"`
+}
+
+// Runtime details the available runtime attributes for a manifest file
+type Runtime struct {
+	MajorVersion string `json:"majorVersion"`
+}
+
+// HealthCheck specifies the available attributes for a health check
+type HealthCheck struct {
+	// Defines the URI that is appended to the application URL to create the health check URL
+	HTTPEndpoint string `json:"http-endpoint"`
+}
+
 // CreateApplicationContainer creates a new Application Container from an ApplicationClient and an input struct.
 // Returns a populated ApplicationContainer struct for the Application, and any errors
 func (c *ContainerClient) CreateApplicationContainer(input *CreateApplicationContainerInput) (*Container, error) {
+
+	var applicationContainer *Container
+	additionalFields := structs.Map(input.AdditionalFields)
 
 	files := make(map[string]string)
 	if input.Deployment != "" {
@@ -193,10 +282,12 @@ func (c *ContainerClient) CreateApplicationContainer(input *CreateApplicationCon
 	if input.Manifest != "" {
 		files["manifest"] = input.Manifest
 	}
-	additionalFields := structs.Map(input.AdditionalFields)
 
-	var applicationContainer *Container
-	if err := c.createResource(files, additionalFields, applicationContainer); err != nil {
+	if len(files) > 0 && input.ManifestAttributes != nil {
+		return nil, fmt.Errorf("Cannot specify both files and attributes %+v", input.ManifestAttributes)
+	}
+
+	if err := c.createResource(input, applicationContainer); err != nil {
 		return nil, err
 	}
 

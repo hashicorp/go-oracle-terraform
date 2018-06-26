@@ -16,8 +16,8 @@ type ResourceClient struct {
 	ResourceRootPath string
 }
 
-func (c *ResourceClient) createResource(files map[string]string, additionalParams map[string]interface{}, responseBody interface{}) error {
-	_, err := c.executeCreateUpdateRequest("POST", c.getContainerPath(c.ContainerPath), files, additionalParams)
+func (c *ResourceClient) createApplicationContainerResource(input *CreateApplicationContainerInput, responseBody interface{}) error {
+	_, err := c.executeCreateUpdateRequest("POST", c.getContainerPath(c.ContainerPath), input)
 
 	return err
 }
