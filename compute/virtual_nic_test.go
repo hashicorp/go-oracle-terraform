@@ -67,6 +67,7 @@ func TestAccVirtNICLifeCycle(t *testing.T) {
 	log.Printf("VNIC Retrieved: %+v", vNIC)
 	assert.NotEmpty(t, vNIC.Name, "Expected VNIC name not to be empty")
 	assert.Equal(t, createdVNIC, vNIC.Name, "Expected VNIC and name to match.")
+	assert.Equal(t, vNIC.FQDN, vnClient.getQualifiedName(vNIC.Name), "Expected FQDN to match qualifed name")
 }
 
 func getVirtNICsTestClients() (*InstancesClient, *IPNetworksClient, *VirtNICsClient, error) {

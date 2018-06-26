@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAccSecurityApplicationsTCPLifeCycle(t *testing.T) {
@@ -41,9 +42,8 @@ func TestAccSecurityApplicationsTCPLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !reflect.DeepEqual(createdSecurityApplication, retrievedSecurityApplication) {
-		t.Fatalf("Retrieved Security Application did not match Expected. \nDesired: %s \nActual: %s", createdSecurityApplication, retrievedSecurityApplication)
-	}
+	assert.Equal(t, createdSecurityApplication, retrievedSecurityApplication, "Retrieved Security Application did not match Expected.")
+	assert.Equal(t, retrievedSecurityApplication.FQDN, securityApplicationsClient.getQualifiedName(name), "Expected FDQN to be equal to qualified name")
 
 	log.Printf("Successfully retrieved Security Application")
 }

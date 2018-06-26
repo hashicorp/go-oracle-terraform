@@ -11,6 +11,7 @@ import (
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -92,9 +93,8 @@ func TestAccRoutesLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !reflect.DeepEqual(createdRoute, receivedRoute) {
-		t.Fatalf("Mismatch found!\nExpected: %+v\nReceived: %+v", createdRoute, receivedRoute)
-	}
+	assert.Equal(t, createdRoute, receivedRoute, "Mismatch found")
+	assert.Equal(t, receivedRoute.FQDN, rClient.getQualifiedName(_RouteTestName), "Expected FDQN to be equal to qualified name")
 
 	updateRouteInput := &UpdateRouteInput{
 		AdminDistance:   _RouteTestAdminDistance + 1,

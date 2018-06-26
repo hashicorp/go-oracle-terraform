@@ -64,8 +64,8 @@ func TestAccOrchestrationLifeCycle(t *testing.T) {
 	}
 	log.Printf("orchestration Retrieved: %+v", orchestration)
 	assert.NotEmpty(t, orchestration.Name, "Expected orchestration name not to be empty")
-	assert.Equal(t, createdOrchestration.Name, orchestration.Name,
-		"Expected orchestration names to match.")
+	assert.Equal(t, createdOrchestration.Name, orchestration.Name, "Expected orchestration names to match.")
+	assert.Equal(t, orchestration.FQDN, orcClient.getQualifiedName(_OrchestrationTestName), "Expected FDQN to be equal to qualified name")
 }
 
 func TestAccOrchestrationLifeCycle_active(t *testing.T) {

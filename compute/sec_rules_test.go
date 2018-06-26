@@ -110,9 +110,8 @@ func TestAccSecRuleLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !updateSecRuleOutput.Disabled {
-		t.Fatal("Sec Rule was not updated to disabled")
-	}
+	assert.True(t, updateSecRuleOutput.Disabled, "Sec Rule was not updated to disabled")
+	assert.Equal(t, updateSecRuleOutput.FQDN, secRuleClient.getQualifiedName(name), "Expected FDQN to be equal to qualified name")
 	log.Printf("Successfully updated Sec Rule")
 }
 

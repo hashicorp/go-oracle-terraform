@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -65,9 +66,8 @@ func TestAccIPAddressPrefixSetsLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !reflect.DeepEqual(updatedIPAddressPrefixSet, receivedIPAddressPrefixSet) {
-		t.Fatalf("Mismatch found after create.\nExpected: %+v\nReceived: %+v", updatedIPAddressPrefixSet, receivedIPAddressPrefixSet)
-	}
+	assert.Equal(t, updatedIPAddressPrefixSet, receivedIPAddressPrefixSet, "Mismatch found after create.")
+	assert.Equal(t, updatedIPAddressPrefixSet.FQDN, svc.getQualifiedName(_IPAddressPrefixSetTestName), "Expected FDQN to be equal to qualified name")
 }
 
 func destroyIPAddressPrefixSet(t *testing.T, svc *IPAddressPrefixSetsClient, name string) {

@@ -7,7 +7,7 @@ import (
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
-	"github.com/kylelemons/godebug/pretty"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAccStorageVolumeSnapshot_Lifecycle(t *testing.T) {
@@ -59,9 +59,9 @@ func TestAccStorageVolumeSnapshot_Lifecycle(t *testing.T) {
 		t.Fatalf("Error getting storage snapshot: %v", err)
 	}
 
-	if diff := pretty.Compare(getRes, snapshot); diff != "" {
-		t.Errorf("Storage Volume Snapshot Diff: (-got +want)\n%s", diff)
-	}
+	assert.Equal(t, getRes, snapshot, "Mismatch after Create.")
+	assert.Equal(t, getRes.FQDN, snapClient.getQualifiedName(snapshot.Name), "Expected FDQN to be equal to qualified name")
+
 }
 
 func getSnapshotTestClients() (*StorageVolumeClient, *StorageVolumeSnapshotClient, error) {

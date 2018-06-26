@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAccVirtNICSetsLifeCycle(t *testing.T) {
@@ -40,14 +41,9 @@ func TestAccVirtNICSetsLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Verify they're the same
-	if createdSet.Name != returnedSet.Name {
-		t.Fatalf("Mismatched Sets found.\nExpected: %+v\nReceived: %+v", createdSet, returnedSet)
-	}
-
-	if createdSet.Description != returnedSet.Description {
-		t.Fatalf("Mismatched Sets found.\nExpected: %+v\nReceived: %+v", createdSet, returnedSet)
-	}
+	assert.Equal(t, createdSet.Name, returnedSet.Name, "Mismatched Sets found.")
+	assert.Equal(t, createdSet.Description, returnedSet.Description, "Mismatched Sets found.")
+	assert.Equal(t, returnedSet.FQDN, svc.getQualifiedName(createdSet.Name), "Expected FDQN to be equal to qualified name")
 
 	// Update the set
 	updateInput := &UpdateVirtualNICSetInput{

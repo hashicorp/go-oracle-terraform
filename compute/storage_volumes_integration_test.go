@@ -118,8 +118,8 @@ func testStorageVolume(t *testing.T, createInput CreateStorageVolumeInput, updat
 		t.Fatal(err)
 	}
 
-	assert.Equal(t, updateResponse.Size, updatedResponse.Size,
-		"Retrieved Storage Volume did not match Expected.")
+	assert.Equal(t, updateResponse.Size, updatedResponse.Size, "Retrieved Storage Volume did not match Expected.")
+	assert.Equal(t, updatedResponse.FQDN, svc.getQualifiedName(createInput.Name), "Expected FDQN to be equal to qualified name")
 
 	actualSize = updatedResponse.Size
 	expectedSize = "30"

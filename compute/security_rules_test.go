@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -174,12 +175,10 @@ func TestAccSecurityRulesWithOptionsLifeCycle(t *testing.T) {
 	log.Print("Security Rule succcessfully created")
 	defer destroySecurityRule(t, rClient, _SecurityRuleTestName)
 
-	if dstSet.Name != createdRule.DstVnicSet {
-		t.Fatalf("Mismatch found after create.\nExpected: %+v\nReceived: %+v", dstSet.Name, createdRule.DstVnicSet)
-	}
-	if srcSet.Name != createdRule.SrcVnicSet {
-		t.Fatalf("Mismatch found after create.\nExpected: %+v\nReceived: %+v", dstSet.Name, createdRule.DstVnicSet)
-	}
+	assert.Equal(t, dstSet.Name, createdRule.DstVnicSet, "Mismatch found after create.")
+	assert.Equal(t, srcSet.Name, createdRule.SrcVnicSet, "Mismatch found after create.")
+	assert.Equal(t, createdRule.FQDN, rClient.getQualifiedName(_SecurityRuleTestName), "Expected FDQN to be equal to qualified name")
+
 }
 
 func destroySecurityRule(t *testing.T, svc *SecurityRuleClient, name string) {

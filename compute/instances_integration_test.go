@@ -94,6 +94,7 @@ func TestAccInstanceLifeCycle(t *testing.T) {
 	}
 
 	expectedInstance := &InstanceInfo{
+		FQDN:         iClient.getQualifiedName(getInput.String()),
 		Name:         _InstanceTestName,
 		Label:        _InstanceTestLabel,
 		Shape:        _InstanceTestShape,
