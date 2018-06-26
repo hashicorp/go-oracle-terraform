@@ -81,6 +81,7 @@ type UpdateOriginServerPoolInput struct {
 // CreateOriginServerPool creates a new server pool
 func (c *OriginServerPoolClient) CreateOriginServerPool(lb LoadBalancerContext, input *CreateOriginServerPoolInput) (*OriginServerPoolInfo, error) {
 
+	// TODO FIND A BETTER FIX
 	// The Create Origin Server Pool API is/can be be temprimental, returning HTTP 500
 	// errors on creation, workaround is to just keep retrying.
 	// Force high number of max retires.
@@ -133,8 +134,8 @@ func (c *OriginServerPoolClient) DeleteOriginServerPool(lb LoadBalancerContext, 
 		return nil, err
 	}
 
-	deletedStates := []LBaaSState{LBaaSStateDeletionInProgress, LBaaSStateDeleted}
-	// deletedStates := []LBaaSState{LBaaSStateDeleted}
+	// deletedStates := []LBaaSState{LBaaSStateDeletionInProgress, LBaaSStateDeleted}
+	deletedStates := []LBaaSState{LBaaSStateDeleted}
 	erroredStates := []LBaaSState{LBaaSStateDeletionFailed, LBaaSStateAbandon, LBaaSStateAutoAbandoned}
 
 	// check the initial response
@@ -151,11 +152,13 @@ func (c *OriginServerPoolClient) DeleteOriginServerPool(lb LoadBalancerContext, 
 		// resource could not be found, thus deleted
 		return nil, nil
 	}
+
 	return &info, err
 }
 
 // GetOriginServerPool fetchs the server pool details
 func (c *OriginServerPoolClient) GetOriginServerPool(lb LoadBalancerContext, name string) (*OriginServerPoolInfo, error) {
+
 	var info OriginServerPoolInfo
 	if err := c.getResource(lb.Region, lb.Name, name, &info); err != nil {
 		return nil, err

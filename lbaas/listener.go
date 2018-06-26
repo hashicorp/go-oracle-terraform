@@ -153,8 +153,8 @@ func (c *ListenerClient) DeleteListener(lb LoadBalancerContext, name string) (*L
 		return nil, err
 	}
 
-	deletedStates := []LBaaSState{LBaaSStateDeletionInProgress, LBaaSStateDeleted}
-	// deletedStates := []LBaaSState{LBaaSStateDeleted}
+	// deletedStates := []LBaaSState{LBaaSStateDeletionInProgress, LBaaSStateDeleted}
+	deletedStates := []LBaaSState{LBaaSStateDeleted}
 	erroredStates := []LBaaSState{LBaaSStateDeletionFailed, LBaaSStateAbandon, LBaaSStateAutoAbandoned}
 
 	// check the initial response
@@ -176,6 +176,7 @@ func (c *ListenerClient) DeleteListener(lb LoadBalancerContext, name string) (*L
 
 // GetListener fetchs the listener details
 func (c *ListenerClient) GetListener(lb LoadBalancerContext, name string) (*ListenerInfo, error) {
+
 	var info ListenerInfo
 	if err := c.getResource(lb.Region, lb.Name, name, &info); err != nil {
 		return nil, err

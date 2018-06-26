@@ -211,6 +211,9 @@ func (c *PolicyClient) CreatePolicy(lb LoadBalancerContext, input *CreatePolicyI
 	var info PolicyInfo
 
 	// set the content type based on the policy type
+	if input.Type == "" {
+		return nil, fmt.Errorf("Policy type for %s is not set", input.Name)
+	}
 	c.ContentType = fmt.Sprintf("application/vnd.com.oracle.oracloud.lbaas.%s+json", input.Type)
 	if err := c.createResource(lb.Region, lb.Name, &input, &info); err != nil {
 		return nil, err
@@ -248,8 +251,8 @@ func (c *PolicyClient) DeletePolicy(lb LoadBalancerContext, name string) (*Polic
 		return nil, err
 	}
 
-	deletedStates := []LBaaSState{LBaaSStateDeletionInProgress, LBaaSStateDeleted}
-	// deletedStates := []LBaaSState{LBaaSStateDeleted}
+	// deletedStates := []LBaaSState{LBaaSStateDeletionInProgress, LBaaSStateDeleted}
+	deletedStates := []LBaaSState{LBaaSStateDeleted}
 	erroredStates := []LBaaSState{LBaaSStateDeletionFailed, LBaaSStateAbandon, LBaaSStateAutoAbandoned}
 
 	// check the initial response
@@ -271,14 +274,6 @@ func (c *PolicyClient) DeletePolicy(lb LoadBalancerContext, name string) (*Polic
 
 // GetPolicy fetchs the listener details
 func (c *PolicyClient) GetPolicy(lb LoadBalancerContext, name string) (*PolicyInfo, error) {
-
-	// The Get Policy API returns occational HTTP 406
-	// errors, workaround is to just keep retrying.
-	// Force higher number of max retires.
-	maxRetries := 5
-	if *c.client.MaxRetries < maxRetries {
-		c.client.MaxRetries = &maxRetries
-	}
 
 	var info PolicyInfo
 	if err := c.getResource(lb.Region, lb.Name, name, &info); err != nil {

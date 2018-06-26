@@ -275,9 +275,11 @@ func (c *Client) retryRequest(req *http.Request) (*http.Response, error) {
 		if err != nil {
 			return resp, err
 		}
+		method := req.Method
+		url := req.URL
 		errMessage = buf.String()
 		statusCode = resp.StatusCode
-		c.DebugLogString(fmt.Sprintf("Encountered HTTP (%d) Error: %s", statusCode, errMessage))
+		c.DebugLogString(fmt.Sprintf("%s %s Encountered HTTP (%d) Error: %s", method, url, statusCode, errMessage))
 		c.DebugLogString(fmt.Sprintf("%d/%d retries left", i+1, retries))
 	}
 
