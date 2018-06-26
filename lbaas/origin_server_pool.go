@@ -81,7 +81,7 @@ type UpdateOriginServerPoolInput struct {
 // CreateOriginServerPool creates a new server pool
 func (c *OriginServerPoolClient) CreateOriginServerPool(lb LoadBalancerContext, input *CreateOriginServerPoolInput) (*OriginServerPoolInfo, error) {
 
-	// The Create Origin Server Pool API iscan be be temprimenta, returning HTTP 500
+	// The Create Origin Server Pool API is/can be be temprimental, returning HTTP 500
 	// errors on creation, workaround is to just keep retrying.
 	// Force high number of max retires.
 	maxRetries := 20

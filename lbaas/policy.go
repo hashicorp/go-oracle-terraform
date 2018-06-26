@@ -56,17 +56,22 @@ type PolicyInfo struct {
 	State LBaaSState `json:"state"`
 	Type  string     `json:"type"`
 	URI   string     `json:"uri"`
+
 	// ApplicationCookieStickinessPolicy
 	AppCookieName string `json:"app_cookie_name"`
+
 	// CloudGatePolicy
 	CloudGateApplication                string `json:"cloudgate_application"`
 	CloudGatePolicyName                 string `json:"cloudgate_policy_name"`
 	IdentityServiceInstanceGuid         string `json:"identity_service_instance_guid"`
 	VirtualHostnameForPolicyAttribution string `json:"virtual_hostname_for_policy_attribution"`
+
 	// LoadBalancerCookieStickinessPolicy
 	CookieExpirationPeriod int `json:"cookie_expiration_period"`
+
 	// LoadBalancingMechanismPolicy
 	LoadBalancingMechanism string `json:"load_balancing_mechanism"`
+
 	// RateLimitingRequestPolicy
 	BurstSize                   int    `json:"burst_size"`
 	DoNotDelayExcessiveRequests bool   `json:"do_not_delay_excessive_requests"`
@@ -76,26 +81,31 @@ type PolicyInfo struct {
 	RequestsPerSecond           int    `json:"requests_per_second"`
 	StorageSize                 int    `json:"storage_size_in_mb"`
 	Zone                        string `json:"zone"`
+
 	// RedirectPolicy
 	RedirectURI  string `json:"redirect_uri"`
 	ResponseCode int    `json:"response_code"`
+
 	// ResourceAccessControlPolicy
 	Disposition      string   `json:"disposition"`
 	DeniedClients    []string `json:"denied_clients"`
 	PermittedClients []string `json:"permitted_clients"`
+
 	// SetRequestHeaderPolicy
 	HeaderName                 string   `json:"header_name"`
 	Value                      string   `json:"value"`
 	ActionWhenHeaderExists     string   `json:"action_when_hdr_exists"`
 	ActionWhenHeaderValueIs    []string `json:"action_when_hdr_value_is"`
 	ActionWhenHeaderValueIsNot []string `json:"action_when_hdr_value_is_not"`
+
 	// SSLNegotiationPolicy
 	Port                  int      `json:"port"`
 	ServerOrderPreference string   `json:"server_order_preference"`
 	SSLProtocol           []string `json:"ssl_protocol"`
-	SSLCiphers            string   `json:"ssl_ciphers"`
+	SSLCiphers            []string `json:"ssl_ciphers"`
+
 	// TrustedCertificatePolicy
-	Cert string `json:"cert"`
+	TrustedCertificate string `json:"cert"`
 }
 
 type CreatePolicyInput struct {
@@ -181,11 +191,11 @@ type SSLNegotiationPolicyInfo struct {
 	Port                  int      `json:"port,omitempty"`
 	ServerOrderPreference string   `json:"server_order_preference,omitempty"`
 	SSLProtocol           []string `json:"ssl_protocol,omitempty"`
-	SSLCiphers            string   `json:"ssl_ciphers,omitempty"`
+	SSLCiphers            []string `json:"ssl_ciphers,omitempty"`
 }
 
 type TrustedCertificatePolicyInfo struct {
-	Cert string `json:"cert,omitempty"`
+	TrustedCertificate string `json:"cert,omitempty"`
 }
 
 // CreatePolicy creates a new listener
@@ -199,7 +209,9 @@ func (c *PolicyClient) CreatePolicy(lb LoadBalancerContext, input *CreatePolicyI
 	}
 
 	var info PolicyInfo
-	c.ContentType = CONTENT_TYPE_SET_REQUEST_HEADER_POLICY_JSON
+
+	// set the content type based on the policy type
+	c.ContentType = fmt.Sprintf("application/vnd.com.oracle.oracloud.lbaas.%s+json", input.Type)
 	if err := c.createResource(lb.Region, lb.Name, &input, &info); err != nil {
 		return nil, err
 	}
@@ -218,7 +230,7 @@ func (c *PolicyClient) CreatePolicy(lb LoadBalancerContext, input *CreatePolicyI
 	}
 	// else poll till ready
 	err = c.WaitForPolicyState(lb, input.Name, createdStates, erroredStates, c.PollInterval, c.Timeout, &info)
-	return &info, nil
+	return &info, err
 }
 
 // DeletePolicy deletes the listener with the specified input
@@ -259,6 +271,15 @@ func (c *PolicyClient) DeletePolicy(lb LoadBalancerContext, name string) (*Polic
 
 // GetPolicy fetchs the listener details
 func (c *PolicyClient) GetPolicy(lb LoadBalancerContext, name string) (*PolicyInfo, error) {
+
+	// The Get Policy API returns occational HTTP 406
+	// errors, workaround is to just keep retrying.
+	// Force higher number of max retires.
+	maxRetries := 5
+	if *c.client.MaxRetries < maxRetries {
+		c.client.MaxRetries = &maxRetries
+	}
+
 	var info PolicyInfo
 	if err := c.getResource(lb.Region, lb.Name, name, &info); err != nil {
 		return nil, err

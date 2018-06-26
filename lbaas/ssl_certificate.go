@@ -56,7 +56,7 @@ func (c *SSLCertificateClient) CreateSSLCertificate(input *CreateSSLCertificateI
 	}
 	// else poll till ready
 	err = c.WaitForSSLCertificateState(input.Name, createdStates, erroredStates, c.PollInterval, c.Timeout, &info)
-	return &info, nil
+	return &info, err
 }
 
 // DeleteSSLCertificate deletes the SSL certificate with the specified name

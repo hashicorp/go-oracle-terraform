@@ -84,7 +84,7 @@ type ComputeSecurityArtifactsInfo struct {
 }
 
 type HealthCheckInfo struct {
-	AcceptedReturnCodes []string `json:accepted_return_codes`
+	AcceptedReturnCodes []string `json:"accepted_return_codes"`
 	Enabled             string   `json:"enabled"`
 	HealthyThreshold    int      `json:"healthy_threshold"`
 	Interval            int      `json:"interval"`
