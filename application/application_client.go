@@ -1,13 +1,8 @@
 package application
 
 import (
-	"bytes"
 	"fmt"
-	"io"
-	"mime/multipart"
 	"net/http"
-	"net/url"
-	"strings"
 
 	"github.com/hashicorp/go-oracle-terraform/client"
 	"github.com/hashicorp/go-oracle-terraform/opc"
@@ -30,8 +25,8 @@ func NewClient(c *opc.Config) (*Client, error) {
 	return appClient, nil
 }
 
-func (c *Client) executeCreateUpdateRequest(method, path string, input *CreateApplicationContainerInput) (*http.Response, error) {
-	req, err := c.client.BuildMultipartFormRequest(method, path, input)
+func (c *Client) executeCreateUpdateApplicationContainer(method, path string, files map[string][]byte, additionalParams map[string]interface{}) (*http.Response, error) {
+	req, err := c.client.BuildMultipartFormRequest(method, path, files, additionalParams)
 	if err != nil {
 		return nil, err
 	}
@@ -81,51 +76,6 @@ func (c *Client) executeRequest(method, path string, body interface{}) (*http.Re
 		return nil, err
 	}
 	return resp, nil
-}
-
-// BuildMultipartFormRequest builds a new HTTP Request for a multipart form request from specifies attributes
-func (c *Client) BuildMultipartFormRequest(method, path string, manifestBody interface{}, parameters map[string]interface{}) (*http.Request, error) {
-
-	urlPath, err := url.Parse(path)
-	if err != nil {
-		return nil, err
-	}
-
-	body := new(bytes.Buffer)
-	writer := multipart.NewWriter(body)
-
-	var (
-		part io.Writer
-	)
-
-	part, err = writer.CreateFormFile("manifest", "manifest.json")
-	if err != nil {
-		return nil, err
-	}
-	manifestBytes, err := c.client.MarshallRequestBody(manifestBody)
-	if err != nil {
-		return nil, err
-	}
-	_, err = part.Write(manifestBytes)
-	if err != nil {
-		return nil, err
-	}
-
-	// Add additional parameters to the writer
-	for key, val := range parameters {
-		if val.(string) != "" {
-			_ = writer.WriteField(strings.ToLower(key), val.(string))
-		}
-	}
-	err = writer.Close()
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", c.formatURL(urlPath), body)
-	req.Header.Set("Content-Type", writer.FormDataContentType())
-
-	return req, err
 }
 
 func (c *Client) getContainerPath(root string) string {
