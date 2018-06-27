@@ -25,13 +25,13 @@ type ListenerClient struct {
 // ListenerClient returns an ListenerClient which is used to access the
 // Load Balancer Listener API
 func (c *Client) ListenerClient() *ListenerClient {
-	c.ContentType = CONTENT_TYPE_LISTENER_JSON
-	c.Accept = CONTENT_TYPE_LISTENER_JSON
 	return &ListenerClient{
 		LBaaSResourceClient: LBaaSResourceClient{
 			Client:           c,
 			ContainerPath:    listenerContainerPath,
 			ResourceRootPath: listenerResourcePath,
+			Accept:           CONTENT_TYPE_LISTENER_JSON,
+			ContentType:      CONTENT_TYPE_LISTENER_JSON,
 		},
 	}
 }
@@ -121,7 +121,6 @@ func (c *ListenerClient) CreateListener(lb LoadBalancerContext, input *CreateLis
 		return nil, err
 	}
 
-	// createdStates := []LBaaSState{LBaaSStateCreationInProgress, LBaaSStateCreated, LBaaSStateHealthy}
 	createdStates := []LBaaSState{LBaaSStateCreated, LBaaSStateHealthy}
 	erroredStates := []LBaaSState{LBaaSStateCreationFailed, LBaaSStateDeletionInProgress, LBaaSStateDeleted, LBaaSStateDeletionFailed, LBaaSStateAbandon, LBaaSStateAutoAbandoned}
 
@@ -153,7 +152,6 @@ func (c *ListenerClient) DeleteListener(lb LoadBalancerContext, name string) (*L
 		return nil, err
 	}
 
-	// deletedStates := []LBaaSState{LBaaSStateDeletionInProgress, LBaaSStateDeleted}
 	deletedStates := []LBaaSState{LBaaSStateDeleted}
 	erroredStates := []LBaaSState{LBaaSStateDeletionFailed, LBaaSStateAbandon, LBaaSStateAutoAbandoned}
 
@@ -199,7 +197,6 @@ func (c *ListenerClient) UpdateListener(lb LoadBalancerContext, name string, inp
 		return nil, err
 	}
 
-	// updatedStates := []LBaaSState{LBaaSStateModificationInProgress, LBaaSStateHealthy}
 	updatedStates := []LBaaSState{LBaaSStateHealthy}
 	erroredStates := []LBaaSState{LBaaSStateModificaitonFailed, LBaaSStateAbandon, LBaaSStateAutoAbandoned}
 

@@ -25,15 +25,17 @@ type OriginServerPoolClient struct {
 // OriginServerPoolClient returns an Client which is used to access the
 // Load Balancer Origin Server Pool API
 func (c *Client) OriginServerPoolClient() *OriginServerPoolClient {
-	c.ContentType = CONTENT_TYPE_ORIGIN_SERVER_POOL_JSON
-	c.Accept = CONTENT_TYPE_ORIGIN_SERVER_POOL_JSON
-	return &OriginServerPoolClient{
+	OriginServerPoolClient := &OriginServerPoolClient{
 		LBaaSResourceClient: LBaaSResourceClient{
 			Client:           c,
 			ContainerPath:    originserverpoolContainerPath,
 			ResourceRootPath: originserverpoolResourcePath,
+			Accept:           CONTENT_TYPE_ORIGIN_SERVER_POOL_JSON,
+			ContentType:      CONTENT_TYPE_ORIGIN_SERVER_POOL_JSON,
 		},
 	}
+
+	return OriginServerPoolClient
 }
 
 type OriginServerInfo struct {
@@ -81,15 +83,6 @@ type UpdateOriginServerPoolInput struct {
 // CreateOriginServerPool creates a new server pool
 func (c *OriginServerPoolClient) CreateOriginServerPool(lb LoadBalancerContext, input *CreateOriginServerPoolInput) (*OriginServerPoolInfo, error) {
 
-	// TODO FIND A BETTER FIX
-	// The Create Origin Server Pool API is/can be be temprimental, returning HTTP 500
-	// errors on creation, workaround is to just keep retrying.
-	// Force high number of max retires.
-	maxRetries := 20
-	if *c.client.MaxRetries < maxRetries {
-		c.client.MaxRetries = &maxRetries
-	}
-
 	if c.PollInterval == 0 {
 		c.PollInterval = waitForOriginServerPoolReadyPollInterval
 	}
@@ -102,7 +95,6 @@ func (c *OriginServerPoolClient) CreateOriginServerPool(lb LoadBalancerContext, 
 		return nil, err
 	}
 
-	// createdStates := []LBaaSState{LBaaSStateCreationInProgress, LBaaSStateCreated, LBaaSStateHealthy}
 	createdStates := []LBaaSState{LBaaSStateCreated, LBaaSStateHealthy}
 	erroredStates := []LBaaSState{LBaaSStateCreationFailed, LBaaSStateDeletionInProgress, LBaaSStateDeleted, LBaaSStateDeletionFailed, LBaaSStateAbandon, LBaaSStateAutoAbandoned}
 
@@ -134,7 +126,6 @@ func (c *OriginServerPoolClient) DeleteOriginServerPool(lb LoadBalancerContext, 
 		return nil, err
 	}
 
-	// deletedStates := []LBaaSState{LBaaSStateDeletionInProgress, LBaaSStateDeleted}
 	deletedStates := []LBaaSState{LBaaSStateDeleted}
 	erroredStates := []LBaaSState{LBaaSStateDeletionFailed, LBaaSStateAbandon, LBaaSStateAutoAbandoned}
 
@@ -181,7 +172,6 @@ func (c *OriginServerPoolClient) UpdateOriginServerPool(lb LoadBalancerContext, 
 		return nil, err
 	}
 
-	// updatedStates := []LBaaSState{LBaaSStateModificationInProgress, LBaaSStateHealthy}
 	updatedStates := []LBaaSState{LBaaSStateHealthy}
 	erroredStates := []LBaaSState{LBaaSStateModificaitonFailed, LBaaSStateAbandon, LBaaSStateAutoAbandoned}
 

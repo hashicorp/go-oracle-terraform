@@ -12,17 +12,19 @@ type LoadBalancerClient struct {
 	*Client
 	ContainerPath    string
 	ResourceRootPath string
+	Accept           string
+	ContentType      string
 }
 
 // LoadBalancerClient returns an ServiceInstanceClient which is used to access the
 // Load Balancer API
 func (c *Client) LoadBalancerClient() *LoadBalancerClient {
-	c.ContentType = CONTENT_TYPE_VLBR_JSON
-	c.Accept = CONTENT_TYPE_VLBR_JSON
 	return &LoadBalancerClient{
 		Client:           c,
 		ContainerPath:    loadBalancerContainerPath,
 		ResourceRootPath: loadBalancerResourcePath,
+		Accept:           CONTENT_TYPE_VLBR_JSON,
+		ContentType:      CONTENT_TYPE_VLBR_JSON,
 	}
 }
 
@@ -32,7 +34,7 @@ func (c *LoadBalancerClient) getObjectPath(root, region, name string) string {
 
 // executes the Create requests to the Load Balancer API
 func (c *LoadBalancerClient) createResource(requestBody interface{}, responseBody interface{}) error {
-	resp, err := c.executeRequest("POST", c.ContainerPath, requestBody)
+	resp, err := c.executeRequest("POST", c.ContainerPath, c.Accept, c.ContentType, requestBody)
 	if err != nil {
 		return err
 	}
@@ -42,7 +44,7 @@ func (c *LoadBalancerClient) createResource(requestBody interface{}, responseBod
 // executes the Update requests to the Load Balancer API
 func (c *LoadBalancerClient) updateResource(region, name string, requestBody interface{}, responseBody interface{}) error {
 	objectPath := c.getObjectPath(c.ResourceRootPath, region, name)
-	resp, err := c.executeRequest("PUT", objectPath, requestBody)
+	resp, err := c.executeRequest("PUT", objectPath, c.Accept, c.ContentType, requestBody)
 	if err != nil {
 		return err
 	}
@@ -52,7 +54,7 @@ func (c *LoadBalancerClient) updateResource(region, name string, requestBody int
 // executes the Get requests to the Load Balancer API
 func (c *LoadBalancerClient) getResource(region, name string, responseBody interface{}) error {
 	objectPath := c.getObjectPath(c.ResourceRootPath, region, name)
-	resp, err := c.executeRequest("GET", objectPath, nil)
+	resp, err := c.executeRequest("GET", objectPath, c.Accept, c.ContentType, nil)
 	if err != nil {
 		return err
 	}
@@ -62,7 +64,7 @@ func (c *LoadBalancerClient) getResource(region, name string, responseBody inter
 // executes the Delete requests to the Load Balancer API
 func (c *LoadBalancerClient) deleteResource(region, name string, responseBody interface{}) error {
 	objectPath := c.getObjectPath(c.ResourceRootPath, region, name)
-	resp, err := c.executeRequest("DELETE", objectPath, nil)
+	resp, err := c.executeRequest("DELETE", objectPath, c.Accept, c.ContentType, nil)
 	if err != nil {
 		return err
 	}

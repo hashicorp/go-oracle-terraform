@@ -83,8 +83,6 @@ const (
 // Client implementation for Oracle Cloud Infrastructure Load Balancing Classic */
 type Client struct {
 	client       *client.Client
-	ContentType  string
-	Accept       string
 	PollInterval time.Duration
 	Timeout      time.Duration
 }
@@ -101,7 +99,7 @@ func NewClient(c *opc.Config) (*Client, error) {
 	return appClient, nil
 }
 
-func (c *Client) executeRequest(method, path string, body interface{}) (*http.Response, error) {
+func (c *Client) executeRequest(method, path, accept, contentType string, body interface{}) (*http.Response, error) {
 
 	reqBody, err := c.client.MarshallRequestBody(body)
 	if err != nil {
@@ -113,12 +111,12 @@ func (c *Client) executeRequest(method, path string, body interface{}) (*http.Re
 		return nil, err
 	}
 
+	req.Header.Add("Accept", accept)
 	debugReqString := fmt.Sprintf("HTTP %s Req (%s)", method, path)
-	req.Header.Add("Accept", c.Accept)
+	debugReqString = fmt.Sprintf("%s:\nAccept: %+v", debugReqString, accept)
 	if body != nil {
-		req.Header.Set("Content-Type", c.ContentType)
-		// Debug the body for database services
-		debugReqString = fmt.Sprintf("%s:\nContent-Type: %+v\nAccept: %+v\nBody: %+v", debugReqString, c.ContentType, c.Accept, string(reqBody))
+		req.Header.Set("Content-Type", contentType)
+		debugReqString = fmt.Sprintf("%s:\nContent-Type: %+v\nBody: %+v", debugReqString, contentType, string(reqBody))
 	}
 	// Log the request before the authentication header, so as not to leak credentials
 	c.client.DebugLogString(debugReqString)

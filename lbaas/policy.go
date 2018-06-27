@@ -26,27 +26,27 @@ type PolicyClient struct {
 // PolicyClient returns an PolicyClient which is used to access the
 // Load Balancer Policy API
 func (c *Client) PolicyClient() *PolicyClient {
-	// c.ContentType cannot be generally set for the PolicyClient, instead it is set on each
-	// Create or Update request based on the Type of the Policy being created/updated.
-	// Accept all Policy Content Types
-	c.Accept = strings.Join([]string{
-		CONTENT_TYPE_APP_COOKIE_STICKINESS_POLICY_JSON,
-		CONTENT_TYPE_CLOUDGATE_POLICY_JSON,
-		CONTENT_TYPE_LB_COOKIE_STICKINESS_POLICY_JSON,
-		CONTENT_TYPE_LOADBALANCING_MECHANISM_POLICY_JSON,
-		CONTENT_TYPE_RATE_LIMITING_REQUEST_POLICY_JSON,
-		CONTENT_TYPE_RESOURCE_ACCESS_CONTROL_POLICY_JSON,
-		CONTENT_TYPE_REDIRECT_POLICY_JSON,
-		CONTENT_TYPE_SSL_NEGOTIATION_POLICY_JSON,
-		CONTENT_TYPE_SET_REQUEST_HEADER_POLICY_JSON,
-		CONTENT_TYPE_TRUSTED_CERTIFICATE_POLICY_JSON,
-	}, ",")
 
 	return &PolicyClient{
 		LBaaSResourceClient: LBaaSResourceClient{
 			Client:           c,
 			ContainerPath:    policyContainerPath,
 			ResourceRootPath: policyResourcePath,
+			// Accept all Policy Content Types
+			Accept: strings.Join([]string{
+				CONTENT_TYPE_APP_COOKIE_STICKINESS_POLICY_JSON,
+				CONTENT_TYPE_CLOUDGATE_POLICY_JSON,
+				CONTENT_TYPE_LB_COOKIE_STICKINESS_POLICY_JSON,
+				CONTENT_TYPE_LOADBALANCING_MECHANISM_POLICY_JSON,
+				CONTENT_TYPE_RATE_LIMITING_REQUEST_POLICY_JSON,
+				CONTENT_TYPE_RESOURCE_ACCESS_CONTROL_POLICY_JSON,
+				CONTENT_TYPE_REDIRECT_POLICY_JSON,
+				CONTENT_TYPE_SSL_NEGOTIATION_POLICY_JSON,
+				CONTENT_TYPE_SET_REQUEST_HEADER_POLICY_JSON,
+				CONTENT_TYPE_TRUSTED_CERTIFICATE_POLICY_JSON,
+			}, ","),
+			// ContentType cannot be generally set for the PolicyClient, instead it is set on each
+			// Create or Update request based on the Type of the Policy being created/updated.
 		},
 	}
 }
@@ -219,7 +219,6 @@ func (c *PolicyClient) CreatePolicy(lb LoadBalancerContext, input *CreatePolicyI
 		return nil, err
 	}
 
-	// createdStates := []LBaaSState{LBaaSStateCreationInProgress, LBaaSStateCreated, LBaaSStateHealthy}
 	createdStates := []LBaaSState{LBaaSStateCreated, LBaaSStateHealthy}
 	erroredStates := []LBaaSState{LBaaSStateCreationFailed, LBaaSStateDeletionInProgress, LBaaSStateDeleted, LBaaSStateDeletionFailed, LBaaSStateAbandon, LBaaSStateAutoAbandoned}
 
@@ -251,7 +250,6 @@ func (c *PolicyClient) DeletePolicy(lb LoadBalancerContext, name string) (*Polic
 		return nil, err
 	}
 
-	// deletedStates := []LBaaSState{LBaaSStateDeletionInProgress, LBaaSStateDeleted}
 	deletedStates := []LBaaSState{LBaaSStateDeleted}
 	erroredStates := []LBaaSState{LBaaSStateDeletionFailed, LBaaSStateAbandon, LBaaSStateAutoAbandoned}
 
@@ -298,7 +296,6 @@ func (c *PolicyClient) UpdatePolicy(lb LoadBalancerContext, name, policyType str
 		return nil, err
 	}
 
-	// updatedStates := []LBaaSState{LBaaSStateModificationInProgress, LBaaSStateHealthy}
 	updatedStates := []LBaaSState{LBaaSStateHealthy}
 	erroredStates := []LBaaSState{LBaaSStateModificaitonFailed, LBaaSStateAbandon, LBaaSStateAutoAbandoned}
 

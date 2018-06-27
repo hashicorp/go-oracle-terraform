@@ -42,7 +42,6 @@ func (c *SSLCertificateClient) CreateSSLCertificate(input *CreateSSLCertificateI
 		return nil, err
 	}
 
-	// createdStates := []LBaaSState{LBaaSStateCreationInProgress, LBaaSStateCreated, LBaaSStateHealthy}
 	createdStates := []LBaaSState{LBaaSStateCreated, LBaaSStateHealthy}
 	erroredStates := []LBaaSState{LBaaSStateCreationFailed, LBaaSStateDeletionInProgress, LBaaSStateDeleted, LBaaSStateDeletionFailed, LBaaSStateAbandon, LBaaSStateAutoAbandoned}
 
@@ -74,7 +73,6 @@ func (c *SSLCertificateClient) DeleteSSLCertificate(name string) (*SSLCertificat
 		return nil, err
 	}
 
-	// deletedStates := []LBaaSState{LBaaSStateDeletionInProgress, LBaaSStateDeleted}
 	deletedStates := []LBaaSState{LBaaSStateDeleted}
 	erroredStates := []LBaaSState{LBaaSStateDeletionFailed, LBaaSStateAbandon, LBaaSStateAutoAbandoned}
 
