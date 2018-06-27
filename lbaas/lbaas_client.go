@@ -12,6 +12,15 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
+// LBaaSClient is the base client implementation for the Load Balancer Classic API
+// Specialized clients are implemented for different LBaaS Service resources:
+// - LoadBalancerClient - Load Balancers
+// - LBaaSResourceClient - base client impl for child resources of a Load Balancer instnance:
+//   - PolicyClient - Policies
+//   - ListenerClient - Listeners
+//   - OriginServerPoolClient - Origin Server Pools
+// - SSLCertificateClient - SSL Certificates
+
 // Resource Content Types
 const CONTENT_TYPE_VLBR_JSON = "application/vnd.com.oracle.oracloud.lbaas.VLBR+json"
 const CONTENT_TYPE_LISTENER_JSON = "application/vnd.com.oracle.oracloud.lbaas.Listener+json"

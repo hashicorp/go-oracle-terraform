@@ -168,7 +168,7 @@ func (c *OriginServerPoolClient) UpdateOriginServerPool(lb LoadBalancerContext, 
 	}
 
 	var info OriginServerPoolInfo
-	if err := c.updateResource(lb.Region, lb.Name, name, &input, &info); err != nil {
+	if err := c.updateOriginServerPool(lb.Region, lb.Name, name, &input, &info); err != nil {
 		return nil, err
 	}
 
