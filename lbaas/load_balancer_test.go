@@ -1,10 +1,11 @@
 package lbaas
 
 import (
+	"os"
 	"testing"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
-	"github.com/hashicorp/go-oracle-terraform/opc"
+	"github.com/stretchr/testify/assert"
 )
 
 // Test the Load Balancer lifecycle the create, get, delete a Load Balancer
@@ -17,11 +18,16 @@ func TestAccLoadBalancerLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
+	var region string
+	if region = os.Getenv("OPC_TEST_LBAAS_REGION"); region == "" {
+		region = "uscom-central-1"
+	}
+
 	// CREATE
 
 	createLoadBalancerInput := &CreateLoadBalancerInput{
 		Name:        "acc-test-lb1",
-		Region:      "uscom-central-1",
+		Region:      region,
 		Description: "Terraformed Load Balancer Test",
 		Scheme:      LoadBalancerSchemeInternetFacing,
 		Disabled:    LBaaSDisabledTrue,
@@ -57,20 +63,21 @@ func TestAccLoadBalancerLifeCycle(t *testing.T) {
 	}
 
 	// compare resp to expected
-	compare(t, "Name", resp.Name, expected.Name)
-	compare(t, "Region", resp.Region, expected.Region)
-	compare(t, "Description", resp.Description, expected.Description)
-	compare(t, "Scheme", string(resp.Scheme), string(expected.Scheme))
-	compare(t, "Disabled", string(resp.Disabled), string(expected.Disabled))
-	// TODO compare(t, "Tags", string(resp.Tags), string(expected.Tags))
+	assert.Equal(t, expected.Name, resp.Name, "Expected Load Balancer name to match")
+	assert.Equal(t, expected.Region, resp.Region, "Expected Load Balancer region to match")
+	assert.Equal(t, expected.Description, resp.Description, "Expected Load Balancer description to match")
+	assert.Equal(t, expected.Scheme, resp.Scheme, "Expected Load Balancer scheme to match")
+	assert.ElementsMatch(t, expected.Tags, resp.Tags, "Expected Load Balancer tags to match ")
 
 	// UPDATE
 
+	updatedDescription := "Updated Description"
+	updatedTags := []string{"TAGA", "TAGB", "TAGC"}
+
 	updateInput := &UpdateLoadBalancerInput{
 		Name:        createLoadBalancerInput.Name,
-		Description: "Updated Description",
-		Tags:        []string{"TAGA", "TAGB", "TAGC"},
-		// TODO add updateable attributes
+		Description: &updatedDescription,
+		Tags:        &updatedTags,
 	}
 
 	resp, err = lbClient.UpdateLoadBalancer(lb, updateInput)
@@ -80,32 +87,13 @@ func TestAccLoadBalancerLifeCycle(t *testing.T) {
 
 	expected = &LoadBalancerInfo{
 		Name:        createLoadBalancerInput.Name,
-		Region:      createLoadBalancerInput.Region,
-		Description: updateInput.Description,
-		Disabled:    createLoadBalancerInput.Disabled,
-		Scheme:      createLoadBalancerInput.Scheme,
-		Tags:        updateInput.Tags,
+		Description: updatedDescription,
+		Tags:        updatedTags,
 	}
 
-	compare(t, "Name", resp.Name, expected.Name)
-	compare(t, "Region", resp.Region, expected.Region)
-	compare(t, "Description", resp.Description, expected.Description)
-	compare(t, "Scheme", string(resp.Scheme), string(expected.Scheme))
-	compare(t, "Disabled", string(resp.Disabled), string(expected.Disabled))
-	// TODO compare(t, "Tags", string(resp.Tags), string(expected.Tags))
+	// compare resp to expected
+	assert.Equal(t, expected.Name, resp.Name, "Expected Load Balancer name to match")
+	assert.Equal(t, expected.Description, resp.Description, "Expected Load Balancer description to match")
+	assert.ElementsMatch(t, expected.Tags, resp.Tags, "Expected Load Balancer tags to match ")
 
-}
-
-func getLoadBalancerClient() (*LoadBalancerClient, error) {
-	client, err := GetTestClient(&opc.Config{})
-	if err != nil {
-		return &LoadBalancerClient{}, err
-	}
-	return client.LoadBalancerClient(), nil
-}
-
-func destroyLoadBalancer(t *testing.T, client *LoadBalancerClient, lb LoadBalancerContext) {
-	if _, err := client.DeleteLoadBalancer(lb); err != nil {
-		t.Fatal(err)
-	}
 }

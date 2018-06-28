@@ -86,17 +86,6 @@ type ComputeSecurityArtifactsInfo struct {
 	URI          string `json:"uri"`
 }
 
-type HealthCheckInfo struct {
-	AcceptedReturnCodes []string `json:"accepted_return_codes"`
-	Enabled             string   `json:"enabled"`
-	HealthyThreshold    int      `json:"healthy_threshold"`
-	Interval            int      `json:"interval"`
-	Path                string   `json:"path"`
-	Timeout             int      `json:"timeout"`
-	Type                string   `json:"type"`
-	UnhealthyThreshold  int      `json:"unhealthy_threshold"`
-}
-
 type RestURIInfo struct {
 	Type string `json:"type"`
 	URI  string `json:"uri"`

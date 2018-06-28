@@ -1,10 +1,12 @@
 package lbaas
 
 import (
+	"os"
 	"testing"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
+	"github.com/stretchr/testify/assert"
 )
 
 // Test the Policy lifecycle to create, get, update and delete a Policy
@@ -14,30 +16,11 @@ func TestAccPolicyLifeCycle(t *testing.T) {
 
 	// CREATE Parent Load Balancer Service Instance
 
-	lbClient, err := getLoadBalancerClient()
-	if err != nil {
-		t.Fatal(err)
+	var region string
+	if region = os.Getenv("OPC_TEST_LBAAS_REGION"); region == "" {
+		region = "uscom-central-1"
 	}
-
-	createLoadBalancerInput := &CreateLoadBalancerInput{
-		Name:        "acc-test-lb-policy1",
-		Region:      "uscom-central-1",
-		Description: "Terraformed Load Balancer Test",
-		Scheme:      LoadBalancerSchemeInternetFacing,
-		Disabled:    LBaaSDisabledTrue,
-	}
-
-	_, err = lbClient.CreateLoadBalancer(createLoadBalancerInput)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	lb := LoadBalancerContext{
-		Region: createLoadBalancerInput.Region,
-		Name:   createLoadBalancerInput.Name,
-	}
-
-	defer destroyLoadBalancer(t, lbClient, lb)
+	lb := createParentLoadBalancer(t, region, "acc-test-lb-server-pool1")
 
 	// CREATE Policy
 
@@ -51,8 +34,8 @@ func TestAccPolicyLifeCycle(t *testing.T) {
 		Type: "SetRequestHeaderPolicy",
 		SetRequestHeaderPolicyInfo: SetRequestHeaderPolicyInfo{
 			ActionWhenHeaderExists: "OVERWRITE",
-			HeaderName:             "internal",
-			Value:                  "http://myurl.example.com",
+			HeaderName:             "MyHeaderName",
+			Value:                  "MyValue",
 		},
 	}
 
@@ -79,18 +62,22 @@ func TestAccPolicyLifeCycle(t *testing.T) {
 	}
 
 	// compare resp to expected
-	compare(t, "Name", resp.Name, expected.Name)
-	compare(t, "ActionWhenHeaderExists", resp.ActionWhenHeaderExists, expected.ActionWhenHeaderExists)
-	compare(t, "HeaderName", resp.HeaderName, expected.HeaderName)
-	compare(t, "Type", resp.Type, expected.Type)
-	compare(t, "Value", resp.Value, expected.Value)
+
+	assert.Equal(t, expected.Name, resp.Name, "SetRequestHeaderPolicy Name should match")
+	assert.Equal(t, expected.ActionWhenHeaderExists, resp.ActionWhenHeaderExists, "SetRequestHeaderPolicy ActionWhenHeaderExists should match")
+	assert.Equal(t, expected.HeaderName, resp.HeaderName, "SetRequestHeaderPolicy HeaderName should match")
+	assert.Equal(t, expected.Value, resp.Value, "SetRequestHeaderPolicy Value should match")
 
 	// UPDATE
+
+	updatedHeaderName := "UpdatedHeaderName"
+	updatedValue := "UpdatedValue"
 
 	updateInput := &UpdatePolicyInput{
 		Name: createPolicyInput.Name,
 		SetRequestHeaderPolicyInfo: SetRequestHeaderPolicyInfo{
-			Value: "http://updatedurl.example.com",
+			HeaderName: updatedHeaderName,
+			Value:      updatedValue,
 		},
 	}
 
@@ -100,15 +87,17 @@ func TestAccPolicyLifeCycle(t *testing.T) {
 	}
 
 	expected = &PolicyInfo{
-		Name:                   updateInput.Name,
-		Type:                   createPolicyInput.Type,
-		HeaderName:             createPolicyInput.SetRequestHeaderPolicyInfo.HeaderName,
+		Name:       updateInput.Name,
+		Type:       createPolicyInput.Type,
+		HeaderName: updatedHeaderName,
+		Value:      updatedValue,
 		ActionWhenHeaderExists: createPolicyInput.SetRequestHeaderPolicyInfo.ActionWhenHeaderExists,
-		Value: updateInput.SetRequestHeaderPolicyInfo.Value,
 	}
 
-	compare(t, "Name", resp.Name, expected.Name)
-	compare(t, "Value", resp.Value, expected.Value)
+	assert.Equal(t, expected.Name, resp.Name, "SetRequestHeaderPolicy Name should match")
+	assert.Equal(t, expected.ActionWhenHeaderExists, resp.ActionWhenHeaderExists, "SetRequestHeaderPolicy ActionWhenHeaderExists should match")
+	assert.Equal(t, expected.HeaderName, resp.HeaderName, "SetRequestHeaderPolicy HeaderName should match")
+	assert.Equal(t, expected.Value, resp.Value, "SetRequestHeaderPolicy Value should match")
 
 }
 

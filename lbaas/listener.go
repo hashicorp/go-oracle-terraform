@@ -12,10 +12,10 @@ var (
 	listenerResourcePath  = "/vlbrs/%s/%s/listeners/%s"
 )
 
-const waitForListenerReadyPollInterval = 10 * time.Second  // 10 seconds
-const waitForListenerReadyTimeout = 30 * time.Minute       // 30 minutes
-const waitForListenerDeletePollInterval = 10 * time.Second // 10 seconds
-const waitForListenerDeleteTimeout = 30 * time.Minute      // 30 minutes
+const waitForListenerReadyPollInterval = 1 * time.Second  // 1 second
+const waitForListenerReadyTimeout = 5 * time.Minute       // 5 minutes
+const waitForListenerDeletePollInterval = 1 * time.Second // 1 second
+const waitForListenerDeleteTimeout = 5 * time.Minute      // 5 minutes
 
 // ListenerClient is a client for the Load Balancer Listener resources.
 type ListenerClient struct {
@@ -117,8 +117,8 @@ func (c *ListenerClient) CreateListener(lb LoadBalancerContext, input *CreateLis
 		c.Timeout = waitForListenerReadyTimeout
 	}
 
-	var info ListenerInfo
-	if err := c.createResource(lb.Region, lb.Name, &input, &info); err != nil {
+	info := &ListenerInfo{}
+	if err := c.createResource(lb.Region, lb.Name, &input, info); err != nil {
 		return nil, err
 	}
 
@@ -126,16 +126,19 @@ func (c *ListenerClient) CreateListener(lb LoadBalancerContext, input *CreateLis
 	erroredStates := []LBaaSState{LBaaSStateCreationFailed, LBaaSStateDeletionInProgress, LBaaSStateDeleted, LBaaSStateDeletionFailed, LBaaSStateAbandon, LBaaSStateAutoAbandoned}
 
 	// check the initial response
-	ready, err := c.checkListenerState(&info, createdStates, erroredStates)
+	ready, err := c.checkListenerState(info, createdStates, erroredStates)
 	if err != nil {
 		return nil, err
 	}
 	if ready {
-		return &info, nil
+		return info, nil
 	}
 	// else poll till ready
-	err = c.WaitForListenerState(lb, input.Name, createdStates, erroredStates, &info)
-	return &info, err
+	info, err = c.WaitForListenerState(lb, input.Name, createdStates, erroredStates)
+	if err != nil {
+		return nil, err
+	}
+	return info, nil
 }
 
 // DeleteListener deletes the listener with the specified input
@@ -148,8 +151,8 @@ func (c *ListenerClient) DeleteListener(lb LoadBalancerContext, name string) (*L
 		c.Timeout = waitForListenerDeleteTimeout
 	}
 
-	var info ListenerInfo
-	if err := c.deleteResource(lb.Region, lb.Name, name, &info); err != nil {
+	info := &ListenerInfo{}
+	if err := c.deleteResource(lb.Region, lb.Name, name, info); err != nil {
 		return nil, err
 	}
 
@@ -157,30 +160,30 @@ func (c *ListenerClient) DeleteListener(lb LoadBalancerContext, name string) (*L
 	erroredStates := []LBaaSState{LBaaSStateDeletionFailed, LBaaSStateAbandon, LBaaSStateAutoAbandoned}
 
 	// check the initial response
-	deleted, err := c.checkListenerState(&info, deletedStates, erroredStates)
+	deleted, err := c.checkListenerState(info, deletedStates, erroredStates)
 	if err != nil {
 		return nil, err
 	}
 	if deleted {
-		return &info, nil
+		return info, nil
 	}
 	// else poll till deleted
-	err = c.WaitForListenerState(lb, name, deletedStates, erroredStates, &info)
+	info, err = c.WaitForListenerState(lb, name, deletedStates, erroredStates)
 	if err != nil && client.WasNotFoundError(err) {
 		// resource could not be found, thus deleted
 		return nil, nil
 	}
-	return &info, err
+	return info, err
 }
 
 // GetListener fetchs the listener details
 func (c *ListenerClient) GetListener(lb LoadBalancerContext, name string) (*ListenerInfo, error) {
 
-	var info ListenerInfo
-	if err := c.getResource(lb.Region, lb.Name, name, &info); err != nil {
+	info := &ListenerInfo{}
+	if err := c.getResource(lb.Region, lb.Name, name, info); err != nil {
 		return nil, err
 	}
-	return &info, nil
+	return info, nil
 }
 
 // UpdateListener updated the listener
@@ -193,8 +196,8 @@ func (c *ListenerClient) UpdateListener(lb LoadBalancerContext, name string, inp
 		c.Timeout = waitForListenerReadyTimeout
 	}
 
-	var info ListenerInfo
-	if err := c.updateResource(lb.Region, lb.Name, name, &input, &info); err != nil {
+	info := &ListenerInfo{}
+	if err := c.updateResource(lb.Region, lb.Name, name, &input, info); err != nil {
 		return nil, err
 	}
 
@@ -202,22 +205,26 @@ func (c *ListenerClient) UpdateListener(lb LoadBalancerContext, name string, inp
 	erroredStates := []LBaaSState{LBaaSStateModificaitonFailed, LBaaSStateAbandon, LBaaSStateAutoAbandoned}
 
 	// check the initial response
-	ready, err := c.checkListenerState(&info, updatedStates, erroredStates)
+	ready, err := c.checkListenerState(info, updatedStates, erroredStates)
 	if err != nil {
 		return nil, err
 	}
 	if ready {
-		return &info, nil
+		return info, nil
 	}
 	// else poll till ready
-	err = c.WaitForListenerState(lb, name, updatedStates, erroredStates, &info)
-	return &info, err
+	info, err = c.WaitForListenerState(lb, name, updatedStates, erroredStates)
+	if err != nil {
+		return nil, err
+	}
+	return info, nil
 }
 
 // WaitForListenerState waits for the resource to be in one of a set of desired states
-func (c *ListenerClient) WaitForListenerState(lb LoadBalancerContext, name string, desiredStates, errorStates []LBaaSState, info *ListenerInfo) error {
+func (c *ListenerClient) WaitForListenerState(lb LoadBalancerContext, name string, desiredStates, errorStates []LBaaSState) (*ListenerInfo, error) {
 
 	var getErr error
+	info := &ListenerInfo{}
 	err := c.client.WaitFor("Listener status update", c.PollInterval, c.Timeout, func() (bool, error) {
 		info, getErr = c.GetListener(lb, name)
 		if getErr != nil {
@@ -226,7 +233,7 @@ func (c *ListenerClient) WaitForListenerState(lb LoadBalancerContext, name strin
 
 		return c.checkListenerState(info, desiredStates, errorStates)
 	})
-	return err
+	return info, err
 }
 
 // check the State, returns in desired state (true), not ready yet (false) or errored state (error)

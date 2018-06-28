@@ -5,12 +5,14 @@ import (
 	"net/http"
 )
 
-// The LBaaSResourceClient is the general client used for the majority of the Load Balancer
-// Service child resources (Listeners, Origin Servier Pools and Policies) which have the common URI
-// format https://{api_endpoint}/{lb_name}/{lb_region}/{resource_type}/{resource_name}?{projection}
-//
-// For SSL Certificates use the SSLCertificateClient
-// For the Load Balancer Service Instance use the LoadBalancerResourceClient
+/*
+ * The LBaaSResourceClient is the general client used for the majority of the Load Balancer
+ * Service child resources (Listeners, Origin Servier Pools and Policies) which have the common URI
+ * format https://{api_endpoint}/{lb_name}/{lb_region}/{resource_type}/{resource_name}?{projection}
+ *
+ * For SSL Certificates use the SSLCertificateClient
+ * For the Load Balancer Service Instance use the LoadBalancerResourceClient
+ */
 
 // LBaaSResourceClient is an AuthenticatedClient with some additional information about the resources to be addressed.
 type LBaaSResourceClient struct {

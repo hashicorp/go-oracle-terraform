@@ -5,6 +5,7 @@ import (
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
+	"github.com/stretchr/testify/assert"
 )
 
 // Test the SSL Certificate lifecycle the create, get, delete an SSL Certificate
@@ -46,8 +47,7 @@ func TestAccSSLCertificateLifeCycle(t *testing.T) {
 		Trusted:     createCertInput.Trusted,
 	}
 
-	compare(t, "Name", resp.Name, expected.Name)
-	// compare(t, "Certificate", resp.Certificate, expected.Certificate)
+	assert.Equal(t, expected.Name, resp.Name, "SSL Certification name should match")
 
 }
 

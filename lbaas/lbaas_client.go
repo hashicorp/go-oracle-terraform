@@ -12,22 +12,24 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-// LBaaSClient is the base client implementation for the Load Balancer Classic API
-// Specialized clients are implemented for different LBaaS Service resources:
-// - LoadBalancerClient - Load Balancers
-// - LBaaSResourceClient - base client impl for child resources of a Load Balancer instnance:
-//   - PolicyClient - Policies
-//   - ListenerClient - Listeners
-//   - OriginServerPoolClient - Origin Server Pools
-// - SSLCertificateClient - SSL Certificates
+/*
+ * LBaaSClient is the base client implementation for the Load Balancer Classic API
+ * Specialized clients are implemented for different LBaaS Service resources:
+ * - LoadBalancerClient - Load Balancers
+ * - LBaaSResourceClient - base client impl for child resources of a Load Balancer instnance:
+ *   - PolicyClient - Policies
+ *   - ListenerClient - Listeners
+ *   - OriginServerPoolClient - Origin Server Pools
+ * - SSLCertificateClient - SSL Certificates
+ */
 
-// Resource Content Types
+// Main Resource Content Types. Each resource has it's own ContentType
 const CONTENT_TYPE_VLBR_JSON = "application/vnd.com.oracle.oracloud.lbaas.VLBR+json"
 const CONTENT_TYPE_LISTENER_JSON = "application/vnd.com.oracle.oracloud.lbaas.Listener+json"
 const CONTENT_TYPE_ORIGIN_SERVER_POOL_JSON = "application/vnd.com.oracle.oracloud.lbaas.OriginServerPool+json"
 const CONTENT_TYPE_SERVER_CERTIFICATE_JSON = "application/vnd.com.oracle.oracloud.lbaas.ServerCertificate+json"
 
-// Policy Specific Content Types
+// Policy Specific Content Types. Each Type of Policy has its own ContentType
 const CONTENT_TYPE_APP_COOKIE_STICKINESS_POLICY_JSON = "application/vnd.com.oracle.oracloud.lbaas.AppCookieStickinessPolicy+json"
 const CONTENT_TYPE_CLOUDGATE_POLICY_JSON = "application/vnd.com.oracle.oracloud.lbaas.CloudGatePolicy+json"
 const CONTENT_TYPE_LB_COOKIE_STICKINESS_POLICY_JSON = "application/vnd.com.oracle.oracloud.lbaas.LBCookieStickinessPolicy+json"

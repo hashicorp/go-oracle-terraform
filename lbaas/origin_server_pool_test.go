@@ -1,10 +1,12 @@
 package lbaas
 
 import (
+	"os"
 	"testing"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
+	"github.com/stretchr/testify/assert"
 )
 
 // Test the Origin Server Pool lifecycle to create, get, delete a Origin Server
@@ -14,36 +16,28 @@ func TestAccOriginServerPoolLifeCycle(t *testing.T) {
 
 	// CREATE Parent Load Balancer Service Instance
 
-	lbClient, err := getLoadBalancerClient()
-	if err != nil {
-		t.Fatal(err)
+	var region string
+	if region = os.Getenv("OPC_TEST_LBAAS_REGION"); region == "" {
+		region = "uscom-central-1"
 	}
-
-	createLoadBalancerInput := &CreateLoadBalancerInput{
-		Name:        "acc-test-lb-server-pool1",
-		Region:      "uscom-central-1",
-		Description: "Terraformed Load Balancer Test",
-		Scheme:      LoadBalancerSchemeInternetFacing,
-		Disabled:    LBaaSDisabledTrue,
-	}
-
-	_, err = lbClient.CreateLoadBalancer(createLoadBalancerInput)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	lb := LoadBalancerContext{
-		Region: createLoadBalancerInput.Region,
-		Name:   createLoadBalancerInput.Name,
-	}
-
-	defer destroyLoadBalancer(t, lbClient, lb)
+	lb := createParentLoadBalancer(t, region, "acc-test-lb-server-pool1")
 
 	// CREATE Origin Server Pool
 
 	serverPoolClient, err := getOriginServerPoolClient()
 	if err != nil {
 		t.Fatal(err)
+	}
+
+	healthCheckInfo := HealthCheckInfo{
+		Type:                "HTTP",
+		Path:                "/health",
+		AcceptedReturnCodes: []string{"2xx", "3xx", "4xx", "5xx"},
+		Enabled:             "TRUE",
+		Interval:            30,
+		Timeout:             30,
+		HealthyThreshold:    6,
+		UnhealthyThreshold:  3,
 	}
 
 	createOriginServerPoolInput := &CreateOriginServerPoolInput{
@@ -55,8 +49,9 @@ func TestAccOriginServerPoolLifeCycle(t *testing.T) {
 				Port:     3691,
 			},
 		},
-		Tags:   []string{"tag3", "tag2", "tag1"},
-		Status: "ENABLED",
+		HealthCheck: healthCheckInfo,
+		Tags:        []string{"tag3", "tag2", "tag1"},
+		Status:      "ENABLED",
 	}
 
 	_, err = serverPoolClient.CreateOriginServerPool(lb, createOriginServerPoolInput)
@@ -82,34 +77,61 @@ func TestAccOriginServerPoolLifeCycle(t *testing.T) {
 				Port:     3691,
 			},
 		},
-		Status: createOriginServerPoolInput.Status,
-		Tags:   createOriginServerPoolInput.Tags,
+		HealthCheck: healthCheckInfo,
+		Status:      createOriginServerPoolInput.Status,
+		Tags:        createOriginServerPoolInput.Tags,
 	}
 
 	// compare resp to expected
-	compare(t, "Name", resp.Name, expected.Name)
-	// TODO compare OriginServers
-	// TODO compare Status
-	// TODO compare Tags
+	assert.Equal(t, expected.Name, resp.Name, "Origin Server Pool name should match")
+	assert.ElementsMatch(t, expected.Tags, resp.Tags, "Expected Origin Server Pool tags to match ")
+	assert.Len(t, resp.OriginServers, 1, "Expected one Origin Server to be defined")
+	assert.Equal(t, expected.OriginServers[0].Hostname, resp.OriginServers[0].Hostname, "Origin Server host name should match")
+	assert.Equal(t, expected.OriginServers[0].Port, resp.OriginServers[0].Port, "Origin Server port should match")
 
-	// UPDATE
+	assert.Equal(t, expected.HealthCheck.Type, resp.HealthCheck.Type, "Health Check Type should match")
+	assert.Equal(t, expected.HealthCheck.Path, resp.HealthCheck.Path, "Health Check Path should match")
+	assert.ElementsMatch(t, expected.HealthCheck.AcceptedReturnCodes, resp.HealthCheck.AcceptedReturnCodes, "Health Check AcceptedReturnCodes should match")
+	assert.Equal(t, expected.HealthCheck.Enabled, resp.HealthCheck.Enabled, "Health Check Enabled should match")
+	assert.Equal(t, expected.HealthCheck.Interval, resp.HealthCheck.Interval, "Health Check Interval should match")
+	assert.Equal(t, expected.HealthCheck.Timeout, resp.HealthCheck.Timeout, "Health Check Timeout should match")
+	assert.Equal(t, expected.HealthCheck.HealthyThreshold, resp.HealthCheck.HealthyThreshold, "Health Check HealthyThreshold should match")
+	assert.Equal(t, expected.HealthCheck.UnhealthyThreshold, resp.HealthCheck.UnhealthyThreshold, "Health Check UnhealthyThreshold should match")
+
+	// UPDATES
+
+	updateOriginServers := []CreateOriginServerInput{
+		CreateOriginServerInput{
+			Status:   "ENABLED",
+			Hostname: "example.com",
+			Port:     3691,
+		},
+		CreateOriginServerInput{
+			Status:   "ENABLED",
+			Hostname: "example.com",
+			Port:     8080,
+		},
+	}
+
+	updatedHeathCheck := HealthCheckInfo{
+		Type:                "HTTP",
+		Path:                "",
+		Enabled:             "TRUE",
+		AcceptedReturnCodes: []string{"4xx"},
+		Interval:            10,
+		Timeout:             5,
+		HealthyThreshold:    6,
+		UnhealthyThreshold:  2,
+	}
+
+	updateTags := []string{"TAGA", "TAGB", "TAGC"}
 
 	updateInput := &UpdateOriginServerPoolInput{
-		Name: createOriginServerPoolInput.Name,
-		OriginServers: []CreateOriginServerInput{
-			CreateOriginServerInput{
-				Status:   "ENABLED",
-				Hostname: "example.com",
-				Port:     3691,
-			},
-			CreateOriginServerInput{
-				Status:   "ENABLED",
-				Hostname: "example.com",
-				Port:     8080,
-			},
-		},
-		Status: LBaaSStatusDisabled,
-		Tags:   []string{"TAGA", "TAGB", "TAGC"},
+		Name:          createOriginServerPoolInput.Name,
+		OriginServers: &updateOriginServers,
+		HealthCheck:   &updatedHeathCheck,
+		Status:        LBaaSStatusDisabled,
+		Tags:          &updateTags,
 	}
 
 	resp, err = serverPoolClient.UpdateOriginServerPool(lb, createOriginServerPoolInput.Name, updateInput)
@@ -131,13 +153,23 @@ func TestAccOriginServerPoolLifeCycle(t *testing.T) {
 				Port:     8080,
 			},
 		}, Status: updateInput.Status,
-		Tags: updateInput.Tags,
+		HealthCheck: updatedHeathCheck,
+		Tags:        updateTags,
 	}
 
-	compare(t, "Name", resp.Name, expected.Name)
-	// TODO compare OriginServers
-	// TODO compare Status
-	// TODO compare Tags
+	assert.Equal(t, expected.Name, resp.Name, "Origin Server Pool name should match")
+	assert.ElementsMatch(t, expected.Tags, resp.Tags, "Expected Origin Server Pool tags to match ")
+	assert.Len(t, resp.OriginServers, 2, "Expected two Origin Servers to be defined")
+	assert.ElementsMatch(t, expected.OriginServers, resp.OriginServers, "Expected Origin Servers to match ")
+
+	assert.Equal(t, expected.HealthCheck.Type, resp.HealthCheck.Type, "Health Check Type should match")
+	assert.Equal(t, expected.HealthCheck.Path, resp.HealthCheck.Path, "Health Check Path should match")
+	assert.ElementsMatch(t, expected.HealthCheck.AcceptedReturnCodes, resp.HealthCheck.AcceptedReturnCodes, "Health Check AcceptedReturnCodes should match")
+	assert.Equal(t, expected.HealthCheck.Enabled, resp.HealthCheck.Enabled, "Health Check Enabled should match")
+	assert.Equal(t, expected.HealthCheck.Interval, resp.HealthCheck.Interval, "Health Check Interval should match")
+	assert.Equal(t, expected.HealthCheck.Timeout, resp.HealthCheck.Timeout, "Health Check Timeout should match")
+	assert.Equal(t, expected.HealthCheck.HealthyThreshold, resp.HealthCheck.HealthyThreshold, "Health Check HealthyThreshold should match")
+	assert.Equal(t, expected.HealthCheck.UnhealthyThreshold, resp.HealthCheck.UnhealthyThreshold, "Health Check UnhealthyThreshold should match")
 
 }
 

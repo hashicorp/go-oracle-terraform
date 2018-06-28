@@ -1,10 +1,12 @@
 package lbaas
 
 import (
+	"os"
 	"testing"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
+	"github.com/stretchr/testify/assert"
 )
 
 // Test the Listener lifecycle to create, get, delete a Listener
@@ -14,30 +16,11 @@ func TestAccListenerLifeCycle(t *testing.T) {
 
 	// CREATE Parent Load Balancer Service Instance
 
-	lbClient, err := getLoadBalancerClient()
-	if err != nil {
-		t.Fatal(err)
+	var region string
+	if region = os.Getenv("OPC_TEST_LBAAS_REGION"); region == "" {
+		region = "uscom-central-1"
 	}
-
-	createLoadBalancerInput := &CreateLoadBalancerInput{
-		Name:        "acc-test-lb-listener1",
-		Region:      "uscom-central-1",
-		Description: "Terraformed Load Balancer Test",
-		Scheme:      LoadBalancerSchemeInternetFacing,
-		Disabled:    LBaaSDisabledTrue,
-	}
-
-	_, err = lbClient.CreateLoadBalancer(createLoadBalancerInput)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	lb := LoadBalancerContext{
-		Region: createLoadBalancerInput.Region,
-		Name:   createLoadBalancerInput.Name,
-	}
-
-	defer destroyLoadBalancer(t, lbClient, lb)
+	lb := createParentLoadBalancer(t, region, "acc-test-lb-server-pool1")
 
 	// CREATE Listener
 
@@ -52,6 +35,7 @@ func TestAccListenerLifeCycle(t *testing.T) {
 		BalancerProtocol:     ProtocolHTTP,
 		OriginServerProtocol: ProtocolHTTP,
 		Disabled:             LBaaSDisabledTrue,
+		Tags:                 []string{"tag3", "tag2", "tag1"},
 	}
 
 	_, err = listenerClient.CreateListener(lb, createListenerInput)
@@ -73,21 +57,28 @@ func TestAccListenerLifeCycle(t *testing.T) {
 		Port:                 createListenerInput.Port,
 		BalancerProtocol:     createListenerInput.BalancerProtocol,
 		OriginServerProtocol: createListenerInput.OriginServerProtocol,
+		Tags:                 createListenerInput.Tags,
 	}
 
 	// compare resp to expected
-	compare(t, "Name", resp.Name, expected.Name)
-	compare(t, "Port", string(resp.Port), string(expected.Port))
-	compare(t, "BalancerProtocol", string(resp.BalancerProtocol), string(expected.BalancerProtocol))
-	compare(t, "OriginServerProtocol", string(resp.OriginServerProtocol), string(expected.OriginServerProtocol))
+	assert.Equal(t, expected.Name, resp.Name, "Listener name should match")
+	assert.Equal(t, expected.Port, resp.Port, "Listener port should match")
+	assert.Equal(t, expected.BalancerProtocol, resp.BalancerProtocol, "Listener balancer protocol should match")
+	assert.Equal(t, expected.OriginServerProtocol, resp.OriginServerProtocol, "Listener origin server protocol should match")
+	assert.ElementsMatch(t, expected.Tags, resp.Tags, "Expected Listener tags to match ")
 
 	// UPDATE
+
+	updateTags := []string{"TAGA", "TAGB", "TAGC"}
+	updatePathPrefixes := []string{"/path1", "/path2"}
 
 	updateInput := &UpdateListenerInput{
 		Name:                 createListenerInput.Name,
 		Port:                 8081,
 		BalancerProtocol:     ProtocolHTTPS,
 		OriginServerProtocol: ProtocolHTTPS,
+		PathPrefixes:         &updatePathPrefixes,
+		Tags:                 &updateTags,
 	}
 
 	resp, err = listenerClient.UpdateListener(lb, createListenerInput.Name, updateInput)
@@ -100,12 +91,16 @@ func TestAccListenerLifeCycle(t *testing.T) {
 		Port:                 updateInput.Port,
 		BalancerProtocol:     updateInput.BalancerProtocol,
 		OriginServerProtocol: updateInput.OriginServerProtocol,
+		PathPrefixes:         updatePathPrefixes,
+		Tags:                 updateTags,
 	}
 
-	compare(t, "Name", resp.Name, expected.Name)
-	compare(t, "Port", string(resp.Port), string(expected.Port))
-	compare(t, "BalancerProtocol", string(resp.BalancerProtocol), string(expected.BalancerProtocol))
-	compare(t, "OriginServerProtocol", string(resp.OriginServerProtocol), string(expected.OriginServerProtocol))
+	assert.Equal(t, expected.Name, resp.Name, "Listener name should match")
+	assert.Equal(t, expected.Port, resp.Port, "Listener port should match")
+	assert.Equal(t, expected.BalancerProtocol, resp.BalancerProtocol, "Listener balancer protocol should match")
+	assert.Equal(t, expected.OriginServerProtocol, resp.OriginServerProtocol, "Listener origin server protocol should match")
+	assert.ElementsMatch(t, expected.PathPrefixes, resp.PathPrefixes, "Expected Listener path prefixes to match ")
+	assert.ElementsMatch(t, expected.Tags, resp.Tags, "Expected Listener tags to match ")
 
 }
 

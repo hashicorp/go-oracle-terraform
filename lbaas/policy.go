@@ -8,10 +8,10 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/client"
 )
 
-const waitForPolicyReadyPollInterval = 10 * time.Second  // 10 seconds
-const waitForPolicyReadyTimeout = 30 * time.Minute       // 30 minutes
-const waitForPolicyDeletePollInterval = 10 * time.Second // 10 seconds
-const waitForPolicyDeleteTimeout = 30 * time.Minute      // 30 minutes
+const waitForPolicyReadyPollInterval = 1 * time.Second  // 1 second
+const waitForPolicyReadyTimeout = 5 * time.Minute       // 5 minutes
+const waitForPolicyDeletePollInterval = 1 * time.Second // 1 second
+const waitForPolicyDeleteTimeout = 5 * time.Minute      // 5 minutes
 
 var (
 	policyContainerPath = "/vlbrs/%s/%s/policies"
@@ -52,65 +52,65 @@ func (c *Client) PolicyClient() *PolicyClient {
 }
 
 type PolicyInfo struct {
-	Name  string     `json:"name"`
-	State LBaaSState `json:"state"`
-	Type  string     `json:"type"`
-	URI   string     `json:"uri"`
+	Name  string     `json:"name,omitempty"`
+	State LBaaSState `json:"state,omitempty"`
+	Type  string     `json:"type,omitempty"`
+	URI   string     `json:"uri,omitempty"`
 
 	// ApplicationCookieStickinessPolicy
-	AppCookieName string `json:"app_cookie_name"`
+	AppCookieName string `json:"app_cookie_name,omitempty"`
 
 	// CloudGatePolicy
-	CloudGateApplication                string `json:"cloudgate_application"`
-	CloudGatePolicyName                 string `json:"cloudgate_policy_name"`
-	IdentityServiceInstanceGuid         string `json:"identity_service_instance_guid"`
-	VirtualHostnameForPolicyAttribution string `json:"virtual_hostname_for_policy_attribution"`
+	CloudGateApplication                string `json:"cloudgate_application,omitempty"`
+	CloudGatePolicyName                 string `json:"cloudgate_policy_name,omitempty"`
+	IdentityServiceInstanceGuid         string `json:"identity_service_instance_guid,omitempty"`
+	VirtualHostnameForPolicyAttribution string `json:"virtual_hostname_for_policy_attribution,omitempty"`
 
 	// LoadBalancerCookieStickinessPolicy
-	CookieExpirationPeriod int `json:"cookie_expiration_period"`
+	CookieExpirationPeriod int `json:"cookie_expiration_period,omitempty"`
 
 	// LoadBalancingMechanismPolicy
-	LoadBalancingMechanism string `json:"load_balancing_mechanism"`
+	LoadBalancingMechanism string `json:"load_balancing_mechanism,omitempty"`
 
 	// RateLimitingRequestPolicy
-	BurstSize                   int    `json:"burst_size"`
-	DoNotDelayExcessiveRequests bool   `json:"do_not_delay_excessive_requests"`
-	HttpStatusErrorCode         int    `json:"http_status_error_code"`
-	LogLevel                    string `json:"log_level"`
-	RateLimitingCriteria        string `json:"rate_limiting_criteria"`
-	RequestsPerSecond           int    `json:"requests_per_second"`
-	StorageSize                 int    `json:"storage_size_in_mb"`
-	Zone                        string `json:"zone"`
+	BurstSize                   int    `json:"burst_size,omitempty"`
+	DoNotDelayExcessiveRequests bool   `json:"do_not_delay_excessive_requests,omitempty"`
+	HttpStatusErrorCode         int    `json:"http_status_error_code,omitempty"`
+	LogLevel                    string `json:"log_level,omitempty"`
+	RateLimitingCriteria        string `json:"rate_limiting_criteria,omitempty"`
+	RequestsPerSecond           int    `json:"requests_per_second,omitempty"`
+	StorageSize                 int    `json:"storage_size_in_mb,omitempty"`
+	Zone                        string `json:"zone,omitempty"`
 
 	// RedirectPolicy
-	RedirectURI  string `json:"redirect_uri"`
-	ResponseCode int    `json:"response_code"`
+	RedirectURI  string `json:"redirect_uri,omitempty"`
+	ResponseCode int    `json:"response_code,omitempty"`
 
 	// ResourceAccessControlPolicy
-	Disposition      string   `json:"disposition"`
-	DeniedClients    []string `json:"denied_clients"`
-	PermittedClients []string `json:"permitted_clients"`
+	Disposition      string   `json:"disposition,omitempty"`
+	DeniedClients    []string `json:"denied_clients,omitempty"`
+	PermittedClients []string `json:"permitted_clients,omitempty"`
 
 	// SetRequestHeaderPolicy
-	HeaderName                 string   `json:"header_name"`
-	Value                      string   `json:"value"`
-	ActionWhenHeaderExists     string   `json:"action_when_hdr_exists"`
-	ActionWhenHeaderValueIs    []string `json:"action_when_hdr_value_is"`
-	ActionWhenHeaderValueIsNot []string `json:"action_when_hdr_value_is_not"`
+	HeaderName                 string   `json:"header_name,omitempty"`
+	Value                      string   `json:"value,omitempty"`
+	ActionWhenHeaderExists     string   `json:"action_when_hdr_exists,omitempty"`
+	ActionWhenHeaderValueIs    []string `json:"action_when_hdr_value_is,omitempty"`
+	ActionWhenHeaderValueIsNot []string `json:"action_when_hdr_value_is_not,omitempty"`
 
 	// SSLNegotiationPolicy
-	Port                  int      `json:"port"`
-	ServerOrderPreference string   `json:"server_order_preference"`
-	SSLProtocol           []string `json:"ssl_protocol"`
-	SSLCiphers            []string `json:"ssl_ciphers"`
+	Port                  int      `json:"port,omitempty"`
+	ServerOrderPreference string   `json:"server_order_preference,omitempty"`
+	SSLProtocol           []string `json:"ssl_protocol,omitempty"`
+	SSLCiphers            []string `json:"ssl_ciphers,omitempty"`
 
 	// TrustedCertificatePolicy
-	TrustedCertificate string `json:"cert"`
+	TrustedCertificate string `json:"cert,omitempty"`
 }
 
 type CreatePolicyInput struct {
-	Name string `json:"name"`
-	Type string `json:"type"`
+	Name string `json:"name,omitempty"`
+	Type string `json:"type,omitempty"`
 	ApplicationCookieStickinessPolicyInfo
 	CloudGatePolicyInfo
 	LoadBalancerCookieStickinessPolicyInfo
@@ -124,8 +124,8 @@ type CreatePolicyInput struct {
 }
 
 type UpdatePolicyInput struct {
-	Name string `json:"name"`
-	Type string `json:"type"`
+	Name string `json:"name,omitempty"`
+	Type string `json:"type,omitempty"`
 	ApplicationCookieStickinessPolicyInfo
 	CloudGatePolicyInfo
 	LoadBalancerCookieStickinessPolicyInfo
@@ -139,79 +139,79 @@ type UpdatePolicyInput struct {
 }
 
 type ApplicationCookieStickinessPolicyInfo struct {
-	AppCookieName string `json:"app_cookie_name"`
+	AppCookieName string `json:"app_cookie_name,omitempty"`
 }
 
 type CloudGatePolicyInfo struct {
-	CloudGateApplication                string `json:"cloudgate_application"`
-	CloudGatePolicyName                 string `json:"cloudgate_policy_name"`
-	IdentityServiceInstanceGuid         string `json:"identity_service_instance_guid"`
-	VirtualHostnameForPolicyAttribution string `json:"virtual_hostname_for_policy_attribution"`
+	CloudGateApplication                string `json:"cloudgate_application,omitempty"`
+	CloudGatePolicyName                 string `json:"cloudgate_policy_name,omitempty"`
+	IdentityServiceInstanceGuid         string `json:"identity_service_instance_guid,omitempty"`
+	VirtualHostnameForPolicyAttribution string `json:"virtual_hostname_for_policy_attribution,omitempty"`
 }
 
 type LoadBalancerCookieStickinessPolicyInfo struct {
-	CookieExpirationPeriod int `json:"cookie_expiration_period"`
+	CookieExpirationPeriod int `json:"cookie_expiration_period,omitempty"`
 }
 
 type LoadBalancingMechanismPolicyInfo struct {
-	LoadBalancingMechanism string `json:"load_balancing_mechanism"`
+	LoadBalancingMechanism string `json:"load_balancing_mechanism,omitempty"`
 }
 
 type RateLimitingRequestPolicyInfo struct {
-	BurstSize                   int    `json:"burst_size"`
-	DoNotDelayExcessiveRequests bool   `json:"do_not_delay_excessive_requests"`
-	HttpStatusErrorCode         int    `json:"http_status_error_code"`
-	LogLevel                    string `json:"log_level"`
-	RateLimitingCriteria        string `json:"rate_limiting_criteria"`
-	RequestsPerSecond           int    `json:"requests_per_second"`
-	StorageSize                 int    `json:"storage_size_in_mb"`
-	Zone                        string `json:"zone"`
+	BurstSize                   int    `json:"burst_size,omitempty"`
+	DoNotDelayExcessiveRequests bool   `json:"do_not_delay_excessive_requests,omitempty"`
+	HttpStatusErrorCode         int    `json:"http_status_error_code,omitempty"`
+	LogLevel                    string `json:"log_level,omitempty"`
+	RateLimitingCriteria        string `json:"rate_limiting_criteria,omitempty"`
+	RequestsPerSecond           int    `json:"requests_per_second,omitempty"`
+	StorageSize                 int    `json:"storage_size_in_mb,omitempty"`
+	Zone                        string `json:"zone,omitempty"`
 }
 
 type RedirectPolicyInfo struct {
-	RedirectURI  string `json:"redirect_uri"`
-	ResponseCode int    `json:"response_code"`
+	RedirectURI  string `json:"redirect_uri,omitempty"`
+	ResponseCode int    `json:"response_code,omitempty"`
 }
 
 type ResourceAccessControlPolicyInfo struct {
-	Disposition      string   `json:"disposition"`
-	DeniedClients    []string `json:"denied_clients"`
-	PermittedClients []string `json:"permitted_clients"`
+	Disposition      string   `json:"disposition,omitempty"`
+	DeniedClients    []string `json:"denied_clients,omitempty"`
+	PermittedClients []string `json:"permitted_clients,omitempty"`
 }
 
 // use pointer for nilable fields on update
 type ResourceAccessControlPolicyUpdate struct {
-	Disposition      string    `json:"disposition"`
-	DeniedClients    *[]string `json:"denied_clients"`
-	PermittedClients *[]string `json:"permitted_clients"`
+	Disposition      string    `json:"disposition,omitempty"`
+	DeniedClients    *[]string `json:"denied_clients,omitempty"`
+	PermittedClients *[]string `json:"permitted_clients,omitempty"`
 }
 
 type SetRequestHeaderPolicyInfo struct {
-	HeaderName                 string   `json:"header_name"`
-	Value                      string   `json:"value"`
-	ActionWhenHeaderExists     string   `json:"action_when_hdr_exists"`
-	ActionWhenHeaderValueIs    []string `json:"action_when_hdr_value_is"`
-	ActionWhenHeaderValueIsNot []string `json:"action_when_hdr_value_is_not"`
+	HeaderName                 string   `json:"header_name,omitempty"`
+	Value                      string   `json:"value,omitempty"`
+	ActionWhenHeaderExists     string   `json:"action_when_hdr_exists,omitempty"`
+	ActionWhenHeaderValueIs    []string `json:"action_when_hdr_value_is,omitempty"`
+	ActionWhenHeaderValueIsNot []string `json:"action_when_hdr_value_is_not,omitempty"`
 }
 
 // use pointer for niable fields on update
 type SetRequestHeaderPolicyUpdate struct {
-	HeaderName                 string    `json:"header_name"`
-	Value                      *string   `json:"value"`
-	ActionWhenHeaderExists     string    `json:"action_when_hdr_exists"`
-	ActionWhenHeaderValueIs    *[]string `json:"action_when_hdr_value_is"`
-	ActionWhenHeaderValueIsNot *[]string `json:"action_when_hdr_value_is_not"`
+	HeaderName                 string    `json:"header_name,omitempty"`
+	Value                      *string   `json:"value,omitempty"`
+	ActionWhenHeaderExists     string    `json:"action_when_hdr_exists,omitempty"`
+	ActionWhenHeaderValueIs    *[]string `json:"action_when_hdr_value_is,omitempty"`
+	ActionWhenHeaderValueIsNot *[]string `json:"action_when_hdr_value_is_not,omitempty"`
 }
 
 type SSLNegotiationPolicyInfo struct {
-	Port                  int      `json:"port"`
-	ServerOrderPreference string   `json:"server_order_preference"`
-	SSLProtocol           []string `json:"ssl_protocol"`
-	SSLCiphers            []string `json:"ssl_ciphers"`
+	Port                  int      `json:"port,omitempty"`
+	ServerOrderPreference string   `json:"server_order_preference,omitempty"`
+	SSLProtocol           []string `json:"ssl_protocol,omitempty"`
+	SSLCiphers            []string `json:"ssl_ciphers,omitempty"`
 }
 
 type TrustedCertificatePolicyInfo struct {
-	TrustedCertificate string `json:"cert"`
+	TrustedCertificate string `json:"cert,omitempty"`
 }
 
 // CreatePolicy creates a new listener
@@ -224,14 +224,13 @@ func (c *PolicyClient) CreatePolicy(lb LoadBalancerContext, input *CreatePolicyI
 		c.Timeout = waitForPolicyReadyTimeout
 	}
 
-	var info PolicyInfo
-
+	info := &PolicyInfo{}
 	// set the content type based on the policy type
 	if input.Type == "" {
 		return nil, fmt.Errorf("Policy type for %s is not set", input.Name)
 	}
 	c.ContentType = fmt.Sprintf("application/vnd.com.oracle.oracloud.lbaas.%s+json", input.Type)
-	if err := c.createResource(lb.Region, lb.Name, &input, &info); err != nil {
+	if err := c.createResource(lb.Region, lb.Name, &input, info); err != nil {
 		return nil, err
 	}
 
@@ -239,16 +238,19 @@ func (c *PolicyClient) CreatePolicy(lb LoadBalancerContext, input *CreatePolicyI
 	erroredStates := []LBaaSState{LBaaSStateCreationFailed, LBaaSStateDeletionInProgress, LBaaSStateDeleted, LBaaSStateDeletionFailed, LBaaSStateAbandon, LBaaSStateAutoAbandoned}
 
 	// check the initial response
-	ready, err := c.checkPolicyState(&info, createdStates, erroredStates)
+	ready, err := c.checkPolicyState(info, createdStates, erroredStates)
 	if err != nil {
 		return nil, err
 	}
 	if ready {
-		return &info, nil
+		return info, nil
 	}
 	// else poll till ready
-	err = c.WaitForPolicyState(lb, input.Name, createdStates, erroredStates, c.PollInterval, c.Timeout, &info)
-	return &info, err
+	info, err = c.WaitForPolicyState(lb, input.Name, createdStates, erroredStates, c.PollInterval, c.Timeout)
+	if err != nil {
+		return nil, err
+	}
+	return info, nil
 }
 
 // DeletePolicy deletes the listener with the specified input
@@ -261,8 +263,8 @@ func (c *PolicyClient) DeletePolicy(lb LoadBalancerContext, name string) (*Polic
 		c.Timeout = waitForPolicyDeleteTimeout
 	}
 
-	var info PolicyInfo
-	if err := c.deleteResource(lb.Region, lb.Name, name, &info); err != nil {
+	info := &PolicyInfo{}
+	if err := c.deleteResource(lb.Region, lb.Name, name, info); err != nil {
 		return nil, err
 	}
 
@@ -270,20 +272,20 @@ func (c *PolicyClient) DeletePolicy(lb LoadBalancerContext, name string) (*Polic
 	erroredStates := []LBaaSState{LBaaSStateDeletionFailed, LBaaSStateAbandon, LBaaSStateAutoAbandoned}
 
 	// check the initial response
-	deleted, err := c.checkPolicyState(&info, deletedStates, erroredStates)
+	deleted, err := c.checkPolicyState(info, deletedStates, erroredStates)
 	if err != nil {
 		return nil, err
 	}
 	if deleted {
-		return &info, nil
+		return info, nil
 	}
 	// else poll till deleted
-	err = c.WaitForPolicyState(lb, name, deletedStates, erroredStates, c.PollInterval, c.Timeout, &info)
+	info, err = c.WaitForPolicyState(lb, name, deletedStates, erroredStates, c.PollInterval, c.Timeout)
 	if err != nil && client.WasNotFoundError(err) {
 		// resource could not be found, thus deleted
 		return nil, nil
 	}
-	return &info, nil
+	return info, nil
 }
 
 // GetPolicy fetchs the listener details
@@ -307,7 +309,7 @@ func (c *PolicyClient) UpdatePolicy(lb LoadBalancerContext, name, policyType str
 	}
 
 	c.ContentType = c.getContentTypeForPolicyType(policyType)
-	var info PolicyInfo
+	info := &PolicyInfo{}
 	if err := c.updateResource(lb.Region, lb.Name, name, &input, &info); err != nil {
 		return nil, err
 	}
@@ -316,16 +318,19 @@ func (c *PolicyClient) UpdatePolicy(lb LoadBalancerContext, name, policyType str
 	erroredStates := []LBaaSState{LBaaSStateModificaitonFailed, LBaaSStateAbandon, LBaaSStateAutoAbandoned}
 
 	// check the initial response
-	ready, err := c.checkPolicyState(&info, updatedStates, erroredStates)
+	ready, err := c.checkPolicyState(info, updatedStates, erroredStates)
 	if err != nil {
 		return nil, err
 	}
 	if ready {
-		return &info, nil
+		return info, nil
 	}
 	// else poll till ready
-	err = c.WaitForPolicyState(lb, name, updatedStates, erroredStates, c.PollInterval, c.Timeout, &info)
-	return &info, err
+	info, err = c.WaitForPolicyState(lb, name, updatedStates, erroredStates, c.PollInterval, c.Timeout)
+	if err != nil {
+		return nil, err
+	}
+	return info, nil
 }
 
 // return the corrent Content Type for the Update request depending on the Policy Type
@@ -335,9 +340,10 @@ func (c *PolicyClient) getContentTypeForPolicyType(policyType string) string {
 }
 
 // WaitForPolicyState waits for the resource to be in one of a set of desired states
-func (c *PolicyClient) WaitForPolicyState(lb LoadBalancerContext, name string, desiredStates, errorStates []LBaaSState, pollInterval, timeoutSeconds time.Duration, info *PolicyInfo) error {
+func (c *PolicyClient) WaitForPolicyState(lb LoadBalancerContext, name string, desiredStates, errorStates []LBaaSState, pollInterval, timeoutSeconds time.Duration) (*PolicyInfo, error) {
 
 	var getErr error
+	info := &PolicyInfo{}
 	err := c.client.WaitFor("Policy status update", pollInterval, timeoutSeconds, func() (bool, error) {
 		info, getErr = c.GetPolicy(lb, name)
 		if getErr != nil {
@@ -346,7 +352,7 @@ func (c *PolicyClient) WaitForPolicyState(lb LoadBalancerContext, name string, d
 
 		return c.checkPolicyState(info, desiredStates, errorStates)
 	})
-	return err
+	return info, err
 }
 
 // check the State, returns in desired state (true), not ready yet (false) or errored state (error)

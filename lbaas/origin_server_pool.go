@@ -7,10 +7,10 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/client"
 )
 
-const waitForOriginServerPoolReadyPollInterval = 10 * time.Second  // 10 seconds
-const waitForOriginServerPoolReadyTimeout = 30 * time.Minute       // 30 minutes
-const waitForOriginServerPoolDeletePollInterval = 10 * time.Second // 10 seconds
-const waitForOriginServerPoolDeleteTimeout = 30 * time.Minute      // 30 minutes
+const waitForOriginServerPoolReadyPollInterval = 1 * time.Second  // 1 second
+const waitForOriginServerPoolReadyTimeout = 5 * time.Minute       // 5 minutes
+const waitForOriginServerPoolDeletePollInterval = 1 * time.Second // 1 second
+const waitForOriginServerPoolDeleteTimeout = 5 * time.Minute      // 5 minutes
 
 var (
 	originserverpoolContainerPath = "/vlbrs/%s/%s/originserverpools"
@@ -50,6 +50,17 @@ type CreateOriginServerInput struct {
 	Port     int         `json:"port"`
 }
 
+type HealthCheckInfo struct {
+	AcceptedReturnCodes []string `json:"accepted_return_codes"`
+	Enabled             string   `json:"enabled"`
+	HealthyThreshold    int      `json:"healthy_threshold"`
+	Interval            int      `json:"interval"`
+	Path                string   `json:"path"`
+	Timeout             int      `json:"timeout"`
+	Type                string   `json:"type"`
+	UnhealthyThreshold  int      `json:"unhealthy_threshold"`
+}
+
 type OriginServerPoolInfo struct {
 	Consumers          string             `json:"consumers"`
 	HealthCheck        HealthCheckInfo    `json:"health_check"`
@@ -67,6 +78,7 @@ type OriginServerPoolInfo struct {
 type CreateOriginServerPoolInput struct {
 	Name          string                    `json:"name"`
 	OriginServers []CreateOriginServerInput `json:"origin_servers,omitempty"`
+	HealthCheck   HealthCheckInfo           `json:"health_check,omitempty"`
 	Status        LBaaSStatus               `json:"status,omitempty"`
 	Tags          []string                  `json:"tags,omitempty"`
 	VnicSetName   string                    `json:"vnic_set_name,omitempty"`
@@ -76,6 +88,7 @@ type CreateOriginServerPoolInput struct {
 type UpdateOriginServerPoolInput struct {
 	Name          string                     `json:"name"`
 	OriginServers *[]CreateOriginServerInput `json:"origin_servers,omitempty"`
+	HealthCheck   *HealthCheckInfo           `json:"health_check,omitempty"`
 	Status        LBaaSStatus                `json:"status,omitempty"`
 	Tags          *[]string                  `json:"tags,omitempty"`
 	VnicSetName   *string                    `json:"vnic_set_name,omitempty"`
@@ -91,8 +104,8 @@ func (c *OriginServerPoolClient) CreateOriginServerPool(lb LoadBalancerContext, 
 		c.Timeout = waitForOriginServerPoolReadyTimeout
 	}
 
-	var info OriginServerPoolInfo
-	if err := c.createResource(lb.Region, lb.Name, &input, &info); err != nil {
+	info := &OriginServerPoolInfo{}
+	if err := c.createResource(lb.Region, lb.Name, &input, info); err != nil {
 		return nil, err
 	}
 
@@ -100,16 +113,19 @@ func (c *OriginServerPoolClient) CreateOriginServerPool(lb LoadBalancerContext, 
 	erroredStates := []LBaaSState{LBaaSStateCreationFailed, LBaaSStateDeletionInProgress, LBaaSStateDeleted, LBaaSStateDeletionFailed, LBaaSStateAbandon, LBaaSStateAutoAbandoned}
 
 	// check the initial response
-	ready, err := c.checkOriginServerPoolState(&info, createdStates, erroredStates)
+	ready, err := c.checkOriginServerPoolState(info, createdStates, erroredStates)
 	if err != nil {
 		return nil, err
 	}
 	if ready {
-		return &info, nil
+		return info, nil
 	}
 	// else poll till ready
-	err = c.WaitForOriginServerPoolState(lb, input.Name, createdStates, erroredStates, c.PollInterval, c.Timeout, &info)
-	return &info, err
+	info, err = c.WaitForOriginServerPoolState(lb, input.Name, createdStates, erroredStates, c.PollInterval, c.Timeout)
+	if err != nil {
+		return nil, err
+	}
+	return info, nil
 }
 
 // DeleteOriginServerPool deletes the server pool with the specified input
@@ -122,8 +138,8 @@ func (c *OriginServerPoolClient) DeleteOriginServerPool(lb LoadBalancerContext, 
 		c.Timeout = waitForOriginServerPoolDeleteTimeout
 	}
 
-	var info OriginServerPoolInfo
-	if err := c.deleteResource(lb.Region, lb.Name, name, &info); err != nil {
+	info := &OriginServerPoolInfo{}
+	if err := c.deleteResource(lb.Region, lb.Name, name, info); err != nil {
 		return nil, err
 	}
 
@@ -131,31 +147,31 @@ func (c *OriginServerPoolClient) DeleteOriginServerPool(lb LoadBalancerContext, 
 	erroredStates := []LBaaSState{LBaaSStateDeletionFailed, LBaaSStateAbandon, LBaaSStateAutoAbandoned}
 
 	// check the initial response
-	deleted, err := c.checkOriginServerPoolState(&info, deletedStates, erroredStates)
+	deleted, err := c.checkOriginServerPoolState(info, deletedStates, erroredStates)
 	if err != nil {
 		return nil, err
 	}
 	if deleted {
-		return &info, nil
+		return info, nil
 	}
 	// else poll till deleted
-	err = c.WaitForOriginServerPoolState(lb, name, deletedStates, erroredStates, c.PollInterval, c.Timeout, &info)
+	info, err = c.WaitForOriginServerPoolState(lb, name, deletedStates, erroredStates, c.PollInterval, c.Timeout)
 	if err != nil && client.WasNotFoundError(err) {
 		// resource could not be found, thus deleted
 		return nil, nil
 	}
 
-	return &info, err
+	return info, err
 }
 
 // GetOriginServerPool fetchs the server pool details
 func (c *OriginServerPoolClient) GetOriginServerPool(lb LoadBalancerContext, name string) (*OriginServerPoolInfo, error) {
 
-	var info OriginServerPoolInfo
-	if err := c.getResource(lb.Region, lb.Name, name, &info); err != nil {
+	info := &OriginServerPoolInfo{}
+	if err := c.getResource(lb.Region, lb.Name, name, info); err != nil {
 		return nil, err
 	}
-	return &info, nil
+	return info, nil
 }
 
 // UpdateOriginServerPool fetchs the server pool details
@@ -168,8 +184,8 @@ func (c *OriginServerPoolClient) UpdateOriginServerPool(lb LoadBalancerContext, 
 		c.Timeout = waitForOriginServerPoolReadyTimeout
 	}
 
-	var info OriginServerPoolInfo
-	if err := c.updateOriginServerPool(lb.Region, lb.Name, name, &input, &info); err != nil {
+	info := &OriginServerPoolInfo{}
+	if err := c.updateOriginServerPool(lb.Region, lb.Name, name, &input, info); err != nil {
 		return nil, err
 	}
 
@@ -177,22 +193,26 @@ func (c *OriginServerPoolClient) UpdateOriginServerPool(lb LoadBalancerContext, 
 	erroredStates := []LBaaSState{LBaaSStateModificaitonFailed, LBaaSStateAbandon, LBaaSStateAutoAbandoned}
 
 	// check the initial response
-	ready, err := c.checkOriginServerPoolState(&info, updatedStates, erroredStates)
+	ready, err := c.checkOriginServerPoolState(info, updatedStates, erroredStates)
 	if err != nil {
 		return nil, err
 	}
 	if ready {
-		return &info, nil
+		return info, nil
 	}
 	// else poll till ready
-	err = c.WaitForOriginServerPoolState(lb, name, updatedStates, erroredStates, c.PollInterval, c.Timeout, &info)
-	return &info, err
+	info, err = c.WaitForOriginServerPoolState(lb, name, updatedStates, erroredStates, c.PollInterval, c.Timeout)
+	if err != nil {
+		return nil, err
+	}
+	return info, nil
 }
 
 // WaitForOriginServerPoolState waits for the resource to be in one of a set of desired states
-func (c *OriginServerPoolClient) WaitForOriginServerPoolState(lb LoadBalancerContext, name string, desiredStates, errorStates []LBaaSState, pollInterval, timeoutSeconds time.Duration, info *OriginServerPoolInfo) error {
+func (c *OriginServerPoolClient) WaitForOriginServerPoolState(lb LoadBalancerContext, name string, desiredStates, errorStates []LBaaSState, pollInterval, timeoutSeconds time.Duration) (*OriginServerPoolInfo, error) {
 
 	var getErr error
+	var info *OriginServerPoolInfo
 	err := c.client.WaitFor("Origin Server Pool status update", pollInterval, timeoutSeconds, func() (bool, error) {
 		info, getErr = c.GetOriginServerPool(lb, name)
 		if getErr != nil {
@@ -201,7 +221,7 @@ func (c *OriginServerPoolClient) WaitForOriginServerPoolState(lb LoadBalancerCon
 
 		return c.checkOriginServerPoolState(info, desiredStates, errorStates)
 	})
-	return err
+	return info, err
 }
 
 // check the State, returns in desired state (true), not ready yet (false) or errored state (error)
