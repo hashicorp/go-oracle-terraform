@@ -92,18 +92,19 @@ type CreateListenerInput struct {
 	VirtualHosts         []string      `json:"virtual_hosts,omitempty"`
 }
 
+// use pointer for attributes that can be unset
 type UpdateListenerInput struct {
 	BalancerProtocol     Protocol      `json:"balancer_protocol,omitempty"`
 	Disabled             LBaaSDisabled `json:"disabled,omitempty"`
 	Name                 string        `json:"name"`
-	OriginServerPool     string        `json:"origin_server_pool,omitempty"`
+	OriginServerPool     *string       `json:"origin_server_pool,omitempty"`
 	OriginServerProtocol Protocol      `json:"origin_server_protocol,omitempty"`
-	PathPrefixes         []string      `json:"path_prefixes,omitempty"`
-	Policies             []string      `json:"policies,omitempty"`
+	PathPrefixes         *[]string     `json:"path_prefixes,omitempty"`
+	Policies             *[]string     `json:"policies,omitempty"`
 	Port                 int           `json:"port,omitempty"`
-	SSLCerts             []string      `json:"ssl_cert,omitempty"`
-	Tags                 []string      `json:"tags,omitempty"`
-	VirtualHosts         []string      `json:"virtual_hosts,omitempty"`
+	SSLCerts             *[]string     `json:"ssl_cert,omitempty"`
+	Tags                 *[]string     `json:"tags,omitempty"`
+	VirtualHosts         *[]string     `json:"virtual_hosts,omitempty"`
 }
 
 // CreateListener creates a new listener

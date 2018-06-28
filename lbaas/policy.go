@@ -124,8 +124,8 @@ type CreatePolicyInput struct {
 }
 
 type UpdatePolicyInput struct {
-	Name string `json:"name,omitempty"`
-	Type string `json:"type,omitempty"`
+	Name string `json:"name"`
+	Type string `json:"type"`
 	ApplicationCookieStickinessPolicyInfo
 	CloudGatePolicyInfo
 	LoadBalancerCookieStickinessPolicyInfo
@@ -139,63 +139,79 @@ type UpdatePolicyInput struct {
 }
 
 type ApplicationCookieStickinessPolicyInfo struct {
-	AppCookieName string `json:"app_cookie_name,omitempty"`
+	AppCookieName string `json:"app_cookie_name"`
 }
 
 type CloudGatePolicyInfo struct {
-	CloudGateApplication                string `json:"cloudgate_application,omitempty"`
-	CloudGatePolicyName                 string `json:"cloudgate_policy_name,omitempty"`
-	IdentityServiceInstanceGuid         string `json:"identity_service_instance_guid,omitempty"`
-	VirtualHostnameForPolicyAttribution string `json:"virtual_hostname_for_policy_attribution,omitempty"`
+	CloudGateApplication                string `json:"cloudgate_application"`
+	CloudGatePolicyName                 string `json:"cloudgate_policy_name"`
+	IdentityServiceInstanceGuid         string `json:"identity_service_instance_guid"`
+	VirtualHostnameForPolicyAttribution string `json:"virtual_hostname_for_policy_attribution"`
 }
 
 type LoadBalancerCookieStickinessPolicyInfo struct {
-	CookieExpirationPeriod int `json:"cookie_expiration_period,omitempty"`
+	CookieExpirationPeriod int `json:"cookie_expiration_period"`
 }
 
 type LoadBalancingMechanismPolicyInfo struct {
-	LoadBalancingMechanism string `json:"load_balancing_mechanism,omitempty"`
+	LoadBalancingMechanism string `json:"load_balancing_mechanism"`
 }
 
 type RateLimitingRequestPolicyInfo struct {
-	BurstSize                   int    `json:"burst_size,omitempty"`
-	DoNotDelayExcessiveRequests bool   `json:"do_not_delay_excessive_requests,omitempty"`
-	HttpStatusErrorCode         int    `json:"http_status_error_code,omitempty"`
-	LogLevel                    string `json:"log_level,omitempty"`
-	RateLimitingCriteria        string `json:"rate_limiting_criteria,omitempty"`
-	RequestsPerSecond           int    `json:"requests_per_second,omitempty"`
-	StorageSize                 int    `json:"storage_size_in_mb,omitempty"`
-	Zone                        string `json:"zone,omitempty"`
+	BurstSize                   int    `json:"burst_size"`
+	DoNotDelayExcessiveRequests bool   `json:"do_not_delay_excessive_requests"`
+	HttpStatusErrorCode         int    `json:"http_status_error_code"`
+	LogLevel                    string `json:"log_level"`
+	RateLimitingCriteria        string `json:"rate_limiting_criteria"`
+	RequestsPerSecond           int    `json:"requests_per_second"`
+	StorageSize                 int    `json:"storage_size_in_mb"`
+	Zone                        string `json:"zone"`
 }
 
 type RedirectPolicyInfo struct {
-	RedirectURI  string `json:"redirect_uri,omitempty"`
-	ResponseCode int    `json:"response_code,omitempty"`
+	RedirectURI  string `json:"redirect_uri"`
+	ResponseCode int    `json:"response_code"`
 }
 
 type ResourceAccessControlPolicyInfo struct {
-	Disposition      string   `json:"disposition,omitempty"`
-	DeniedClients    []string `json:"denied_clients,omitempty"`
-	PermittedClients []string `json:"permitted_clients,omitempty"`
+	Disposition      string   `json:"disposition"`
+	DeniedClients    []string `json:"denied_clients"`
+	PermittedClients []string `json:"permitted_clients"`
+}
+
+// use pointer for nilable fields on update
+type ResourceAccessControlPolicyUpdate struct {
+	Disposition      string    `json:"disposition"`
+	DeniedClients    *[]string `json:"denied_clients"`
+	PermittedClients *[]string `json:"permitted_clients"`
 }
 
 type SetRequestHeaderPolicyInfo struct {
-	HeaderName                 string   `json:"header_name,omitempty"`
-	Value                      string   `json:"value,omitempty"`
-	ActionWhenHeaderExists     string   `json:"action_when_hdr_exists,omitempty"`
-	ActionWhenHeaderValueIs    []string `json:"action_when_hdr_value_is,omitempty"`
-	ActionWhenHeaderValueIsNot []string `json:"action_when_hdr_value_is_not,omitempty"`
+	HeaderName                 string   `json:"header_name"`
+	Value                      string   `json:"value"`
+	ActionWhenHeaderExists     string   `json:"action_when_hdr_exists"`
+	ActionWhenHeaderValueIs    []string `json:"action_when_hdr_value_is"`
+	ActionWhenHeaderValueIsNot []string `json:"action_when_hdr_value_is_not"`
+}
+
+// use pointer for niable fields on update
+type SetRequestHeaderPolicyUpdate struct {
+	HeaderName                 string    `json:"header_name"`
+	Value                      *string   `json:"value"`
+	ActionWhenHeaderExists     string    `json:"action_when_hdr_exists"`
+	ActionWhenHeaderValueIs    *[]string `json:"action_when_hdr_value_is"`
+	ActionWhenHeaderValueIsNot *[]string `json:"action_when_hdr_value_is_not"`
 }
 
 type SSLNegotiationPolicyInfo struct {
-	Port                  int      `json:"port,omitempty"`
-	ServerOrderPreference string   `json:"server_order_preference,omitempty"`
-	SSLProtocol           []string `json:"ssl_protocol,omitempty"`
-	SSLCiphers            []string `json:"ssl_ciphers,omitempty"`
+	Port                  int      `json:"port"`
+	ServerOrderPreference string   `json:"server_order_preference"`
+	SSLProtocol           []string `json:"ssl_protocol"`
+	SSLCiphers            []string `json:"ssl_ciphers"`
 }
 
 type TrustedCertificatePolicyInfo struct {
-	TrustedCertificate string `json:"cert,omitempty"`
+	TrustedCertificate string `json:"cert"`
 }
 
 // CreatePolicy creates a new listener

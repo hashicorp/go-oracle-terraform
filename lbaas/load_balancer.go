@@ -67,11 +67,14 @@ type LoadBalancerInfo struct {
 	ModifiedOn               string                         `json:"modified_on"`
 	Name                     string                         `json:"name"`
 	Owner                    string                         `json:"owner"`
+	ParentLoadBalancer       string                         `json:"parent_vlbr"`
+	PermittedClients         []string                       `json:"permitted_clients"`
 	PermittedMethods         []string                       `json:"permitted_methods"`
+	Policies                 []string                       `json:"policies"`
 	Region                   string                         `json:"region"`
 	RestURIs                 []RestURIInfo                  `json:"rest_uri"`
 	Scheme                   LoadBalancerScheme             `json:"scheme"`
-	ServerPool               string                         `json:"server_pool"`
+	OriginServerPool         string                         `json:"origin_server_pool"`
 	State                    LBaaSState                     `json:"state"`
 	Tags                     []string                       `json:"tags"`
 	URI                      string                         `json:"uri"`
@@ -111,22 +114,23 @@ type CreateLoadBalancerInput struct {
 	Policies           []string           `json:"policies,omitempty"`
 	Region             string             `json:"region"`
 	Scheme             LoadBalancerScheme `json:"scheme"`
-	ServerPool         string             `json:"server_pool,omitempty"`
+	OriginServerPool   string             `json:"origin_server_pool,omitempty"`
 	Tags               []string           `json:"tags,omitempty"`
 }
 
 // UpdateLoadBalancerInput specifies the create request for a load balancer service instance
+// using pointer for options items where empty string needs to be passed to clear if previously set
 type UpdateLoadBalancerInput struct {
-	Description        string        `json:"description,omitempty"`
+	Description        *string       `json:"description,omitempty"`
 	Disabled           LBaaSDisabled `json:"disabled,omitempty"`
-	IPNetworkName      string        `json:"ip_network_name,omitempty"`
+	IPNetworkName      *string       `json:"ip_network_name,omitempty"`
 	Name               string        `json:"name,omitempty"`
-	ParentLoadBalancer string        `json:"parent_vlbr,omitempty"`
-	PermittedClients   []string      `json:"permitted_clients,omitempty"`
-	PermittedMethods   []string      `json:"permitted_methods,omitempty"`
-	Policies           []string      `json:"policies,omitempty"`
-	ServerPool         string        `json:"server_pool,omitempty"`
-	Tags               []string      `json:"tags,omitempty"`
+	ParentLoadBalancer *string       `json:"parent_vlbr,omitempty"`
+	PermittedClients   *[]string     `json:"permitted_clients,omitempty"`
+	PermittedMethods   *[]string     `json:"permitted_methods,omitempty"`
+	Policies           *[]string     `json:"policies,omitempty"`
+	OriginServerPool   *string       `json:"origin_server_pool,omitempty"`
+	Tags               *[]string     `json:"tags,omitempty"`
 }
 
 // LoadBalancerContext represents a specific loadbalancer instance by region/name context

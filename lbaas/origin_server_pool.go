@@ -72,12 +72,13 @@ type CreateOriginServerPoolInput struct {
 	VnicSetName   string                    `json:"vnic_set_name,omitempty"`
 }
 
+// use pointer for attributes that can be unset
 type UpdateOriginServerPoolInput struct {
-	Name          string                    `json:"name"`
-	OriginServers []CreateOriginServerInput `json:"origin_servers,omitempty"`
-	Status        LBaaSStatus               `json:"status,omitempty"`
-	Tags          []string                  `json:"tags,omitempty"`
-	VnicSetName   string                    `json:"vnic_set_name,omitempty"`
+	Name          string                     `json:"name"`
+	OriginServers *[]CreateOriginServerInput `json:"origin_servers,omitempty"`
+	Status        LBaaSStatus                `json:"status,omitempty"`
+	Tags          *[]string                  `json:"tags,omitempty"`
+	VnicSetName   *string                    `json:"vnic_set_name,omitempty"`
 }
 
 // CreateOriginServerPool creates a new server pool
