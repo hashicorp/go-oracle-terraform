@@ -8,7 +8,6 @@ import (
 	"mime/multipart"
 	"net/http"
 	"net/url"
-	"os"
 	"runtime"
 	"strings"
 	"time"
@@ -141,56 +140,6 @@ func (c *Client) BuildNonJSONRequest(method, path string, body io.Reader) (*http
 	req.Header.Add(userAgentHeader, *c.UserAgent)
 
 	return req, nil
-}
-
-// BuildMultipartFormRequestFromFiles builds a new HTTP Request for a multipart form request from specifies files
-func (c *Client) BuildMultipartFormRequestFromFiles(method, path string, files map[string][]byte, parameters map[string]interface{}) (*http.Request, error) {
-	urlPath, err := url.Parse(path)
-	if err != nil {
-		return nil, err
-	}
-
-	body := new(bytes.Buffer)
-	writer := multipart.NewWriter(body)
-
-	var (
-		file *os.File
-		fi   os.FileInfo
-		part io.Writer
-	)
-	for fileName, fileContents := range files {
-
-		// Write out the file information and contents
-		fi, err = file.Stat()
-		if err != nil {
-			return nil, err
-		}
-		part, err = writer.CreateFormFile(fileName, fi.Name())
-		if err != nil {
-			return nil, err
-		}
-
-		_, err = part.Write(fileContents)
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	// Add additional parameters to the writer
-	for key, val := range parameters {
-		if val.(string) != "" {
-			_ = writer.WriteField(strings.ToLower(key), val.(string))
-		}
-	}
-	err = writer.Close()
-	if err != nil {
-		return nil, err
-	}
-
-	req, err := http.NewRequest("POST", c.formatURL(urlPath), body)
-	req.Header.Set("Content-Type", writer.FormDataContentType())
-
-	return req, err
 }
 
 // BuildMultipartFormRequest builds a new HTTP Request for a multipart form request from specifies attributes

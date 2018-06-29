@@ -102,7 +102,7 @@ func TestAccApplicationContainerLifeCycle_ManifestFile(t *testing.T) {
 	assert.Equal(t, "RUNNING", applicationContainer.Status)
 }
 
-func TestAccApplicationContainerLifeCycle_TwoManifest(t *testing.T) {
+func TestAccApplicationContainerLifeCycle_BadInput(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
 	aClient, err := getApplicationContainerTestClients()
@@ -132,6 +132,28 @@ func TestAccApplicationContainerLifeCycle_TwoManifest(t *testing.T) {
 		Manifest:           _ApplicationContainerManifestFile,
 	}
 
+	_, err = aClient.CreateApplicationContainer(createApplicationContainerInput)
+	if err == nil {
+		t.Fatal("expected error when specifiying both a manifest file and manifest attributes")
+	}
+
+	environment := map[string]string{
+		"NO_OF_CONNECTIONS": "25",
+		"TWITTER_ID":        "JAVA",
+	}
+
+	deployment := &DeploymentAttributes{
+		Memory:      "2G",
+		Instances:   1,
+		Envrionment: environment,
+	}
+
+	createApplicationContainerInput = &CreateApplicationContainerInput{
+		AdditionalFields:     createApplicationContainerAdditionalFields,
+		DeploymentAttributes: deployment,
+		Manifest:             _ApplicationContainerManifestFile,
+		Deployment:           _ApplicationContainerDeploymentFile,
+	}
 	_, err = aClient.CreateApplicationContainer(createApplicationContainerInput)
 	if err == nil {
 		t.Fatal("expected error when specifiying both a manifest file and manifest attributes")
