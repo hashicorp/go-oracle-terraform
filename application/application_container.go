@@ -133,6 +133,8 @@ type Container struct {
 	AppURL string `json:"appURL"`
 	// Creation time of the application
 	CreatedTime string `json:"createdTime"`
+	// The activity acting on the application container
+	CurrentOnGoingActitvity string `json:"currentOngoingActivity"`
 	// Identity Domain of the application
 	IdentityDomain string `json:"identityDomain"`
 	// Shows details of all instances currently running.
@@ -575,6 +577,9 @@ func (c *ContainerClient) WaitForApplicationContainerRunning(input *GetApplicati
 		c.client.DebugLogString(fmt.Sprintf("Application Container name is %v, Application Contiainer info is %+v", info.Name, info))
 		switch s := info.Status; s {
 		case string(applicationContainerStatusRunning): // Target State
+			if info.CurrentOnGoingActitvity != "" {
+				return false, nil
+			}
 			c.client.DebugLogString("Application Container Running")
 			return true, nil
 		case string(applicationContainerStatusNew):

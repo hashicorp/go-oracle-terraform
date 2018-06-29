@@ -230,7 +230,7 @@ func (c *Client) BuildMultipartFormRequest(method, path string, files map[string
 		return nil, err
 	}
 
-	req, err := http.NewRequest("POST", c.formatURL(urlPath), body)
+	req, err := http.NewRequest(method, c.formatURL(urlPath), body)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 
 	return req, err
