@@ -49,7 +49,7 @@ func TestAccOriginServerPoolLifeCycle(t *testing.T) {
 				Port:     3691,
 			},
 		},
-		HealthCheck: healthCheckInfo,
+		HealthCheck: &healthCheckInfo,
 		Tags:        []string{"tag3", "tag2", "tag1"},
 		Status:      "ENABLED",
 	}

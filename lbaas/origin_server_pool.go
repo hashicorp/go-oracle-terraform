@@ -78,7 +78,7 @@ type OriginServerPoolInfo struct {
 type CreateOriginServerPoolInput struct {
 	Name          string                    `json:"name"`
 	OriginServers []CreateOriginServerInput `json:"origin_servers,omitempty"`
-	HealthCheck   HealthCheckInfo           `json:"health_check,omitempty"`
+	HealthCheck   *HealthCheckInfo          `json:"health_check,omitempty"`
 	Status        LBaaSStatus               `json:"status,omitempty"`
 	Tags          []string                  `json:"tags,omitempty"`
 	VnicSetName   string                    `json:"vnic_set_name,omitempty"`
