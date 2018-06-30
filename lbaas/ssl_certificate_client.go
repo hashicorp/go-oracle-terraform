@@ -1,10 +1,13 @@
 package lbaas
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 var (
 	sslCertificateContainerPath = "/certs"
-	sslCertificaetResourcePath  = "/certs/%s/"
+	sslCertificaetResourcePath  = "/certs/%s"
 )
 
 // SSLCertificateClient is an AuthenticatedClient with some additional information about the resources to be addressed.
@@ -23,8 +26,12 @@ func (c *Client) SSLCertificateClient() *SSLCertificateClient {
 		Client:           c,
 		ContainerPath:    sslCertificateContainerPath,
 		ResourceRootPath: sslCertificaetResourcePath,
-		Accept:           CONTENT_TYPE_SERVER_CERTIFICATE_JSON,
-		ContentType:      CONTENT_TYPE_SERVER_CERTIFICATE_JSON,
+		Accept: strings.Join([]string{
+			CONTENT_TYPE_SERVER_CERTIFICATE_JSON,
+			CONTENT_TYPE_TRUSTED_CERTIFICATE_JSON,
+		}, ","),
+		// ContentType cannot be generally set for the SSLCertificateCleint, instead it is set on each
+		// Create request based on the Type of the Certificate being created.
 	}
 }
 
@@ -45,6 +52,16 @@ func (c *SSLCertificateClient) createResource(requestBody interface{}, responseB
 func (c *SSLCertificateClient) getResource(name string, responseBody interface{}) error {
 	objectPath := c.getObjectPath(c.ResourceRootPath, name)
 	resp, err := c.executeRequest("GET", objectPath, c.Accept, c.ContentType, nil)
+	if err != nil {
+		return err
+	}
+	return c.unmarshalResponseBody(resp, responseBody)
+}
+
+// executes the Update requests to the Load Balancer API
+func (c *SSLCertificateClient) updateResource(name string, requestBody interface{}, responseBody interface{}) error {
+	objectPath := c.getObjectPath(c.ResourceRootPath, name)
+	resp, err := c.executeRequestWithMethodOverride("POST", "PATCH", objectPath, c.Accept, c.ContentType, requestBody)
 	if err != nil {
 		return err
 	}

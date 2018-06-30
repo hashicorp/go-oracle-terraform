@@ -27,7 +27,10 @@ import (
 const CONTENT_TYPE_VLBR_JSON = "application/vnd.com.oracle.oracloud.lbaas.VLBR+json"
 const CONTENT_TYPE_LISTENER_JSON = "application/vnd.com.oracle.oracloud.lbaas.Listener+json"
 const CONTENT_TYPE_ORIGIN_SERVER_POOL_JSON = "application/vnd.com.oracle.oracloud.lbaas.OriginServerPool+json"
+
+// Certificate ContentType
 const CONTENT_TYPE_SERVER_CERTIFICATE_JSON = "application/vnd.com.oracle.oracloud.lbaas.ServerCertificate+json"
+const CONTENT_TYPE_TRUSTED_CERTIFICATE_JSON = "application/vnd.com.oracle.oracloud.lbaas.TrustedCertificate+json"
 
 // Policy Specific Content Types. Each Type of Policy has its own ContentType
 const CONTENT_TYPE_APP_COOKIE_STICKINESS_POLICY_JSON = "application/vnd.com.oracle.oracloud.lbaas.AppCookieStickinessPolicy+json"
@@ -124,6 +127,40 @@ func (c *Client) executeRequest(method, path, accept, contentType string, body i
 
 	req.Header.Add("Accept", accept)
 	debugReqString := fmt.Sprintf("HTTP %s Req (%s)", method, path)
+	debugReqString = fmt.Sprintf("%s:\nAccept: %+v", debugReqString, accept)
+	if body != nil {
+		req.Header.Set("Content-Type", contentType)
+		debugReqString = fmt.Sprintf("%s:\nContent-Type: %+v\nBody: %+v", debugReqString, contentType, string(reqBody))
+	}
+	// Log the request before the authentication header, so as not to leak credentials
+	c.client.DebugLogString(debugReqString)
+
+	// Set the authentication headers
+	req.SetBasicAuth(*c.client.UserName, *c.client.Password)
+
+	resp, err := c.client.ExecuteRequest(req)
+	if err != nil {
+		return nil, err
+	}
+	return resp, nil
+}
+
+// execute a request with a X-HTTP-Method-Override
+func (c *Client) executeRequestWithMethodOverride(method, methodOverride, path, accept, contentType string, body interface{}) (*http.Response, error) {
+
+	reqBody, err := c.client.MarshallRequestBody(body)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := c.client.BuildRequestBody(method, path, reqBody)
+	if err != nil {
+		return nil, err
+	}
+
+	req.Header.Add("X-HTTP-Method-Override", methodOverride)
+	req.Header.Add("Accept", accept)
+	debugReqString := fmt.Sprintf("HTTP %s (%s) Req (%s)", method, methodOverride, path)
 	debugReqString = fmt.Sprintf("%s:\nAccept: %+v", debugReqString, accept)
 	if body != nil {
 		req.Header.Set("Content-Type", contentType)

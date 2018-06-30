@@ -13,28 +13,35 @@ const waitForSSLCertificateDeletePollInterval = 1 * time.Second // 1 second
 const waitForSSLCertificateDeleteTimeout = 5 * time.Minute      // 5 minutes
 
 type SSLCertificateInfo struct {
-	Name        string     `json:"name"`
-	Certificate string     `json:"certificate"`
-	State       LBaaSState `json:"state"`
-	Trusted     bool       `json:"trusted"`
-	URI         string     `json:"uri"`
+	Name             string     `json:"name"`
+	Certificate      string     `json:"certificate"`
+	CertificateChain string     `json:"certificate_chain"`
+	State            LBaaSState `json:"state"`
+	Trusted          bool       `json:"trusted"`
+	URI              string     `json:"uri"`
 }
 
 type CreateSSLCertificateInput struct {
+	Name             string `json:"name"`
+	Certificate      string `json:"certificate"`
+	CertificateChain string `json:"certificate_chain,omitempty"`
+	PrivateKey       string `json:"private_key,omitempty"`
+	Trusted          bool   `json:"trusted"`
+}
+
+type UpdateSSLCertificateInput struct {
 	Name        string `json:"name"`
 	Certificate string `json:"certificate"`
-	PrivateKey  string `json:"private_key"`
-	Trusted     bool   `json:"trusted"`
+	PrivateKey  string `json:"private_key,omitempty"`
 }
 
 // CreateSSLCertificate creates a new SSL certificate
 func (c *SSLCertificateClient) CreateSSLCertificate(input *CreateSSLCertificateInput) (*SSLCertificateInfo, error) {
 
-	if c.PollInterval == 0 {
-		c.PollInterval = waitForSSLCertificateReadyPollInterval
-	}
-	if c.Timeout == 0 {
-		c.Timeout = waitForSSLCertificateReadyTimeout
+	if input.Trusted {
+		c.ContentType = CONTENT_TYPE_TRUSTED_CERTIFICATE_JSON
+	} else {
+		c.ContentType = CONTENT_TYPE_SERVER_CERTIFICATE_JSON
 	}
 
 	var info SSLCertificateInfo
