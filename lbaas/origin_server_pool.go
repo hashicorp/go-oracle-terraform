@@ -7,12 +7,12 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/client"
 )
 
-const waitForOriginServerPoolReadyPollInterval = 1 * time.Second  // 1 second
-const waitForOriginServerPoolReadyTimeout = 5 * time.Minute       // 5 minutes
-const waitForOriginServerPoolDeletePollInterval = 1 * time.Second // 1 second
-const waitForOriginServerPoolDeleteTimeout = 5 * time.Minute      // 5 minutes
+const waitForOriginServerPoolReadyPollInterval = 1 * time.Second
+const waitForOriginServerPoolReadyTimeout = 5 * time.Minute
+const waitForOriginServerPoolDeletePollInterval = 1 * time.Second
+const waitForOriginServerPoolDeleteTimeout = 5 * time.Minute
 
-var (
+const (
 	originserverpoolContainerPath = "/vlbrs/%s/%s/originserverpools"
 	originserverpoolResourcePath  = "/vlbrs/%s/%s/originserverpools/%s"
 )

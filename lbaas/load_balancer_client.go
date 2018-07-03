@@ -2,7 +2,7 @@ package lbaas
 
 import "fmt"
 
-var (
+const (
 	loadBalancerContainerPath = "/vlbrs"
 	loadBalancerResourcePath  = "/vlbrs/%s/%s/"
 )

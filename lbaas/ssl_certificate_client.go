@@ -5,7 +5,7 @@ import (
 	"strings"
 )
 
-var (
+const (
 	sslCertificateContainerPath = "/certs"
 	sslCertificaetResourcePath  = "/certs/%s"
 )

@@ -7,10 +7,10 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/client"
 )
 
-const waitForSSLCertificateReadyPollInterval = 1 * time.Second  // 1 second
-const waitForSSLCertificateReadyTimeout = 5 * time.Minute       // 5 minutes
-const waitForSSLCertificateDeletePollInterval = 1 * time.Second // 1 second
-const waitForSSLCertificateDeleteTimeout = 5 * time.Minute      // 5 minutes
+const waitForSSLCertificateReadyPollInterval = 1 * time.Second
+const waitForSSLCertificateReadyTimeout = 5 * time.Minute
+const waitForSSLCertificateDeletePollInterval = 1 * time.Second
+const waitForSSLCertificateDeleteTimeout = 5 * time.Minute
 
 type SSLCertificateInfo struct {
 	Name             string     `json:"name"`

@@ -7,10 +7,10 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/client"
 )
 
-const waitForLoadBalancerReadyPollInterval = 30 * time.Second  // 30 seconds
-const waitForLoadBalancerReadyTimeout = 30 * time.Minute       // 30 minutes
-const waitForLoadBalancerDeletePollInterval = 30 * time.Second // 30 seconds
-const waitForLoadBalancerDeleteTimeout = 30 * time.Minute      // 30 minutes
+const waitForLoadBalancerReadyPollInterval = 30 * time.Second
+const waitForLoadBalancerReadyTimeout = 30 * time.Minute
+const waitForLoadBalancerDeletePollInterval = 30 * time.Second
+const waitForLoadBalancerDeleteTimeout = 30 * time.Minute
 
 // LoadBalancerScheme Scheme types
 type LoadBalancerScheme string

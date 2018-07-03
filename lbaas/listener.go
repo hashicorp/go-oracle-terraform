@@ -7,15 +7,15 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/client"
 )
 
-var (
+const (
 	listenerContainerPath = "/vlbrs/%s/%s/listeners"
 	listenerResourcePath  = "/vlbrs/%s/%s/listeners/%s"
 )
 
-const waitForListenerReadyPollInterval = 1 * time.Second  // 1 second
-const waitForListenerReadyTimeout = 5 * time.Minute       // 5 minutes
-const waitForListenerDeletePollInterval = 1 * time.Second // 1 second
-const waitForListenerDeleteTimeout = 5 * time.Minute      // 5 minutes
+const waitForListenerReadyPollInterval = 1 * time.Second
+const waitForListenerReadyTimeout = 5 * time.Minute
+const waitForListenerDeletePollInterval = 1 * time.Second
+const waitForListenerDeleteTimeout = 5 * time.Minute
 
 // ListenerClient is a client for the Load Balancer Listener resources.
 type ListenerClient struct {
