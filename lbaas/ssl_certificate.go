@@ -39,9 +39,9 @@ type UpdateSSLCertificateInput struct {
 func (c *SSLCertificateClient) CreateSSLCertificate(input *CreateSSLCertificateInput) (*SSLCertificateInfo, error) {
 
 	if input.Trusted {
-		c.ContentType = CONTENT_TYPE_TRUSTED_CERTIFICATE_JSON
+		c.ContentType = ContentTypeTrustedCertificateJSON
 	} else {
-		c.ContentType = CONTENT_TYPE_SERVER_CERTIFICATE_JSON
+		c.ContentType = ContentTypeServerCertificateJSON
 	}
 
 	var info SSLCertificateInfo

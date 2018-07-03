@@ -30,8 +30,8 @@ func (c *Client) OriginServerPoolClient() *OriginServerPoolClient {
 			Client:           c,
 			ContainerPath:    originserverpoolContainerPath,
 			ResourceRootPath: originserverpoolResourcePath,
-			Accept:           CONTENT_TYPE_ORIGIN_SERVER_POOL_JSON,
-			ContentType:      CONTENT_TYPE_ORIGIN_SERVER_POOL_JSON,
+			Accept:           ContentTypeOriginServerPoolJSON,
+			ContentType:      ContentTypeOriginServerPoolJSON,
 		},
 	}
 

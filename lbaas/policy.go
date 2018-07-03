@@ -34,16 +34,16 @@ func (c *Client) PolicyClient() *PolicyClient {
 			ResourceRootPath: policyResourcePath,
 			// Accept all Policy Content Types
 			Accept: strings.Join([]string{
-				CONTENT_TYPE_APP_COOKIE_STICKINESS_POLICY_JSON,
-				CONTENT_TYPE_CLOUDGATE_POLICY_JSON,
-				CONTENT_TYPE_LB_COOKIE_STICKINESS_POLICY_JSON,
-				CONTENT_TYPE_LOADBALANCING_MECHANISM_POLICY_JSON,
-				CONTENT_TYPE_RATE_LIMITING_REQUEST_POLICY_JSON,
-				CONTENT_TYPE_RESOURCE_ACCESS_CONTROL_POLICY_JSON,
-				CONTENT_TYPE_REDIRECT_POLICY_JSON,
-				CONTENT_TYPE_SSL_NEGOTIATION_POLICY_JSON,
-				CONTENT_TYPE_SET_REQUEST_HEADER_POLICY_JSON,
-				CONTENT_TYPE_TRUSTED_CERTIFICATE_POLICY_JSON,
+				ContentTypeAppCookieSticinessPolicyJSON,
+				ContentTypeCloudGatePolicyJSON,
+				ContentTypeLBCookieStickinessPolicyJSON,
+				ContentTypeLoadBalancingMechanismPolicyJSON,
+				ContentTypeRateLimitingRequestPolicyJSON,
+				ContentTypeResourceAccessControlPolicyJSON,
+				ContentTypeRedirectPolicyJSON,
+				ContentTypeSSLNegotiationPolicyJSON,
+				ContentTypeSetRequestHeaderPolicyJSON,
+				ContentTypeTrustedCertificatePolicyJSON,
 			}, ","),
 			// ContentType cannot be generally set for the PolicyClient, instead it is set on each
 			// Create or Update request based on the Type of the Policy being created/updated.

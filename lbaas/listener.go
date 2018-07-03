@@ -30,8 +30,8 @@ func (c *Client) ListenerClient() *ListenerClient {
 			Client:           c,
 			ContainerPath:    listenerContainerPath,
 			ResourceRootPath: listenerResourcePath,
-			Accept:           CONTENT_TYPE_LISTENER_JSON,
-			ContentType:      CONTENT_TYPE_LISTENER_JSON,
+			Accept:           ContentTypeListenerJSON,
+			ContentType:      ContentTypeListenerJSON,
 		},
 	}
 }

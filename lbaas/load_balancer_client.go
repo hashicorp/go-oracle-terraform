@@ -23,8 +23,8 @@ func (c *Client) LoadBalancerClient() *LoadBalancerClient {
 		Client:           c,
 		ContainerPath:    loadBalancerContainerPath,
 		ResourceRootPath: loadBalancerResourcePath,
-		Accept:           CONTENT_TYPE_VLBR_JSON,
-		ContentType:      CONTENT_TYPE_VLBR_JSON,
+		Accept:           ContentTypeVLBRJSON,
+		ContentType:      ContentTypeVLBRJSON,
 	}
 }
 

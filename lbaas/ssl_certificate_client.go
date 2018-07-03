@@ -27,8 +27,8 @@ func (c *Client) SSLCertificateClient() *SSLCertificateClient {
 		ContainerPath:    sslCertificateContainerPath,
 		ResourceRootPath: sslCertificaetResourcePath,
 		Accept: strings.Join([]string{
-			CONTENT_TYPE_SERVER_CERTIFICATE_JSON,
-			CONTENT_TYPE_TRUSTED_CERTIFICATE_JSON,
+			ContentTypeServerCertificateJSON,
+			ContentTypeTrustedCertificateJSON,
 		}, ","),
 		// ContentType cannot be generally set for the SSLCertificateCleint, instead it is set on each
 		// Create request based on the Type of the Certificate being created.
