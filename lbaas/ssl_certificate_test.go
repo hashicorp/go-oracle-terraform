@@ -14,9 +14,7 @@ func TestAccServerCertificateLifeCycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
 	certClient, err := getSSLCertificateClient()
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	// CREATE
 
@@ -29,18 +27,14 @@ func TestAccServerCertificateLifeCycle(t *testing.T) {
 	}
 
 	_, err = certClient.CreateSSLCertificate(createCertInput)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	defer destroySSLCertificate(t, certClient, createCertInput.Name)
 
 	// FETCH
 
 	resp, err := certClient.GetSSLCertificate(createCertInput.Name)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	expected := &SSLCertificateInfo{
 		Name:        createCertInput.Name,
@@ -61,9 +55,7 @@ func BROKEN_TestAccTrustedCertificateLifeCycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
 	certClient, err := getSSLCertificateClient()
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	// CREATE
 
@@ -75,18 +67,14 @@ func BROKEN_TestAccTrustedCertificateLifeCycle(t *testing.T) {
 	}
 
 	_, err = certClient.CreateSSLCertificate(createCertInput)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	defer destroySSLCertificate(t, certClient, createCertInput.Name)
 
 	// FETCH
 
 	resp, err := certClient.GetSSLCertificate(createCertInput.Name)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	expected := &SSLCertificateInfo{
 		Name:        createCertInput.Name,

@@ -1,6 +1,7 @@
 package lbaas
 
 import (
+	"fmt"
 	"os"
 	"testing"
 
@@ -25,9 +26,7 @@ func TestAccPolicyLifeCycle(t *testing.T) {
 	// CREATE Policy
 
 	policyClient, err := getPolicyClient()
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	createPolicyInput := &CreatePolicyInput{
 		Name: "acc-test-policy1",
@@ -40,18 +39,16 @@ func TestAccPolicyLifeCycle(t *testing.T) {
 	}
 
 	_, err = policyClient.CreatePolicy(lb, createPolicyInput)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	defer destroyPolicy(t, policyClient, lb, createPolicyInput.Name)
 
 	// FETCH
 
 	resp, err := policyClient.GetPolicy(lb, createPolicyInput.Name)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
+
+	expectedURI := fmt.Sprintf("%svlbrs/%s/%s/policies/%s", policyClient.client.APIEndpoint.String(), lb.Region, lb.Name, createPolicyInput.Name)
 
 	expected := &PolicyInfo{
 		Name:                   createPolicyInput.Name,
@@ -59,10 +56,12 @@ func TestAccPolicyLifeCycle(t *testing.T) {
 		HeaderName:             createPolicyInput.SetRequestHeaderPolicyInfo.HeaderName,
 		ActionWhenHeaderExists: createPolicyInput.SetRequestHeaderPolicyInfo.ActionWhenHeaderExists,
 		Value: createPolicyInput.SetRequestHeaderPolicyInfo.Value,
+		State: LBaaSStateHealthy,
+		URI:   expectedURI,
 	}
 
 	// compare resp to expected
-
+	assert.Equal(t, expected, resp, "Response should match expected PolicyInfo")
 	assert.Equal(t, expected.Name, resp.Name, "SetRequestHeaderPolicy Name should match")
 	assert.Equal(t, expected.ActionWhenHeaderExists, resp.ActionWhenHeaderExists, "SetRequestHeaderPolicy ActionWhenHeaderExists should match")
 	assert.Equal(t, expected.HeaderName, resp.HeaderName, "SetRequestHeaderPolicy HeaderName should match")
@@ -82,9 +81,7 @@ func TestAccPolicyLifeCycle(t *testing.T) {
 	}
 
 	resp, err = policyClient.UpdatePolicy(lb, createPolicyInput.Name, createPolicyInput.Type, updateInput)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	expected = &PolicyInfo{
 		Name:       updateInput.Name,
@@ -92,7 +89,11 @@ func TestAccPolicyLifeCycle(t *testing.T) {
 		HeaderName: updatedHeaderName,
 		Value:      updatedValue,
 		ActionWhenHeaderExists: createPolicyInput.SetRequestHeaderPolicyInfo.ActionWhenHeaderExists,
+		State: LBaaSStateHealthy,
+		URI:   expectedURI,
 	}
+
+	assert.Equal(t, expected, resp, "Response should match expected PolicyInfo")
 
 	assert.Equal(t, expected.Name, resp.Name, "SetRequestHeaderPolicy Name should match")
 	assert.Equal(t, expected.ActionWhenHeaderExists, resp.ActionWhenHeaderExists, "SetRequestHeaderPolicy ActionWhenHeaderExists should match")

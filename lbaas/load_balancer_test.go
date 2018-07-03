@@ -14,9 +14,7 @@ func TestAccLoadBalancerLifeCycle(t *testing.T) {
 	helper.Test(t, helper.TestCase{})
 
 	lbClient, err := getLoadBalancerClient()
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	var region string
 	if region = os.Getenv("OPC_TEST_LBAAS_REGION"); region == "" {
@@ -35,9 +33,7 @@ func TestAccLoadBalancerLifeCycle(t *testing.T) {
 	}
 
 	_, err = lbClient.CreateLoadBalancer(createLoadBalancerInput)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	lb := LoadBalancerContext{
 		Region: createLoadBalancerInput.Region,
@@ -49,9 +45,7 @@ func TestAccLoadBalancerLifeCycle(t *testing.T) {
 	// FETCH
 
 	resp, err := lbClient.GetLoadBalancer(lb)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	expected := &LoadBalancerInfo{
 		Name:        createLoadBalancerInput.Name,
@@ -81,9 +75,7 @@ func TestAccLoadBalancerLifeCycle(t *testing.T) {
 	}
 
 	resp, err = lbClient.UpdateLoadBalancer(lb, updateInput)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	expected = &LoadBalancerInfo{
 		Name:        createLoadBalancerInput.Name,

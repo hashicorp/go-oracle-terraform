@@ -25,9 +25,7 @@ func TestAccListenerLifeCycle(t *testing.T) {
 	// CREATE Listener
 
 	listenerClient, err := getListenerClient()
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	createListenerInput := &CreateListenerInput{
 		Name:                 "acc-test-listener1",
@@ -39,18 +37,14 @@ func TestAccListenerLifeCycle(t *testing.T) {
 	}
 
 	_, err = listenerClient.CreateListener(lb, createListenerInput)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	defer destroyListener(t, listenerClient, lb, createListenerInput.Name)
 
 	// FETCH
 
 	resp, err := listenerClient.GetListener(lb, createListenerInput.Name)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	expected := &ListenerInfo{
 		Name:                 createListenerInput.Name,
@@ -82,9 +76,7 @@ func TestAccListenerLifeCycle(t *testing.T) {
 	}
 
 	resp, err = listenerClient.UpdateListener(lb, createListenerInput.Name, updateInput)
-	if err != nil {
-		t.Fatal(err)
-	}
+	assert.NoError(t, err)
 
 	expected = &ListenerInfo{
 		Name:                 createListenerInput.Name,
