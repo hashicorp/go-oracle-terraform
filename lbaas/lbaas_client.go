@@ -23,27 +23,6 @@ import (
  * - SSLCertificateClient - SSL Certificates
  */
 
-// Main Resource Content Types. Each resource has it's own ContentType
-const ContentTypeVLBRJSON = "application/vnd.com.oracle.oracloud.lbaas.VLBR+json"
-const ContentTypeListenerJSON = "application/vnd.com.oracle.oracloud.lbaas.Listener+json"
-const ContentTypeOriginServerPoolJSON = "application/vnd.com.oracle.oracloud.lbaas.OriginServerPool+json"
-
-// Certificate ContentType
-const ContentTypeServerCertificateJSON = "application/vnd.com.oracle.oracloud.lbaas.ServerCertificate+json"
-const ContentTypeTrustedCertificateJSON = "application/vnd.com.oracle.oracloud.lbaas.TrustedCertificate+json"
-
-// Policy Specific Content Types. Each Type of Policy has its own ContentType
-const ContentTypeAppCookieSticinessPolicyJSON = "application/vnd.com.oracle.oracloud.lbaas.AppCookieStickinessPolicy+json"
-const ContentTypeCloudGatePolicyJSON = "application/vnd.com.oracle.oracloud.lbaas.CloudGatePolicy+json"
-const ContentTypeLBCookieStickinessPolicyJSON = "application/vnd.com.oracle.oracloud.lbaas.LBCookieStickinessPolicy+json"
-const ContentTypeLoadBalancingMechanismPolicyJSON = "application/vnd.com.oracle.oracloud.lbaas.LoadBalancingMechanismPolicy+json"
-const ContentTypeRateLimitingRequestPolicyJSON = "application/vnd.com.oracle.oracloud.lbaas.RateLimitingRequestPolicy+json"
-const ContentTypeRedirectPolicyJSON = "application/vnd.com.oracle.oracloud.lbaas.RedirectPolicy+json"
-const ContentTypeResourceAccessControlPolicyJSON = "application/vnd.com.oracle.oracloud.lbaas.ResourceAccessControlPolicy+json"
-const ContentTypeSetRequestHeaderPolicyJSON = "application/vnd.com.oracle.oracloud.lbaas.SetRequestHeaderPolicy+json"
-const ContentTypeSSLNegotiationPolicyJSON = "application/vnd.com.oracle.oracloud.lbaas.SSLNegotiationPolicy+json"
-const ContentTypeTrustedCertificatePolicyJSON = "application/vnd.com.oracle.oracloud.lbaas.TrustedCertPolicy+json"
-
 // LBaaSState common State type for all LBaaS service resources
 type LBaaSState string
 

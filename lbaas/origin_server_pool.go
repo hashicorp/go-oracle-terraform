@@ -17,6 +17,9 @@ const (
 	originserverpoolResourcePath  = "/vlbrs/%s/%s/originserverpools/%s"
 )
 
+// ContentType for Load Balancer Origin Server Pool API requests
+const ContentTypeOriginServerPoolJSON = "application/vnd.com.oracle.oracloud.lbaas.OriginServerPool+json"
+
 // OriginServerPoolClient is a client for the Load Balancer Origin Server Pool resources.
 type OriginServerPoolClient struct {
 	LBaaSResourceClient

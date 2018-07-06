@@ -18,6 +18,18 @@ const (
 	policyResourcePath  = "/vlbrs/%s/%s/policies/%s"
 )
 
+// Policy Specific ContentTypes for API REquests. Each type of Policy has its own ContentType
+const ContentTypeAppCookieSticinessPolicyJSON = "application/vnd.com.oracle.oracloud.lbaas.AppCookieStickinessPolicy+json"
+const ContentTypeCloudGatePolicyJSON = "application/vnd.com.oracle.oracloud.lbaas.CloudGatePolicy+json"
+const ContentTypeLBCookieStickinessPolicyJSON = "application/vnd.com.oracle.oracloud.lbaas.LBCookieStickinessPolicy+json"
+const ContentTypeLoadBalancingMechanismPolicyJSON = "application/vnd.com.oracle.oracloud.lbaas.LoadBalancingMechanismPolicy+json"
+const ContentTypeRateLimitingRequestPolicyJSON = "application/vnd.com.oracle.oracloud.lbaas.RateLimitingRequestPolicy+json"
+const ContentTypeRedirectPolicyJSON = "application/vnd.com.oracle.oracloud.lbaas.RedirectPolicy+json"
+const ContentTypeResourceAccessControlPolicyJSON = "application/vnd.com.oracle.oracloud.lbaas.ResourceAccessControlPolicy+json"
+const ContentTypeSetRequestHeaderPolicyJSON = "application/vnd.com.oracle.oracloud.lbaas.SetRequestHeaderPolicy+json"
+const ContentTypeSSLNegotiationPolicyJSON = "application/vnd.com.oracle.oracloud.lbaas.SSLNegotiationPolicy+json"
+const ContentTypeTrustedCertificatePolicyJSON = "application/vnd.com.oracle.oracloud.lbaas.TrustedCertPolicy+json"
+
 // PolicyClient is a client for the Load Balancer Policy resources.
 type PolicyClient struct {
 	LBaaSResourceClient

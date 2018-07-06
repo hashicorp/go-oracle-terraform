@@ -12,6 +12,9 @@ const (
 	listenerResourcePath  = "/vlbrs/%s/%s/listeners/%s"
 )
 
+// ContentType for Load Balancer Listener API requests
+const ContentTypeListenerJSON = "application/vnd.com.oracle.oracloud.lbaas.Listener+json"
+
 const waitForListenerReadyPollInterval = 1 * time.Second
 const waitForListenerReadyTimeout = 5 * time.Minute
 const waitForListenerDeletePollInterval = 1 * time.Second

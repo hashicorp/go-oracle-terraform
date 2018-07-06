@@ -7,6 +7,9 @@ const (
 	loadBalancerResourcePath  = "/vlbrs/%s/%s/"
 )
 
+// ContentType for Load Balancer API requests
+const ContentTypeVLBRJSON = "application/vnd.com.oracle.oracloud.lbaas.VLBR+json"
+
 // LoadBalancerClient is an AuthenticatedClient with some additional information about the resources to be addressed.
 type LoadBalancerClient struct {
 	*Client

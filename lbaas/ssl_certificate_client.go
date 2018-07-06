@@ -10,6 +10,10 @@ const (
 	sslCertificaetResourcePath  = "/certs/%s"
 )
 
+// Supported ContentTypes for the SSL Certificate API requests
+const ContentTypeServerCertificateJSON = "application/vnd.com.oracle.oracloud.lbaas.ServerCertificate+json"
+const ContentTypeTrustedCertificateJSON = "application/vnd.com.oracle.oracloud.lbaas.TrustedCertificate+json"
+
 // SSLCertificateClient is an AuthenticatedClient with some additional information about the resources to be addressed.
 type SSLCertificateClient struct {
 	*Client
