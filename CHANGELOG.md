@@ -1,4 +1,4 @@
-## 0.10.0 (Unreleased)
+## 0.10.0 (July 6, 2018)
 
 * compute: Added the fully qualified domain name to all resources [GH-153]
 
