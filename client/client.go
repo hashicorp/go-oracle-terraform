@@ -275,9 +275,11 @@ func (c *Client) retryRequest(req *http.Request) (*http.Response, error) {
 		if err != nil {
 			return resp, err
 		}
+		method := req.Method
+		url := req.URL
 		errMessage = buf.String()
 		statusCode = resp.StatusCode
-		c.DebugLogString(fmt.Sprintf("Encountered HTTP (%d) Error: %s", statusCode, errMessage))
+		c.DebugLogString(fmt.Sprintf("%s %s Encountered HTTP (%d) Error: %s", method, url, statusCode, errMessage))
 		c.DebugLogString(fmt.Sprintf("%d/%d retries left", i+1, retries))
 	}
 
@@ -296,19 +298,18 @@ func (c *Client) formatURL(path *url.URL) string {
 
 // WaitFor - Retry function
 func (c *Client) WaitFor(description string, pollInterval, timeout time.Duration, test func() (bool, error)) error {
-	tick := time.NewTicker(1 * time.Second)
 
 	timeoutSeconds := int(timeout.Seconds())
 	pollIntervalSeconds := int(pollInterval.Seconds())
 
+	c.DebugLogString(fmt.Sprintf("Starting Wait For %s, polling every %d for %d seconds ", description, pollIntervalSeconds, timeoutSeconds))
+
 	for i := 0; i < timeoutSeconds; i += pollIntervalSeconds {
-		for range tick.C {
-			completed, err := test()
-			if err != nil || completed {
-				return err
-			}
-			c.DebugLogString(fmt.Sprintf("Waiting %d seconds for %s (%d/%ds)", pollIntervalSeconds, description, i, timeoutSeconds))
-			time.Sleep(pollInterval)
+		c.DebugLogString(fmt.Sprintf("Waiting %d seconds for %s (%d/%ds)", pollIntervalSeconds, description, i, timeoutSeconds))
+		time.Sleep(pollInterval)
+		completed, err := test()
+		if err != nil || completed {
+			return err
 		}
 	}
 	return fmt.Errorf("Timeout after %d seconds waiting for %s", timeoutSeconds, description)
