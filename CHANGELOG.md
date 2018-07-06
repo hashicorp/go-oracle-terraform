@@ -2,6 +2,8 @@
 
 * compute: Added the fully qualified domain name to all resources [GH-153]
 
+* lbaas: Added the Load Balancer Classic resources to the sdk [GH-151]
+
 ## 0.9.8 (June 20, 2018
 
 * mysql: Add additional logging [GH-152]
