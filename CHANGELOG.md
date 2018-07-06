@@ -1,3 +1,7 @@
+## 0.10.0 (Unreleased)
+
+* compute: Added the fully qualified domain name to all resources [GH-153]
+
 ## 0.9.8 (June 20, 2018
 
 * mysql: Add additional logging [GH-152]
