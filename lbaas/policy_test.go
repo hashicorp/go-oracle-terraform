@@ -46,7 +46,7 @@ func TestAccPolicyLifeCycle(t *testing.T) {
 	resp, err := policyClient.GetPolicy(lb, createPolicyInput.Name)
 	assert.NoError(t, err)
 
-	expectedURI := fmt.Sprintf("%svlbrs/%s/%s/policies/%s", policyClient.client.APIEndpoint.String(), lb.Region, lb.Name, createPolicyInput.Name)
+	expectedURI := fmt.Sprintf("%s/vlbrs/%s/%s/policies/%s", policyClient.client.APIEndpoint.String(), lb.Region, lb.Name, createPolicyInput.Name)
 
 	expected := &PolicyInfo{
 		Name:                   createPolicyInput.Name,

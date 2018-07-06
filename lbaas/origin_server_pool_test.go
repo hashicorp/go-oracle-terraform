@@ -61,7 +61,7 @@ func TestAccOriginServerPoolLifeCycle(t *testing.T) {
 	resp, err := serverPoolClient.GetOriginServerPool(lb, createOriginServerPoolInput.Name)
 	assert.NoError(t, err)
 
-	expectedURI := fmt.Sprintf("%svlbrs/%s/%s/originserverpools/%s", serverPoolClient.client.APIEndpoint.String(), lb.Region, lb.Name, createOriginServerPoolInput.Name)
+	expectedURI := fmt.Sprintf("%s/vlbrs/%s/%s/originserverpools/%s", serverPoolClient.client.APIEndpoint.String(), lb.Region, lb.Name, createOriginServerPoolInput.Name)
 
 	expected := &OriginServerPoolInfo{
 		Name: createOriginServerPoolInput.Name,
