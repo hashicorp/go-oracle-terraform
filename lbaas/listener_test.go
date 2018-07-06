@@ -1,7 +1,6 @@
 package lbaas
 
 import (
-	"os"
 	"testing"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
@@ -16,12 +15,10 @@ func TestAccListenerLifeCycle(t *testing.T) {
 
 	// CREATE Parent Load Balancer Service Instance
 
-	var region string
-	if region = os.Getenv("OPC_TEST_LBAAS_REGION"); region == "" {
-		region = "uscom-central-1"
+	lb, lbClient := createParentLoadBalancer(t)
+	if lbClient != nil {
+		defer destroyLoadBalancer(t, lbClient, lb)
 	}
-	lb := createParentLoadBalancer(t, region, "acc-test-lb-server-pool1")
-
 	// CREATE Listener
 
 	listenerClient, err := getListenerClient()

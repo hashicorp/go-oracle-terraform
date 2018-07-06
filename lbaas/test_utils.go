@@ -1,6 +1,7 @@
 package lbaas
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 	"os"
@@ -9,6 +10,7 @@ import (
 	"time"
 
 	"github.com/hashicorp/go-oracle-terraform/opc"
+	"github.com/hashicorp/terraform/helper/acctest"
 )
 
 // GetTestClient obtains a client for testing purposes
@@ -59,7 +61,7 @@ func destroyLoadBalancer(t *testing.T, client *LoadBalancerClient, lb LoadBalanc
 }
 
 // utility function to create a load balancer instance needed for testing child resources
-func createParentLoadBalancer(t *testing.T, region, name string) LoadBalancerContext {
+func createParentLoadBalancer(t *testing.T) (LoadBalancerContext, *LoadBalancerClient) {
 
 	// if environment variable `OPC_TEST_USE_EXISTING_LB` is set an existing LB instance
 	// can be using instead of waiting for a new one to be created.
@@ -70,10 +72,18 @@ func createParentLoadBalancer(t *testing.T, region, name string) LoadBalancerCon
 			Region: s[0],
 			Name:   s[1],
 		}
-		return lb
+		return lb, nil
 	}
 
 	// create a new Load Balancer instance
+
+	rInt := acctest.RandInt()
+	name := fmt.Sprintf("acctestlb-%d", rInt)
+
+	var region string
+	if region = os.Getenv("OPC_TEST_LBAAS_REGION"); region == "" {
+		region = "uscom-central-1"
+	}
 
 	lbClient, err := getLoadBalancerClient()
 	if err != nil {
@@ -98,7 +108,5 @@ func createParentLoadBalancer(t *testing.T, region, name string) LoadBalancerCon
 		Name:   createLoadBalancerInput.Name,
 	}
 
-	defer destroyLoadBalancer(t, lbClient, lb)
-
-	return lb
+	return lb, lbClient
 }
