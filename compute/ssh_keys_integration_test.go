@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAccSSHKeyLifeCycle(t *testing.T) {
@@ -39,9 +40,9 @@ func TestAccSSHKeyLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if createSSHKeyInput.Key != getSSHKeyOutput.Key {
-		t.Fatalf("Created and retrived keys don't match %s\n%s\n", createSSHKeyInput.Key, getSSHKeyOutput.Key)
-	}
+	assert.Equal(t, createSSHKeyInput.Key, getSSHKeyOutput.Key, "Created and retrived keys don't match.")
+	assert.Equal(t, getSSHKeyOutput.FQDN, sshKeyClient.getQualifiedName(name), "Expected FDQN to be equal to qualified name")
+
 	log.Printf("Successfully retrieved ssh key\n")
 
 	updateSSHKeyInput := UpdateSSHKeyInput{

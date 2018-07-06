@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -52,9 +53,8 @@ func TestAccIPNetworksLifeCycle(t *testing.T) {
 	}
 	log.Print("IP Network successfully fetched")
 
-	if !reflect.DeepEqual(createdNetwork, receivedNetwork) {
-		t.Fatalf("Mismatch found after create.\nExpected: %+v\nReceived: %+v", createdNetwork, receivedNetwork)
-	}
+	assert.Equal(t, createdNetwork, receivedNetwork, "Mismatch found after create.")
+	assert.Equal(t, createdNetwork.FQDN, svc.getQualifiedName(createInput.Name), "Expected FDQN to be equal to qualified name")
 
 	// Update prefix, NAPT, and tags
 	updateInput := &UpdateIPNetworkInput{

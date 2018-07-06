@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
 	"github.com/kylelemons/godebug/pretty"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -54,13 +55,9 @@ func TestAccIPAddressReservationLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if receivedRes.IPAddress == "" {
-		t.Fatal("Expected an IPAddress created, got nil")
-	}
-
-	if diff := pretty.Compare(ipRes, receivedRes); diff != "" {
-		t.Errorf("Created Reservation Diff: (-got +want)\n%s", diff)
-	}
+	assert.Equal(t, receivedRes.FQDN, ipaClient.getQualifiedName(resName), "Exptcted FDQN to be equal to qualified name")
+	assert.NotEmpty(t, receivedRes.IPAddress, "Expected an IPAddress created")
+	assert.Equal(t, ipRes, receivedRes, "Expected sent and received ip reservations to be equal")
 
 	updateInput := &UpdateIPAddressReservationInput{
 		Description:   _TestIPAddressResDesc,

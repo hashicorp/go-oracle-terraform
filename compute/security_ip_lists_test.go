@@ -10,6 +10,7 @@ import (
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAccSecurityIPListLifeCycle(t *testing.T) {
@@ -53,9 +54,10 @@ func TestAccSecurityIPListLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !reflect.DeepEqual(updateSecurityIPListInput.SecIPEntries, updateSecurityIPListOutput.SecIPEntries) {
-		t.Fatalf("Security IP Entry not successfully updated \nDesired: %s \nActual: %s", updateSecurityIPListInput.SecIPEntries[0], updateSecurityIPListOutput.SecIPEntries[0])
-	}
+
+	assert.Equal(t, updateSecurityIPListInput.SecIPEntries, updateSecurityIPListOutput.SecIPEntries, "Security IP Entry not successfully updated")
+	assert.Equal(t, updateSecurityIPListOutput.FQDN, securityIPListClient.getQualifiedName(createdSecurityIPList.Name), "Expected FDQN to be equal to qualified name")
+
 	log.Print("Successfully updated Security IP List")
 }
 

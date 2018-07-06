@@ -9,6 +9,7 @@ import (
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAccSecurityListLifeCycle(t *testing.T) {
@@ -56,9 +57,9 @@ func TestAccSecurityListLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if updateSecurityListOutput.OutboundCIDRPolicy != "PERMIT" {
-		t.Fatalf("Outbound policy not successfully updated \nDesired: %s \nActual: %s", updateSecurityListInput.OutboundCIDRPolicy, updateSecurityListOutput.OutboundCIDRPolicy)
-	}
+	assert.Equal(t, updateSecurityListOutput.OutboundCIDRPolicy, SecurityListPolicy("PERMIT"), "Outbound policy not successfully updated.")
+	assert.Equal(t, updateSecurityListOutput.FQDN, securityListClient.getQualifiedName(name), "Expected FDQN to be equal to qualified name")
+
 	log.Print("Successfully updated Security List")
 }
 

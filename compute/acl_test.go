@@ -22,7 +22,7 @@ func TestAccACLLifeCycle(t *testing.T) {
 
 	name := "test-acc-acl"
 
-	ACLClient, err := getACLsClient()
+	aclClient, err := getACLsClient()
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -35,17 +35,17 @@ func TestAccACLLifeCycle(t *testing.T) {
 		Tags:        []string{"tag1"},
 	}
 
-	createdACL, err := ACLClient.CreateACL(&createACLInput)
+	createdACL, err := aclClient.CreateACL(&createACLInput)
 	if err != nil {
 		t.Fatal(err)
 	}
 	log.Printf("Successfully created acl: %+v", createdACL)
-	defer deleteACL(t, ACLClient, name)
+	defer deleteACL(t, aclClient, name)
 
 	getACLInput := GetACLInput{
 		Name: _ACLTestName,
 	}
-	getACLOutput, err := ACLClient.GetACL(&getACLInput)
+	getACLOutput, err := aclClient.GetACL(&getACLInput)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -58,13 +58,13 @@ func TestAccACLLifeCycle(t *testing.T) {
 		Description: _ACLTestDescription,
 		Tags:        []string{"tag1"},
 	}
-	updateACLOutput, err := ACLClient.UpdateACL(&updateACLInput)
+	updateACLOutput, err := aclClient.UpdateACL(&updateACLInput)
 	if err != nil {
 		t.Fatal(err)
 	}
-	if !updateACLOutput.Enabled {
-		t.Fatal("acl was not updated to enabled")
-	}
+	assert.True(t, updateACLOutput.Enabled, "acl was not updated to enabled")
+	assert.Equal(t, updateACLOutput.FQDN, aclClient.getQualifiedName(updateACLInput.Name), "Expected FDQN to be equal to qualified name")
+
 	log.Print("Successfully updated acl")
 }
 

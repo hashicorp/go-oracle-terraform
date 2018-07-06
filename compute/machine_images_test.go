@@ -13,7 +13,7 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
 	"github.com/hashicorp/go-oracle-terraform/storage"
-	"github.com/kylelemons/godebug/pretty"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -63,9 +63,9 @@ func TestAccMachineImageLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if diff := pretty.Compare(machineImage, receivedMachineImage); diff != "" {
-		t.Errorf("Created Machine Image Diff: (-got +want)\n%s", diff)
-	}
+	assert.Equal(t, machineImage, receivedMachineImage, "Diff between created and received machine images")
+	assert.Equal(t, receivedMachineImage.FQDN, client.getQualifiedName(machineImageName), "Expected FDQN to be equal to qualified name")
+
 }
 
 func getMachineImagesClient() (*MachineImagesClient, error) {

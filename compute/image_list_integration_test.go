@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAccImageListLifeCycle(t *testing.T) {
@@ -38,6 +39,8 @@ func TestAccImageListLifeCycle(t *testing.T) {
 		t.Fatalf("Error Getting Image List: %+v", err)
 	}
 
+	assert.Equal(t, createInput.Description, createGetResult.Description, "Created and retrieved Image List don't match.")
+
 	updateInput := UpdateImageListInput{
 		Name:        name,
 		Description: "Updated Description",
@@ -53,15 +56,8 @@ func TestAccImageListLifeCycle(t *testing.T) {
 		t.Fatalf("Error Getting Image List: %+v", err)
 	}
 
-	// we can't compare the entire object because of the additional fields :(
-	if createInput.Description != createGetResult.Description {
-		t.Fatalf("Created and retrieved Image List don't match.\n Desired: %s\n Actual: %s", createInput.Description, createGetResult.Description)
-	}
-
-	// we can't compare the entire object because of the additional fields :(
-	if updateInput.Description != updatedGetResult.Description {
-		t.Fatalf("Updated and retrieved Image List don't match.\n Desired: %s\n Actual: %s", updateInput.Description, updatedGetResult.Description)
-	}
+	assert.Equal(t, updateInput.Description, updatedGetResult.Description, "Updated and retrieved Image List don't match.")
+	assert.Equal(t, updatedGetResult.FQDN, client.getQualifiedName(updatedGetResult.Name), "Expected FDQN to be equal to qualified name")
 
 	log.Print("Successfully Updated Image List")
 }

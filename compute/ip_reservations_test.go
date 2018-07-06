@@ -9,6 +9,7 @@ import (
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
 	"github.com/kylelemons/godebug/pretty"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -73,9 +74,8 @@ func TestAccIPReservationLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if diff := pretty.Compare(updatedRes, receivedRes); diff != "" {
-		t.Errorf("Created Reservation Diff: (-got +want)\n%s", diff)
-	}
+	assert.Equal(t, updatedRes, receivedRes, "Diff between updated and received result.")
+	assert.Equal(t, updatedRes.FQDN, iprClient.getQualifiedName(resName), "Expected FDQN to be equal to qualified name")
 
 }
 

@@ -77,8 +77,8 @@ func TestAccStorageAttachmentsLifecycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	assert.Equal(t, createResult.Index, getResult.Index,
-		"Retrieved Storage Volume Attachment did not match Expected.")
+	assert.Equal(t, createResult.Index, getResult.Index, "Retrieved Storage Volume Attachment did not match Expected.")
+	assert.Equal(t, getResult.FQDN, createResult.FQDN, "Expected FDQN to be equal to qualified name")
 
 	log.Printf("Attachment created: %#v\n", getResult)
 }
