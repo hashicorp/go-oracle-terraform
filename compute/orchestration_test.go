@@ -354,6 +354,23 @@ func TestAccOrchestrationLifeCycle_relationship(t *testing.T) {
 		"Relationship between instances not setup properly")
 }
 
+func TestAccOrchestration_BadWaitForState(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
+
+	orcClient, err := getOrchestrationsTestClients()
+	if err != nil {
+		t.Fatal(err)
+	}
+	getInput := &GetOrchestrationInput{
+		Name: _OrchestrationTestName,
+	}
+
+	_, err = orcClient.WaitForOrchestrationState(getInput, waitForOrchestrationActivePollInterval, waitForOrchestrationActiveTimeout)
+	if err == nil {
+		t.Fatal("Expected error after waiting for bad state")
+	}
+}
+
 func getOrchestrationsTestClients() (*OrchestrationsClient, error) {
 	client, err := getTestClient(&opc.Config{})
 	if err != nil {
