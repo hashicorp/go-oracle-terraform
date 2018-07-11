@@ -298,7 +298,7 @@ func (c *OrchestrationsClient) CreateOrchestration(input *CreateOrchestrationInp
 		return nil, fmt.Errorf("Error creating orchestration %s: %s", getInput.Name, orchestrationError)
 	}
 
-	return &orchestrationInfo, nil
+	return orchestrationInfo, nil
 }
 
 // GetOrchestrationInput describes the Orchestration to get
@@ -385,7 +385,7 @@ func (c *OrchestrationsClient) UpdateOrchestration(input *UpdateOrchestrationInp
 		return nil, orchestrationError
 	}
 
-	return &orchestrationInfo, nil
+	return orchestrationInfo, nil
 }
 
 // DeleteOrchestrationInput describes the Orchestration to delete
@@ -429,7 +429,7 @@ func (c *OrchestrationsClient) success(info *Orchestration) (*Orchestration, err
 }
 
 // WaitForOrchestrationState waits for an orchestration to be in the specified state
-func (c *OrchestrationsClient) WaitForOrchestrationState(input *GetOrchestrationInput, pollInterval, timeout time.Duration) (Orchestration, error) {
+func (c *OrchestrationsClient) WaitForOrchestrationState(input *GetOrchestrationInput, pollInterval, timeout time.Duration) (*Orchestration, error) {
 	var info *Orchestration
 	var getErr error
 	err := c.client.WaitFor("orchestration to be ready", pollInterval, timeout, func() (bool, error) {
@@ -472,7 +472,7 @@ func (c *OrchestrationsClient) WaitForOrchestrationState(input *GetOrchestration
 			return false, fmt.Errorf("Unknown orchestration state: %s, erroring", s)
 		}
 	})
-	return *info, err
+	return info, err
 }
 
 // WaitForOrchestrationDeleted waits for an orchestration to be fully deleted.

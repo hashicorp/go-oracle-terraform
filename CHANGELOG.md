@@ -1,3 +1,11 @@
+## 0.11.1 (Unreleased)
+
+## 0.11.0 (July 8, 2018)
+
+* application: Application Container now takes manifest and deployment attributes in addition to files [GH-154]
+
+* compute: Fixed orchestration crash while waiting for state [GH-155]
+
 ## 0.10.0 (July 6, 2018)
 
 * compute: Added the fully qualified domain name to all resources [GH-153]
