@@ -155,31 +155,31 @@ type CreateApplicationContainerInput struct {
 type CreateApplicationContainerAdditionalFields struct {
 	// Location of the application archive file in Oracle Storage Cloud Service, in the format app-name/file-name
 	// Optional
-	ArchiveURL string
+	ArchiveURL string `json:"archiveURL"`
 	// Uses Oracle Identity Cloud Service to control who can access your Java SE 7 or 8, Node.js, or PHP application.
 	// This should be ApplicationContainerAuthType but because of how we need to translate this strut to a map[string]string we are keeping it as a string
 	// Allowed values are 'basic' and 'oauth'.
 	// Optional
-	AuthType string // ApplicationContainerAuthType
+	AuthType string `json:"authType"`
 	// Name of the application
 	// Required
-	Name string
+	Name string `json:"name"`
 	// Comments on the application deployment
-	Notes string
+	Notes string `json:"notes"`
 	// Email address to which application deployment status updates are sent.
-	NotificationEmail string
+	NotificationEmail string `json:"notifcationEmail"`
 	// Repository of the application. The only allowed value is 'dockerhub'.
 	// This should be ApplicationRepository but because of how we need to translate this strut to a map[string]string we are keeping it as a string
 	// Optional
-	Repository string // ApplicationRepository
+	Repository string `json:"repository"`
 	// Runtime environment: java (the default), node, php, python, or ruby
 	// This should be ApplicationRuntime but because of how we need to translate this strut to a map[string]string we are keeping it as a string
 	// Required
-	Runtime string // ApplicationRuntime
+	Runtime string `json:"runtime"`
 	// Subscription, either hourly (the default) or monthly
 	// This should be ApplicationSubscriptionType but because of how we need to translate this strut to a map[string]string we are keeping it as a string
 	// Optional
-	SubscriptionType string //ApplicationSubscriptionType
+	SubscriptionType string `json:"subscription"`
 }
 
 // CreateApplicationContainer creates a new Application Container from an ApplicationClient and an input struct.
@@ -193,7 +193,13 @@ func (c *ContainerClient) CreateApplicationContainer(input *CreateApplicationCon
 	if input.Manifest != "" {
 		files["manifest"] = input.Manifest
 	}
-	additionalFields := structs.Map(input.AdditionalFields)
+
+	additionalFields := make(map[string]interface{})
+	additionalFieldsStruct := structs.New(input.AdditionalFields)
+	additionalFieldsValues := additionalFieldsStruct.Values()
+	for i, value := range additionalFieldsValues {
+		additionalFields[additionalFieldsStruct.Fields()[i].Tag("json")] = value
+	}
 
 	var applicationContainer *Container
 	if err := c.createResource(files, additionalFields, applicationContainer); err != nil {
