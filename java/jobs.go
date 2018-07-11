@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-// API URI Paths for Container and Root objects
+// API URI Paths for the Root Job path
 const (
 	JobRootPath = "/paas/api/v1.1/activitylog/%s/job/%s"
 )
@@ -13,7 +13,7 @@ const (
 // Default Poll Interval value
 const waitForJobPollInterval = 1 * time.Second
 
-// JobClient is a client for the Service functions of the Java API.
+// JobClient is a client for the Service functions of the Job API.
 type JobClient struct {
 	ResourceClient
 	PollInterval time.Duration
@@ -63,7 +63,7 @@ type Job struct {
 
 // GetJobInput specifies which job to retrieve
 type GetJobInput struct {
-	// Name of the Java Cloud Service instance.
+	// ID of the job.
 	// Required.
 	ID string
 }
