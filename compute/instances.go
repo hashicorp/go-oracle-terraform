@@ -743,13 +743,8 @@ func (c *InstancesClient) qualifyNetworking(info map[string]NetworkingInfo) map[
 		}
 		if v.SecLists != nil {
 			// Network interface is for the shared network
-			secLists := []string{}
-			for _, v := range v.SecLists {
-				secLists = append(secLists, c.getQualifiedName(v))
-			}
-			qfd.SecLists = secLists
+			qfd.SecLists = c.getQualifiedList(v.SecLists)
 		}
-
 		qualifiedNetworks[k] = qfd
 	}
 	return qualifiedNetworks
@@ -777,11 +772,7 @@ func (c *InstancesClient) unqualifyNetworking(info map[string]NetworkingInfo) (m
 			unq.VnicSets = c.getUnqualifiedList(v.VnicSets)
 		}
 		if v.SecLists != nil {
-			secLists := []string{}
-			for _, v := range v.SecLists {
-				secLists = append(secLists, c.getUnqualifiedName(v))
-			}
-			v.SecLists = secLists
+			unq.SecLists = c.getUnqualifiedList(v.SecLists)
 		}
 		unqualifiedNetworks[k] = unq
 	}
