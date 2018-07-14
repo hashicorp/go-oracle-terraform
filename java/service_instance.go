@@ -947,7 +947,7 @@ type CreateServiceInstanceInput struct {
 	// The default value is true when you configure more than one Managed Server for the Oracle
 	// Java Cloud Service instance. Otherwise, the default value is false
 	// Optional.
-	ProvisionOTD bool `json:"provisionOTD,omitempty"`
+	ProvisionOTD bool `json:"provisionOTD"`
 	// This attribute is not available in Oracle Cloud Infrastructure.
 	// This attribute is applicable only to accounts that include Oracle Identity Cloud Service.
 	// Flag that specifies whether to use Oracle Identity Cloud Service (true) or the local WebLogic identity store
