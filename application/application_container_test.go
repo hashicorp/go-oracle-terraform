@@ -32,8 +32,9 @@ func TestAccApplicationContainerLifeCycle_Basic(t *testing.T) {
 	}
 
 	createApplicationContainerAdditionalFields := CreateApplicationContainerAdditionalFields{
-		Name:    _ApplicationContainerTestName,
-		Runtime: _ApplicationContainerRuntimeJava,
+		Name:       _ApplicationContainerTestName,
+		Runtime:    _ApplicationContainerRuntimeJava,
+		ArchiveURL: "test123",
 	}
 
 	createApplicationContainerInput := &CreateApplicationContainerInput{

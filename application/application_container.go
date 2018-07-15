@@ -209,6 +209,13 @@ type CreateApplicationContainerAdditionalFields struct {
 	// Allowed values are 'basic' and 'oauth'.
 	// Optional
 	AuthType string `json:"authType"`
+	// The password of your GitHub repository, required if your repository is private.
+	// Optional
+	GitPassword string `json:"gitPassword"`
+	// URL of your GitHub repository.
+	GitRepoURL string `json:"gitRepoURL"`
+	// The user name of your GitHub repository, required if your repository is private.
+	GitUsername string `json:"gitUserName"`
 	// Name of the application
 	// Required
 	Name string `json:"name"`
@@ -228,6 +235,8 @@ type CreateApplicationContainerAdditionalFields struct {
 	// This should be ApplicationSubscriptionType but because of how we need to translate this strut to a map[string]string we are keeping it as a string
 	// Optional
 	SubscriptionType string `json:"subscription"`
+	// List of tags that can be associated with the application.
+	Tags []string `json:"tags"`
 }
 
 // ManifestAttributes details the available attributes in a manifest file
