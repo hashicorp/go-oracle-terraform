@@ -175,7 +175,6 @@ func (c *Client) BuildMultipartFormRequest(method, path string, files map[string
 		}
 	}
 
-	return nil, fmt.Errorf("%+v", parameters)
 	err = writer.Close()
 	if err != nil {
 		return nil, err

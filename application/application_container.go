@@ -236,7 +236,7 @@ type CreateApplicationContainerAdditionalFields struct {
 	// Optional
 	SubscriptionType string `json:"subscription"`
 	// List of tags that can be associated with the application.
-	Tags []string `json:"tags"`
+	Tags []Tag `json:"tags"`
 }
 
 // ManifestAttributes details the available attributes in a manifest file
@@ -355,6 +355,12 @@ type Service struct {
 	Password string `json:"password"`
 }
 
+// Tag defines the attributes related to a tag
+type Tag struct {
+	Key   string `json:"key"`
+	Value string `json:"value"`
+}
+
 // CreateApplicationContainer creates a new Application Container from an ApplicationClient and an input struct.
 // Returns a populated ApplicationContainer struct for the Application, and any errors
 func (c *ContainerClient) CreateApplicationContainer(input *CreateApplicationContainerInput) (*Container, error) {
@@ -387,8 +393,18 @@ func (c *ContainerClient) CreateApplicationContainer(input *CreateApplicationCon
 	additionalFields := make(map[string]interface{})
 	additionalFieldsStruct := structs.New(input.AdditionalFields)
 	additionalFieldsValues := additionalFieldsStruct.Values()
-	for i, value := range additionalFieldsValues {
-		additionalFields[additionalFieldsStruct.Fields()[i].Tag("json")] = value
+	for i, v := range additionalFieldsValues {
+		key := additionalFieldsStruct.Fields()[i]
+		if key.Name() == "Tags" {
+			modifiedTags := make([]string, 0)
+			tags := v.([]Tag)
+			for _, tag := range tags {
+				modifiedTags = append(modifiedTags, fmt.Sprintf("{'key': %q, 'value': %q}", tag.Key, tag.Value))
+			}
+			additionalFields[key.Tag("json")] = fmt.Sprintf("[%s]", strings.Join(modifiedTags, ","))
+		} else {
+			additionalFields[key.Tag("json")] = v
+		}
 	}
 
 	if input.ManifestAttributes != nil {
@@ -521,7 +537,22 @@ func (c *ContainerClient) UpdateApplicationContainer(input *UpdateApplicationCon
 		return nil, fmt.Errorf("Cannot specify both a deployment file and deployment attributes")
 	}
 
-	additionalFields := structs.Map(input.AdditionalFields)
+	additionalFields := make(map[string]interface{})
+	additionalFieldsStruct := structs.New(input.AdditionalFields)
+	additionalFieldsValues := additionalFieldsStruct.Values()
+	for i, v := range additionalFieldsValues {
+		key := additionalFieldsStruct.Fields()[i]
+		if key.Name() == "Tags" {
+			modifiedTags := make([]string, 0)
+			tags := v.([]Tag)
+			for _, tag := range tags {
+				modifiedTags = append(modifiedTags, fmt.Sprintf("{'key': %q, 'value': %q}", tag.Key, tag.Value))
+			}
+			additionalFields[key.Tag("json")] = fmt.Sprintf("[%s]", strings.Join(modifiedTags, ","))
+		} else {
+			additionalFields[key.Tag("json")] = v
+		}
+	}
 
 	files := make(map[string][]byte)
 	if input.Deployment != "" {
