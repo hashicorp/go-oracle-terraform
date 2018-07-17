@@ -1,4 +1,4 @@
-## 0.12.0 (Unreleased)
+## 0.12.0 (July 17, 2018)
 
 * java: Added the ability to check the status of a job [GH-156]
 
