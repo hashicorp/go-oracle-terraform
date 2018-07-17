@@ -8,6 +8,8 @@
 
 * java: Prevented `provisionOTD` from being set by default [GH-160]
 
+* application: Add additional fields to application container [GH-158]
+
 ## 0.11.0 (July 8, 2018)
 
 * application: Application Container now takes manifest and deployment attributes in addition to files [GH-154]
