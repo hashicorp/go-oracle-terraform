@@ -1,4 +1,12 @@
-## 0.11.1 (Unreleased)
+## 0.12.0 (July 17, 2018)
+
+* java: Added the ability to check the status of a job [GH-156]
+
+* opc: Fixed unqualification of security lists [GH-157]
+
+* storage: Fixed storage headers [GH-158]
+
+* java: Prevented `provisionOTD` from being set by default [GH-160]
 
 ## 0.11.0 (July 8, 2018)
 
