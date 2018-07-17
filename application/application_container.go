@@ -541,17 +541,7 @@ func (c *ContainerClient) UpdateApplicationContainer(input *UpdateApplicationCon
 	additionalFieldsStruct := structs.New(input.AdditionalFields)
 	additionalFieldsValues := additionalFieldsStruct.Values()
 	for i, v := range additionalFieldsValues {
-		key := additionalFieldsStruct.Fields()[i]
-		if key.Name() == "Tags" {
-			modifiedTags := make([]string, 0)
-			tags := v.([]Tag)
-			for _, tag := range tags {
-				modifiedTags = append(modifiedTags, fmt.Sprintf("{'key': %q, 'value': %q}", tag.Key, tag.Value))
-			}
-			additionalFields[key.Tag("json")] = fmt.Sprintf("[%s]", strings.Join(modifiedTags, ","))
-		} else {
-			additionalFields[key.Tag("json")] = v
-		}
+		additionalFields[additionalFieldsStruct.Fields()[i].Tag("json")] = v
 	}
 
 	files := make(map[string][]byte)
