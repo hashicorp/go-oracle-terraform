@@ -1,3 +1,9 @@
+## 0.12.2 (Unreleased)
+
+## 0.12.1 (July 18, 2018)
+
+* application: Fixed name for gitRepoUrl [GH-161]
+
 ## 0.12.0 (July 17, 2018)
 
 * java: Added the ability to check the status of a job [GH-156]
