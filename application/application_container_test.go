@@ -118,8 +118,8 @@ func TestAccApplicationContainerLifeCycle_BadInput(t *testing.T) {
 		Command: _ApplicationContainerManifestCommand,
 		Notes:   _ApplicationContainerManifestNotes,
 		Mode:    _ApplicationContainerManifestMode,
-		Runtime: Runtime{MajorVersion: _ApplicationContainerManifestMajorVersion},
-		Release: Release{
+		Runtime: &Runtime{MajorVersion: _ApplicationContainerManifestMajorVersion},
+		Release: &Release{
 			Build:   _ApplicationContainerManifestBuild,
 			Commit:  _ApplicationContainerManifestCommit,
 			Version: _ApplicationContainerManifestVersion},
@@ -176,8 +176,8 @@ func TestAccApplicationContainerLifeCycle_ManifestAttr(t *testing.T) {
 		Command: _ApplicationContainerManifestCommand,
 		Notes:   _ApplicationContainerManifestNotes,
 		Mode:    _ApplicationContainerManifestMode,
-		Runtime: Runtime{MajorVersion: _ApplicationContainerManifestMajorVersion},
-		Release: Release{
+		Runtime: &Runtime{MajorVersion: _ApplicationContainerManifestMajorVersion},
+		Release: &Release{
 			Build:   _ApplicationContainerManifestBuild,
 			Commit:  _ApplicationContainerManifestCommit,
 			Version: _ApplicationContainerManifestVersion},
