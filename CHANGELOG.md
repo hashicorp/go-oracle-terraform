@@ -1,4 +1,6 @@
-## 0.12.2 (Unreleased)
+## 0.12.2 (July 18,2018)
+
+* application: Use addresses for nested structures [GH-162]
 
 ## 0.12.1 (July 18, 2018)
 
