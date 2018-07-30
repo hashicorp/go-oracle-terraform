@@ -64,8 +64,8 @@ func TestAccOrchestrationLifeCycle(t *testing.T) {
 	}
 	log.Printf("orchestration Retrieved: %+v", orchestration)
 	assert.NotEmpty(t, orchestration.Name, "Expected orchestration name not to be empty")
-	assert.Equal(t, createdOrchestration.Name, orchestration.Name,
-		"Expected orchestration names to match.")
+	assert.Equal(t, createdOrchestration.Name, orchestration.Name, "Expected orchestration names to match.")
+	assert.Equal(t, orchestration.FQDN, orcClient.getQualifiedName(_OrchestrationTestName), "Expected FDQN to be equal to qualified name")
 }
 
 func TestAccOrchestrationLifeCycle_active(t *testing.T) {
@@ -352,6 +352,23 @@ func TestAccOrchestrationLifeCycle_relationship(t *testing.T) {
 		"Expected orchestration names to match.")
 	assert.NotNil(t, orchestration.Objects[1].Relationships,
 		"Relationship between instances not setup properly")
+}
+
+func TestAccOrchestration_BadWaitForState(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
+
+	orcClient, err := getOrchestrationsTestClients()
+	if err != nil {
+		t.Fatal(err)
+	}
+	getInput := &GetOrchestrationInput{
+		Name: _OrchestrationTestName,
+	}
+
+	_, err = orcClient.WaitForOrchestrationState(getInput, waitForOrchestrationActivePollInterval, waitForOrchestrationActiveTimeout)
+	if err == nil {
+		t.Fatal("Expected error after waiting for bad state")
+	}
 }
 
 func getOrchestrationsTestClients() (*OrchestrationsClient, error) {

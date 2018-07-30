@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -70,9 +71,9 @@ func TestAccSecurityProtocolsLifeCycle(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if !reflect.DeepEqual(updatedSecurityProtocol, receivedSecurityProtocol) {
-		t.Fatalf("Mismatch found after create.\nExpected: %+v\nReceived: %+v", updatedSecurityProtocol, receivedSecurityProtocol)
-	}
+	assert.Equal(t, updatedSecurityProtocol, receivedSecurityProtocol, "Mismatch found after create.")
+	assert.Equal(t, updatedSecurityProtocol.FQDN, svc.getQualifiedName(_SecurityProtocolTestName), "Expected FDQN to be equal to qualified name.")
+
 }
 
 func destroySecurityProtocol(t *testing.T, svc *SecurityProtocolsClient, name string) {

@@ -3,16 +3,18 @@
 	"ignore": "test",
 	"package": [
 		{
+			"checksumSHA1": "dvabztWVQX8f6oMLRyv4dLH+TGY=",
+			"path": "github.com/davecgh/go-spew/spew",
+			"revision": "346938d642f2ec3594ed81d874461961cd0faa76",
+			"revisionTime": "2016-10-29T20:57:26Z",
+			"version": "=v1.1.0",
+			"versionExact": "v1.1.0"
+		},
+		{
 			"checksumSHA1": "5BP5xofo0GoFi6FtgqFFbmHyUKI=",
 			"path": "github.com/fatih/structs",
 			"revision": "ebf56d35bba727c68ac77f56f2fcf90b181851aa",
 			"revisionTime": "2018-01-23T06:50:59Z"
-		},
-		{
-			"checksumSHA1": "5rPfda8jFccr3A6heL+JAmi9K9g=",
-			"path": "github.com/davecgh/go-spew/spew",
-			"revision": "5215b55f46b2b919f50a1df0eaa5886afe4e3b3d",
-			"revisionTime": "2015-11-05T21:09:06Z"
 		},
 		{
 			"checksumSHA1": "0xjvz/KGzXhAFsnDRvzofE0xNzI=",
@@ -39,10 +41,16 @@
 			"revisionTime": "2016-01-10T10:55:54Z"
 		},
 		{
-			"checksumSHA1": "Wx2FYL6OLgZ/9PF1nb+hhNoXcTo=",
+			"checksumSHA1": "c6pbpF7eowwO59phRTpF8cQ80Z0=",
+			"path": "github.com/stretchr/testify/assert",
+			"revision": "f35b8ab0b5a2cef36673838d662e249dd9c94686",
+			"revisionTime": "2018-05-06T18:05:49Z"
+		},
+		{
+			"checksumSHA1": "yYZfE7VoMMLrnFqBY2rklFUY4Bg=",
 			"path": "gopkg.in/jarcoal/httpmock.v1",
-			"revision": "cf52904a3cf0f78f199ecade6a6df8e245d5b25a",
-			"revisionTime": "2017-04-12T08:57:02Z"
+			"revision": "16f9a43967d613f0adc2000f0094a17b9f6c4c20",
+			"revisionTime": "2018-06-15T19:10:36Z"
 		}
 	],
 	"rootPath": "github.com/hashicorp/go-oracle-terraform"

@@ -2,11 +2,11 @@ package compute
 
 import (
 	"log"
-	"reflect"
 	"testing"
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
+	"github.com/stretchr/testify/assert"
 )
 
 const (
@@ -44,9 +44,9 @@ func TestAccIPNetworkExchangesLifeCycle(t *testing.T) {
 	}
 	log.Print("IP Network Exchange successfully fetched")
 
-	if !reflect.DeepEqual(createdNetworkExchange, receivedNetworkExchange) {
-		t.Fatalf("Mismatch found after create.\nExpected: %+v\nReceived: %+v", createdNetworkExchange, receivedNetworkExchange)
-	}
+	assert.Equal(t, createdNetworkExchange, receivedNetworkExchange, "Mismatch found after create.")
+	assert.Equal(t, createdNetworkExchange.FQDN, svc.getQualifiedName(createInput.Name), "Expected FDQN to be equal to qualified name")
+
 }
 
 func destroyIPNetworkExchange(t *testing.T, svc *IPNetworkExchangesClient, name string) {

@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
+	"github.com/stretchr/testify/assert"
 )
 
 var createdSecurityAssociation *SecurityAssociationInfo
@@ -72,9 +73,9 @@ func TestAccSecurityAssociationLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if createdSecurityAssociation.VCable != getSecurityAssociationOutput.VCable {
-		t.Fatalf("Created and retrived vcables don't match.\n Desired: %s\n Actual: %s", createdSecurityAssociation.VCable, getSecurityAssociationOutput.VCable)
-	}
+	assert.Equal(t, createdSecurityAssociation.VCable, getSecurityAssociationOutput.VCable, "Created and retrived vcables don't match.")
+	assert.Equal(t, getSecurityAssociationOutput.FQDN, saClient.getQualifiedName(createdSecurityAssociation.Name), "Expected FDQN to be equal to qualified name")
+
 	log.Printf("Successfully retrieved Security Association")
 }
 

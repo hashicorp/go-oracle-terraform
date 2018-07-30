@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/go-oracle-terraform/helper"
 	"github.com/hashicorp/go-oracle-terraform/opc"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestAccIPAssociationLifeCycle(t *testing.T) {
@@ -65,9 +66,10 @@ func TestAccIPAssociationLifeCycle(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if createdIPAssociation.URI != ipAssociationInfo.URI {
-		t.Fatal("IP Association URIs don't match")
-	}
+
+	assert.Equal(t, createdIPAssociation.URI, ipAssociationInfo.URI, "IP Association URIs don't match")
+	assert.Equal(t, createdIPAssociation.FQDN, ipaClient.getQualifiedName(createdIPAssociation.Name), "Expected FDQN to be equal to qualified name")
+
 	log.Print("Successfully retrived ip association")
 
 	deleteIPInput := &DeleteIPAssociationInput{

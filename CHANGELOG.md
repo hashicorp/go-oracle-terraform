@@ -1,3 +1,61 @@
+## 0.12.3 (Unreleased)
+
+## 0.12.2 (July 18,2018)
+
+* application: Use addresses for nested structures [GH-162]
+
+## 0.12.1 (July 18, 2018)
+
+* application: Fixed name for gitRepoUrl [GH-161]
+
+## 0.12.0 (July 17, 2018)
+
+* java: Added the ability to check the status of a job [GH-156]
+
+* opc: Fixed unqualification of security lists [GH-157]
+
+* storage: Fixed storage headers [GH-158]
+
+* java: Prevented `provisionOTD` from being set by default [GH-160]
+
+* application: Add additional fields to application container [GH-158]
+
+## 0.11.0 (July 8, 2018)
+
+* application: Application Container now takes manifest and deployment attributes in addition to files [GH-154]
+
+* compute: Fixed orchestration crash while waiting for state [GH-155]
+
+## 0.10.0 (July 6, 2018)
+
+* compute: Added the fully qualified domain name to all resources [GH-153]
+
+* lbaas: Added the Load Balancer Classic resources to the sdk [GH-151]
+
+## 0.9.8 (June 20, 2018
+
+* mysql: Add additional logging [GH-152]
+
+## 0.9.7 (June 19, 2018)
+
+* mysql: Add omitempty to Notification Email [GH-150]
+
+## 0.9.6 (June 19, 2018)
+
+* mysql: Adding Notification Email to list of attributes specified when creating a service instance [GH-149]
+
+## 0.9.5 (June 12, 2018)
+
+* java: Access Rules wait for Instance State [GH-148]
+
+## 0.9.4 (June 12, 2018)
+
+* java: Assign public ip to service instance [GH-145]
+
+* java: Set service instance desired state [GH-146]
+
+* java: Check for desired state when deleting access rules [GH-147]
+
 ## 0.9.3 (May 23, 2018)
 
 * java: Scale up/down shape for java service instance [GH-142]

@@ -216,6 +216,8 @@ func TestAccSnapshotLifeCycleDelay(t *testing.T) {
 
 	log.Printf("Snapshot Retrieved: %+v", snapshot)
 	assert.Equal(t, createdSnapshot.Name, snapshot.Name, "Snapshot Name mismatch!")
+	assert.Equal(t, snapshot.FQDN, sClient.getQualifiedName(snapshot.Name), "Expected FDQN to be equal to qualified name")
+
 }
 
 func TestAccSnapshotLifeCycleAccount(t *testing.T) {
