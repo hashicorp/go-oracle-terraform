@@ -16,35 +16,58 @@ type IPReservationResourceClient struct {
 	ResourceRootPath string
 }
 
-func (c *IPReservationResourceClient) createResource(requestBody interface{}, responseBody interface{}) error {
-	_, err := c.executeRequest("POST", c.getContainerPath(c.ContainerPath), requestBody)
+func (c *IPReservationResourceClient) createResource(requestBody interface{}) (*CreateIPReservationInfo, error) {
+	resp, err := c.executeRequest("POST", c.getContainerPath(c.ContainerPath), requestBody)
+	if err != nil {
+		return nil, err
+	}
 
-	return err
+	var info CreateIPReservationInfo
+	if err := c.unmarshalResponseBody(resp, &info); err != nil {
+		return nil, err
+	}
+
+	return &info, nil
 }
 
-func (c *IPReservationResourceClient) getResource(name string, responseBody interface{}) error {
-	var objectPath string
-	if name != "" {
-		objectPath = c.getObjectPath(c.ResourceRootPath, name)
-	} else {
-		objectPath = c.getContainerPath(c.ContainerPath)
-	}
+func (c *IPReservationResourceClient) getResource(name string) (*IPReservationInfo, error) {
+	objectPath := c.getContainerPath(c.ContainerPath)
 
 	resp, err := c.executeRequest("GET", objectPath, nil)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
-	return c.unmarshalResponseBody(resp, responseBody)
+	var ipReservations IPReservations
+	if err := c.unmarshalResponseBody(resp, &ipReservations); err != nil {
+		return nil, err
+	}
+
+	// API returns all IP Reservations, iterate to find the one we want
+	for _, ipRes := range ipReservations.IPReservations {
+		if ipRes.Name == name {
+			var ipReservation *IPReservationInfo
+			ipReservation = &ipRes
+			return ipReservation, nil
+		}
+	}
+	return nil, fmt.Errorf("IP Reservation not found")
 }
 
-func (c *IPReservationResourceClient) deleteResource(name string) error {
+func (c *IPReservationResourceClient) deleteResource(name string) (*DeleteIPReservationInfo, error) {
 	objectPath := c.getObjectPath(c.ResourceRootPath, name)
 
-	if _, err := c.executeRequest("DELETE", objectPath, nil); err != nil {
-		return err
+	resp, err := c.executeRequest("DELETE", objectPath, nil)
+	if err != nil {
+		return nil, err
 	}
-	return nil
+
+	var info DeleteIPReservationInfo
+	if err := c.unmarshalResponseBody(resp, &info); err != nil {
+		return nil, err
+	}
+
+	return &info, nil
 }
 
 func (c *IPReservationResourceClient) unmarshalResponseBody(resp *http.Response, iface interface{}) error {
@@ -78,11 +101,9 @@ func (c *IPReservationResourceClient) unmarshalResponseBody(resp *http.Response,
 }
 
 func (c *IPReservationResourceClient) getContainerPath(root string) string {
-	// /paas/api/v1.1/network/{identityDomainId}/services/dbaas/ipreservations
 	return fmt.Sprintf(root, *c.client.IdentityDomain)
 }
 
 func (c *IPReservationResourceClient) getObjectPath(root, name string) string {
-	// /paas/api/v1.1/network/{identityDomainId}/services/dbaas/ipreservations/{ipResName}
 	return fmt.Sprintf(root, *c.client.IdentityDomain, name)
 }
