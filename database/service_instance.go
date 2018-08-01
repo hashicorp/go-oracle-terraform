@@ -600,8 +600,8 @@ type ParameterInput struct {
 	// Storage size for data (in GB). Minimum value is 15. Maximum value depends on the backup
 	// destination: if BOTH is specified, the maximum value is 1200; if OSS or NONE is specified,
 	// the maximum value is 2048.
-	// Required.
-	UsableStorage string `json:"usableStorage"`
+	// Optional.
+	UsableStorage string `json:"usableStorage,omitempty"`
 	// Specify if the given cloudStorageContainer is to be created if it does not already exist.
 	// Default value is false.
 	// Optional.
