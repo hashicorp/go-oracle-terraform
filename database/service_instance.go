@@ -296,6 +296,8 @@ type ServiceInstance struct {
 	NumIPReservations int `json:"num_ip_reservations"`
 	// The number of compute nodes in the service instance.
 	NumNodes string `json:"num_nodes"`
+	// Name for the Oracle Home directory location (Exadata Cloud Service only)
+	OracleHomeName string `json:"oracleHomeName"`
 	// The name of the default PDB (pluggable database) created when the service instance was created.
 	PDBName string `json:"pdbName"`
 	// This attribute is only applicable to accounts where regions are supported.
@@ -554,6 +556,12 @@ type ParameterInput struct {
 	// Default value is AL16UTF16.
 	// Optional.
 	NCharSet ServiceInstanceNCharSet `json:"ncharset,omitempty"`
+	// Name for the Oracle Home directory location that you want to use for the database deployment.
+	// If you specify the name for an existing Oracle Home directory location, then the database
+	// deployment shares the existing Oracle Database binaries at that location. Otherwise a new
+	// Oracle Home is created.
+	// Optional. Exadata Cloud Service only
+	OracleHomeName string `json:"oracleHomeName,omitempty"`
 	// Note: This attribute is valid when Database Cloud Service instance is configured with version 12c.
 	// Pluggable Database Name for the Database Cloud Service instance.
 	// Default value is pdb1.
