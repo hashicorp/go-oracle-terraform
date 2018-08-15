@@ -34,6 +34,10 @@ func TestAccApplicationContainerLifeCycle_Basic(t *testing.T) {
 	createApplicationContainerAdditionalFields := CreateApplicationContainerAdditionalFields{
 		Name:    _ApplicationContainerTestName,
 		Runtime: _ApplicationContainerRuntimeJava,
+		Tags: []Tag{
+			Tag{Key: "key", Value: "value"},
+			Tag{Key: "key2", Value: "key2"},
+		},
 	}
 
 	createApplicationContainerInput := &CreateApplicationContainerInput{
@@ -114,8 +118,8 @@ func TestAccApplicationContainerLifeCycle_BadInput(t *testing.T) {
 		Command: _ApplicationContainerManifestCommand,
 		Notes:   _ApplicationContainerManifestNotes,
 		Mode:    _ApplicationContainerManifestMode,
-		Runtime: Runtime{MajorVersion: _ApplicationContainerManifestMajorVersion},
-		Release: Release{
+		Runtime: &Runtime{MajorVersion: _ApplicationContainerManifestMajorVersion},
+		Release: &Release{
 			Build:   _ApplicationContainerManifestBuild,
 			Commit:  _ApplicationContainerManifestCommit,
 			Version: _ApplicationContainerManifestVersion},
@@ -172,8 +176,8 @@ func TestAccApplicationContainerLifeCycle_ManifestAttr(t *testing.T) {
 		Command: _ApplicationContainerManifestCommand,
 		Notes:   _ApplicationContainerManifestNotes,
 		Mode:    _ApplicationContainerManifestMode,
-		Runtime: Runtime{MajorVersion: _ApplicationContainerManifestMajorVersion},
-		Release: Release{
+		Runtime: &Runtime{MajorVersion: _ApplicationContainerManifestMajorVersion},
+		Release: &Release{
 			Build:   _ApplicationContainerManifestBuild,
 			Commit:  _ApplicationContainerManifestCommit,
 			Version: _ApplicationContainerManifestVersion},

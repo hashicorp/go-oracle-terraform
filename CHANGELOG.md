@@ -1,4 +1,24 @@
-## 0.11.1 (Unreleased)
+## 0.12.3 (Unreleased)
+
+## 0.12.2 (July 18,2018)
+
+* application: Use addresses for nested structures [GH-162]
+
+## 0.12.1 (July 18, 2018)
+
+* application: Fixed name for gitRepoUrl [GH-161]
+
+## 0.12.0 (July 17, 2018)
+
+* java: Added the ability to check the status of a job [GH-156]
+
+* opc: Fixed unqualification of security lists [GH-157]
+
+* storage: Fixed storage headers [GH-158]
+
+* java: Prevented `provisionOTD` from being set by default [GH-160]
+
+* application: Add additional fields to application container [GH-158]
 
 ## 0.11.0 (July 8, 2018)
 
