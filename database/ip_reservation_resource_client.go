@@ -32,8 +32,9 @@ func (c *IPReservationResourceClient) createResource(requestBody interface{}) (*
 
 func (c *IPReservationResourceClient) getResource(name string) (*IPReservationInfo, error) {
 	objectPath := c.getContainerPath(c.ContainerPath)
+	queryParams := "?networkType=ALL"
 
-	resp, err := c.executeRequest("GET", objectPath, nil)
+	resp, err := c.executeRequest("GET", objectPath+queryParams, nil)
 	if err != nil {
 		return nil, err
 	}
