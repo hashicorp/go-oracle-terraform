@@ -155,6 +155,14 @@ func (c *IPReservationClient) GetIPReservation(name string) (*IPReservationInfo,
 
 // DeleteIPReservation deletes an IP Reservation.
 func (c *IPReservationClient) DeleteIPReservation(name string) error {
+
+	if c.PollInterval == 0 {
+		c.PollInterval = waitForIPReservationReadyPollInterval
+	}
+	if c.Timeout == 0 {
+		c.Timeout = waitForIPReservationReadyTimeout
+	}
+
 	info, err := c.deleteResource(name)
 	if err != nil {
 		return err
