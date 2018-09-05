@@ -942,7 +942,7 @@ type CreateServiceInstanceInput struct {
 	// If this property is set to true, you must have a Universal Credits subscription in order to use your existing license.
 	// You are responsible for ensuring that you have the required licenses for BYOL instances in Oracle Java Cloud Service.
 	// Optional
-	IsBYOL bool `json:"isBYOL,omitempty"`
+	IsBYOL *bool `json:"isBYOL,omitempty"`
 	// Flag that specifies whether to enable the load balancer.
 	// The default value is true when you configure more than one Managed Server for the Oracle
 	// Java Cloud Service instance. Otherwise, the default value is false
