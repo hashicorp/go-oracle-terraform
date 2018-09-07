@@ -1,4 +1,6 @@
-## 0.12.3 (Unreleased)
+## 0.13.1 (Unreleased)
+
+## 0.13.0 (Sept 7, 2018)
 
 * database: Pass IsBYOL by reference [GH-169]
 
