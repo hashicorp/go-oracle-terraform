@@ -39,6 +39,12 @@ type ComputeNodeInfo struct {
 	InitialPrimary bool `json:"initialPrimary"`
 	// The listener port for Oracle Net Services (SQL*Net) connections.
 	ListenerPort int `json:"listenerPort"`
+	// The size in GB of the memory allocated to the compure node.
+	// Exadata only.
+	MemoryAllocated int `json:"memoryAllocated"`
+	// Number of CPU Cores.
+	// Exadata only.
+	NumberOfCores int `json:"numberOfCores"`
 	// The name of the default PDB (pluggable database) created when the service instance was created.
 	PDBName string `json:"pdbName"`
 	// The IP address of the compute node.
@@ -55,6 +61,8 @@ type ComputeNodeInfo struct {
 	StorageAllocated int `json:"storageAllocated"`
 	// Name of the subnet within the region where the compute node is provisioned.
 	Subnet string `json:"subnet"`
+	// Virtual Machine type
+	VMType string `json:"vmType"`
 }
 
 // ComputeNodesInfo - contains details of a Compute Nodes for a service instance
