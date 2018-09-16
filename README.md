@@ -87,6 +87,7 @@ To authenticate with the Oracle Compute Cloud the following credentials must be 
 - `OPC_STORAGE_ENDPOINT` - API Endpoint URL for the Object Storage Classic service (e.g. https://mydomain.storage.oraclecloud.com/\)
 - `OPC_LBAAS_ENDPOINT` - API Endpoint URL for the Load Balancer Classic service (e.g. https://lbcs-a123b3456c7896576655438.balancer.oraclecloud.com/\ )
 - `ORACLEPAAS_DATABASE_ENDPOINT` - API Endpoint URL for the Database Cloud service (e.g. https://dbaas.oraclecloud.com/\)
+- `ORACLEPAAS_MYSQL_ENDPOINT` - API Endpoint URL for the MySQL Cloud service (e.g. https://psm.us.oraclecloud.com/\)
 - `ORACLEPAAS_JAVA_ENDPOINT` - API Endpoint URL for the Java Cloud service (e.g. https://jaas.oraclecloud.com/\)
 - `ORACLEPAAS_APPLICATION_ENDPOINT` - API Endpoint URL for the Application Container Cloud service (e.g. https://apaas.us.oraclecloud.com/\)
 

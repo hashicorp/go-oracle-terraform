@@ -1,4 +1,18 @@
-## 0.12.3 (Unreleased)
+## 0.13.1 (Unreleased)
+
+## 0.13.0 (Sept 7, 2018)
+
+* database: Pass IsBYOL by reference [GH-169]
+
+* application: Add addtional variables to the container service. [GH-168]
+
+* storage: Update storage name [GH-167]
+
+* client: Updata retry logic [GH-164]
+
+* database/java: Change IPReservations to be a single string [GH-165]
+
+* mysql/java/database: Add IP Reservations [GH-163]
 
 ## 0.12.2 (July 18,2018)
 

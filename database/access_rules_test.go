@@ -122,6 +122,8 @@ func TestAccAccessRulesLifeCycle(t *testing.T) {
 }
 
 func TestGetDefaultAccessRule_Basic(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
+
 	sClient, aClient, err := getAccessRulesTestClients()
 	if err != nil {
 		t.Fatal(err)
@@ -168,6 +170,8 @@ func TestGetDefaultAccessRule_Basic(t *testing.T) {
 }
 
 func TestUpdateDefaultAccessRule_Basic(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
+
 	sClient, aClient, err := getAccessRulesTestClients()
 	if err != nil {
 		t.Fatal(err)
