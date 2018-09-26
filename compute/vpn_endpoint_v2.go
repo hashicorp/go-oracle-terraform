@@ -134,6 +134,9 @@ type CreateVPNEndpointV2Input struct {
 	CustomerVPNGateway string `json:"customer_vpn_gateway"`
 	// Description of the VPN Endpoint
 	Description string `json:"description,omitempty"`
+	// Enable/Disable the tunnel
+	// Optional
+	Enabled bool `json:"enabled,omitempty"`
 	// The Internet Key Exchange (IKE) ID. If you don't specify a value, the default value is
 	// the public IP address of the cloud gateway. You can specify either an alternative IP address,
 	// or any text string that you want to use as the IKE ID. If you specify a text string, you must
