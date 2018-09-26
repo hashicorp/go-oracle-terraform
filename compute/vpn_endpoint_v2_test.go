@@ -11,8 +11,8 @@ import (
 
 const (
 	_VPNEndpointV2TestName               = "test-acc-vpn-endpoint-v2"
-	_VPNEndpointV2TestCustomerVPNGateway = "172.16.254.1"
-	_VPNEndpointV2TestPSK                = "********"
+	_VPNEndpointV2TestCustomerVPNGateway = "127.0.0.1"
+	_VPNEndpointV2TestPSK                = "asdfasdf"
 )
 
 func TestAccVPNEndpointV2sLifeCycle(t *testing.T) {
@@ -34,7 +34,8 @@ func TestAccVPNEndpointV2sLifeCycle(t *testing.T) {
 		CustomerVPNGateway: _VPNEndpointV2TestCustomerVPNGateway,
 		IPNetwork:          ipNetwork.Name,
 		PSK:                _VPNEndpointV2TestPSK,
-		ReachableRoutes:    []string{"192.168.155.2/24"},
+		ReachableRoutes:    []string{"127.0.0.1/24"},
+		VNICSets:           []string{"default"},
 	}
 
 	// Create a vNIC Set
@@ -55,26 +56,31 @@ func TestAccVPNEndpointV2sLifeCycle(t *testing.T) {
 	}
 	log.Print("VPN Endpoint V2 successfully fetched")
 
-	if !reflect.DeepEqual(createdVPNEndpointV2, receivedVPNEndpointV2) {
+	if !reflect.DeepEqual(createdVPNEndpointV2.URI, receivedVPNEndpointV2.URI) {
 		t.Fatalf("Mismatch found after create.\nExpected: %+v\nReceived: %+v", createdVPNEndpointV2, receivedVPNEndpointV2)
 	}
-	/*
-		updateInput := &UpdateVPNEndpointV2Input{
-			Name: _VPNEndpointV2TestName,
-		}
-		updatedVPNEndpointV2, err := svc.UpdateVPNEndpointV2(updateInput)
-		if err != nil {
-			t.Fatal(err)
-		}
-		log.Print("VPN Endpoint V2 succcessfully updated")
-		receivedVPNEndpointV2, err = svc.GetVPNEndpointV2(getInput)
-		if err != nil {
-			t.Fatal(err)
-		}
 
-		if !reflect.DeepEqual(updatedVPNEndpointV2, receivedVPNEndpointV2) {
-			t.Fatalf("Mismatch found after create.\nExpected: %+v\nReceived: %+v", updatedVPNEndpointV2, receivedVPNEndpointV2)
-		} */
+	updateInput := &UpdateVPNEndpointV2Input{
+		Name:               _VPNEndpointV2TestName,
+		CustomerVPNGateway: _VPNEndpointV2TestCustomerVPNGateway,
+		IPNetwork:          ipNetwork.Name,
+		PSK:                _VPNEndpointV2TestPSK,
+		ReachableRoutes:    []string{"127.0.0.1/10"},
+		VNICSets:           []string{"default"},
+	}
+	updatedVPNEndpointV2, err := vpnClient.UpdateVPNEndpointV2(updateInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	log.Print("VPN Endpoint V2 succcessfully updated")
+	receivedVPNEndpointV2, err = vpnClient.GetVPNEndpointV2(getInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if !reflect.DeepEqual(updatedVPNEndpointV2.ReachableRoutes, receivedVPNEndpointV2.ReachableRoutes) {
+		t.Fatalf("Mismatch found after create.\nExpected: %+v\nReceived: %+v", updatedVPNEndpointV2, receivedVPNEndpointV2)
+	}
 }
 
 func destroyVPNEndpointV2(t *testing.T, vpnClient *VPNEndpointV2sClient, name string) {
