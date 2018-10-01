@@ -1,4 +1,10 @@
-## 0.13.1 (Unreleased)
+## 0.14.1 (Unreleased)
+
+## 0.14.0 (October 1, 2018)
+
+* compute: Added support for VPN Gateway V2 [GH-166]
+
+* database: Added support for exadata [GH-170]
 
 ## 0.13.0 (Sept 7, 2018)
 
