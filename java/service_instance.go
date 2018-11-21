@@ -782,11 +782,17 @@ type CreateServiceInstanceInput struct {
 	// Groups properties for the Oracle WebLogic Server component (WLS) and the optional Oracle Traffice Director (OTD) component.
 	// Optional
 	Components CreateComponents `json:"components,omitempty"`
+	// Flag that specifies whether to enable an Oracle-managed load balancer for the service instance. Default value is `false`.
+	// This attribute is only applicable when creating an Oracle Java Cloud Service instance on Oracle Cloud Infrastructure.
+	// Only `configureLoadBalancer` or `provisionOTD` (Oracle Traffic Director as a user-managed load balancer) can be true
+	// (in other words, if one is true, the other must be false).
+	// Optional.
+	ConfigureLoadBalancer bool `json:"configureLoadBalancer,omitempty"`
 	// Software edition for Oracle WebLogic Server. Valid values include:
 	// SE - Standard edition. See Oracle WebLogic Server Standard Edition. Do not use the Standard edition if you are enabling domain partitions using WebLogic Server 12.2.1, or using upperStackProductName to provision a service instance for an Oracle Fusion Middleware product. Scaling a cluster is also not supported on service instances that are based on the Standard edition.
 	// EE - Enterprise Edition. This is the default for both PAAS and BASIC service levels. See Oracle WebLogic Server Enterprise Edition.
 	// SUITE - Suite edition. See Oracle WebLogic Suite.
-	//Optional
+	// Optional.
 	Edition ServiceInstanceEdition `json:"edition,omitempty"`
 	// This attribute is applicable only to accounts where regions are supported.
 	// This attribute is not applicable when provisioning Oracle Java Cloud Service instances in Oracle Cloud Infrastructure.
@@ -803,12 +809,22 @@ type CreateServiceInstanceInput struct {
 	// you can first create reserved IP addresses, then provision the service instance to use those persistent IP addresses.
 	// Optional.
 	IPNetwork string `json:"ipNetwork,omitempty"`
-	// This attribute is not available on Oracle Cloud Infrastructure.
-	// This attribute is applicable only when provisioning an Oracle Java Cloud Service instance that uses
-	// Oracle Identity Cloud Service to configure user authentication and administer users, groups, and roles.
-	// Groups properties for the Oracle managed load balancer.
-	// Optional
+	// Groups properties for an Oracle-managed load balancer, which is maintained and patched by Oracle.
+	// On Oracle Cloud Infrastructure Classic and Oracle Cloud at Customer: This attribute is only applicable if provisioning a service instance with useIdentityService set to true.
+	// When Oracle Identity Cloud Service is enabled, the Oracle-managed load balancer runs on Oracle Cloud Infrastructure Load Balancing Classic. You can set the load balancing policy.
+	// On Oracle Cloud Infrastructure: This attribute is only applicable if provisioning a service instance with configureLoadBalancer set to true,
+	// where the Oracle-managed load balancer runs on Oracle Cloud Infrastructure Load Balancing. You can set the load balancing policy.
+	// If a specific subnet is specified for the service instance, you can also specify subnets for the Oracle-managed load balancer nodes (node 1 and node 2).
+	// Optional.
 	LoadBalancer *LoadBalancer `json:"loadbalancer,omitempty"`
+	// Type of Oracle-managed load balancer. Valid values are:
+	// PRIVATE - The Oracle-managed load balancer is not accessible over the Internet. Note that this type is not available on Oracle Cloud Infrastructure.
+	// PUBLIC - The Oracle-managed load balancer is accessible over the Internet. This is the default.
+	// This attribute is only applicable when creating an Oracle Java Cloud Service instance with an Oracle-managed load balancer.
+	// On Oracle Cloud Infrastructure Classic: This attribute is only applicable when provisioning a service instance on a specific IP network (ipNetwork)
+	// and Oracle Identity Cloud Service is enabled (where useIdentityService is set to true).
+	// Optional.
+	LoadBalancerType string `json:"loadBalancerType,omitempty"`
 	// Metering frequency. Valid values include:
 	// HOURLY - Pay only for the number of hours used during your billing period. This is the default.
 	// MONTHLY - Pay one price for the full month irrespective of the number of hours used.
@@ -972,6 +988,11 @@ type LoadBalancer struct {
 	// Policy to use for routing requests to the origin servers of the Oracle managed load balancer
 	// (that is, when useIdentityService is set to true.
 	LoadBalancingPolicy ServiceInstanceLoadBalancingPolicy `json:"loadBalancingPolicy,omitempty"`
+	// Subnets for the Oracle-managed load balancer nodes (node 1 and node 2).
+	// This attribute is only available on Oracle Cloud Infrastructure.
+	// This attribute is required if you are provisioning an Oracle Java Cloud Service instance on a specific subnet using subnet.
+	// Use the OCID of a public subnet.
+	Subnets []string `json:"subnets,omitempty"`
 }
 
 // CreateComponents specifies the details of the components to create
