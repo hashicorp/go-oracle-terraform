@@ -350,6 +350,16 @@ const (
 	ServiceInstanceLifecycleStateRestart ServiceInstanceLifecycleState = "restart"
 )
 
+// ServiceInstanceLoadBalancerType defined the constants for the loadbalancer type
+type ServiceInstanceLoadBalancerType string
+
+const (
+	// ServiceInstanceLoadBalancerTypePrivate - PRIVATE: The Oracle-managed load balancer is not accessible over the Internet.
+	ServiceInstanceLoadBalancerTypePrivate ServiceInstanceLoadBalancerType = "PRIVATE"
+	// ServiceInstanceLoadBalancerTypePublic - PUBLIC: The Oracle-managed load balancer is accessible over the Internet
+	ServiceInstanceLoadBalancerTypePublic ServiceInstanceLoadBalancerType = "PUBLIC"
+)
+
 // ServiceInstance specifies the attributes associated with a service instance
 type ServiceInstance struct {
 	// Activity logs for the service instance.
@@ -824,7 +834,7 @@ type CreateServiceInstanceInput struct {
 	// On Oracle Cloud Infrastructure Classic: This attribute is only applicable when provisioning a service instance on a specific IP network (ipNetwork)
 	// and Oracle Identity Cloud Service is enabled (where useIdentityService is set to true).
 	// Optional.
-	LoadBalancerType string `json:"loadBalancerType,omitempty"`
+	LoadBalancerType ServiceInstanceLoadBalancerType `json:"loadBalancerType,omitempty"`
 	// Metering frequency. Valid values include:
 	// HOURLY - Pay only for the number of hours used during your billing period. This is the default.
 	// MONTHLY - Pay one price for the full month irrespective of the number of hours used.
