@@ -30,7 +30,7 @@ const (
 	_ServiceInstanceUseOauth                    = false
 	_ServiceInstanceConfigureLoadBalancer       = true
 	// Database specific configuration
-	_ServiceInstanceDatabaseName            = "matthew-test"
+	_ServiceInstanceDatabaseName            = "testingjavaserviceinstance1"
 	_ServiceInstanceBackupDestinationBoth   = "BOTH"
 	_ServiceInstanceDBSID                   = "ORCL"
 	_ServiceInstanceDBType                  = "db"
