@@ -376,6 +376,8 @@ type ServiceInstance struct {
 	Components Components `json:"components"`
 	// Location where the service instance is provisioned
 	ComputeSiteName string `json:"computeSiteName"`
+	// Specifies whether an Oracle-managed load balancer is configured within the service instance.
+	ConfigureLoadBalancer bool `json:"configureLoadBalancer,omitempty"`
 	// Date and time the Oracle Java Cloud Service instance was created.
 	CreationDate string `json:"creationDate"`
 	// Name of the user account that was used to create the Oracle Java Cloud Service instance.
@@ -390,6 +392,8 @@ type ServiceInstance struct {
 	FMWRoot string `json:"FMW_ROOT"`
 	// Components key to the operation of this service instance.
 	KeyComponentInstance string `json:"keyComponentInstance"`
+	// Oracle-managed load balancer details.
+	LoadBalancer *LoadBalancerInfo `json:"loadbalancer,omitempty"`
 	// Current version for the service definition (schema) used by this service instance.
 	MetaVersion string `json:"metaVersion"`
 	// Metering frequency. For example: HOURLY or MONTHLY
@@ -727,6 +731,31 @@ type IPReservation struct {
 	Name string `json:"name"`
 }
 
+// LoadBalancerInfo contains the information related to the load balancer attached to the service instance
+type LoadBalancerInfo struct {
+	Public PublicLoadBalancerInfo `json:"PUBLIC"`
+}
+
+// PublicLoadBalancerInfo contains the information related to the public load balancer attached to the service instance
+type PublicLoadBalancerInfo struct {
+	// Dispay name of the load balancer.
+	DisplayName string `json:"displayName"`
+	// Load Balancer Admin URL.
+	LoadBalancerAdminURL string `json:"loadBalancerAdminUrl"`
+	// Load Balancer Console URL.
+	LoadBalancerConsoleURL string `json:"loadBalancerConsoleUrl"`
+	// Permanent URL.
+	PermanentURL string `json:"permanentUrl"`
+	// List of permanent URLs.
+	PermanentURLs []string `json:"permanentUrls"`
+	// Role type.
+	RoleType string `json:"roleType"`
+	// URL.
+	URL string `json:"url"`
+	// URLS.
+	URLs []string `json:"urls"`
+}
+
 // CreateServiceInstanceInput specifies the attributes of the service instance that will be created
 type CreateServiceInstanceInput struct {
 	// This attribute is only applicable when provisioning an Oracle Java Cloud Service
@@ -990,7 +1019,13 @@ type CreateServiceInstanceInput struct {
 	// ipNetwork cannot be used
 	// See Using Oracle Identity Cloud Service with Oracle Java Cloud Service in Administering Oracle Java Cloud Service.
 	// Optional
-	UseIdentityService bool `json:"useIdentityService,omitempty"`
+	UseIdentityService *bool `json:"useIdentityService,omitempty"`
+	// This attribute is only applicable when provisioning an Oracle Java Cloud Service instance on Oracle Cloud Infrastructure Classic.
+	// This attribute is only applicable to Oracle Cloud accounts that are created with OAuth protected object storage. If you do not want
+	// to use the default OAuth protected object storage for instance backups, you must set the attribute to false and specify the following
+	// in the payload: cloudStorageContainer, cloudStorageUser, and cloudStoragePassword. cloudStorageContainerAutoGenerate is optional.
+	// Optional
+	UseOauthForStorage *bool `json:"useOAuthForStorage,omitempty"`
 }
 
 // LoadBalancer specifies the details of the loadbalancer to create

@@ -26,8 +26,11 @@ const (
 	_ServiceInstanceCloudStorageCreateIfMissing = true
 	_ServiceInstanceManagedServerCount          = 0
 	_ServiceInstanceProvisionOTD                = true
+	_ServiceInstanceUseIdentityService          = true
+	_ServiceInstanceUseOauth                    = false
+	_ServiceInstanceConfigureLoadBalancer       = true
 	// Database specific configuration
-	_ServiceInstanceDatabaseName            = "testing-java-instance-service1"
+	_ServiceInstanceDatabaseName            = "matthew-test"
 	_ServiceInstanceBackupDestinationBoth   = "BOTH"
 	_ServiceInstanceDBSID                   = "ORCL"
 	_ServiceInstanceDBType                  = "db"
@@ -489,6 +492,90 @@ func TestAccServiceInstanceLifeCycle_RestartHost(t *testing.T) {
 	}
 
 	assert.Equal(t, ServiceInstanceStatusReady, receivedRes.State, "Service instance status not expected.")
+}
+
+func TestAccServiceInstanceLifeCycle_LoadBalancer(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
+
+	siClient, _, err := getServiceInstanceTestClients()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	siClient, dClient, err := getServiceInstanceTestClients()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	databaseParameter := database.ParameterInput{
+		AdminPassword:                   _ServiceInstanceDBAPassword,
+		BackupDestination:               _ServiceInstanceBackupDestinationBoth,
+		SID:                             _ServiceInstanceDBSID,
+		Type:                            _ServiceInstanceDBType,
+		UsableStorage:                   _ServiceInstanceUsableStorage,
+		CloudStorageContainer:           _ServiceInstanceDBCloudStorageContainer,
+		CreateStorageContainerIfMissing: _ServiceInstanceCloudStorageCreateIfMissing,
+	}
+
+	createDatabaseServiceInstance := &database.CreateServiceInstanceInput{
+		Name:             _ServiceInstanceDatabaseName,
+		Edition:          _ServiceInstanceEdition,
+		Level:            _ServiceInstanceLevel,
+		Shape:            _ServiceInstanceDatabaseShape,
+		SubscriptionType: _ServiceInstanceSubscriptionType,
+		Version:          _ServiceInstanceDBVersion,
+		VMPublicKey:      _ServiceInstancePubKey,
+		Parameter:        databaseParameter,
+	}
+
+	_, err = dClient.CreateServiceInstance(createDatabaseServiceInstance)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer destroyDatabaseServiceInstance(t, dClient, _ServiceInstanceDatabaseName)
+
+	wlsConfig := &CreateWLS{
+		DBAName:            _ServiceInstanceDBAUser,
+		DBAPassword:        _ServiceInstanceDBAPassword,
+		DBServiceName:      _ServiceInstanceDatabaseName,
+		Shape:              _ServiceInstanceShape,
+		ManagedServerCount: _ServiceInstanceManagedServerCount,
+		AdminUsername:      _ServiceInstanceAdminUsername,
+		AdminPassword:      _ServiceInstanceAdminPassword,
+	}
+
+	useIdentityService := _ServiceInstanceUseIdentityService
+	useOauth := _ServiceInstanceUseOauth
+	createServiceInstance := &CreateServiceInstanceInput{
+		ConfigureLoadBalancer:             _ServiceInstanceConfigureLoadBalancer,
+		CloudStorageContainer:             _ServiceInstanceCloudStorageContainer,
+		CloudStorageContainerAutoGenerate: _ServiceInstanceCloudStorageCreateIfMissing,
+		ServiceName:                       _ServiceInstanceName,
+		ServiceLevel:                      _ServiceInstanceLevel,
+		Components:                        CreateComponents{WLS: wlsConfig},
+		VMPublicKeyText:                   _ServiceInstancePubKey,
+		Edition:                           ServiceInstanceEditionSuite,
+		ServiceVersion:                    _ServiceInstanceVersion,
+		UseIdentityService:                &useIdentityService,
+		UseOauthForStorage:                &useOauth,
+	}
+
+	_, err = siClient.CreateServiceInstance(createServiceInstance)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer destroyServiceInstance(t, siClient, _ServiceInstanceName)
+
+	getInput := &GetServiceInstanceInput{
+		Name: _ServiceInstanceName,
+	}
+
+	receivedRes, err := siClient.GetServiceInstance(getInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t, true, receivedRes.ConfigureLoadBalancer, "Service instance load balancer not attached.")
 }
 
 func getServiceInstanceTestClients() (*ServiceInstanceClient, *database.ServiceInstanceClient, error) {

@@ -53,9 +53,9 @@ func TestAccPolicyLifeCycle(t *testing.T) {
 		Type:                   createPolicyInput.Type,
 		HeaderName:             createPolicyInput.SetRequestHeaderPolicyInfo.HeaderName,
 		ActionWhenHeaderExists: createPolicyInput.SetRequestHeaderPolicyInfo.ActionWhenHeaderExists,
-		Value: createPolicyInput.SetRequestHeaderPolicyInfo.Value,
-		State: LBaaSStateHealthy,
-		URI:   expectedURI,
+		Value:                  createPolicyInput.SetRequestHeaderPolicyInfo.Value,
+		State:                  LBaaSStateHealthy,
+		URI:                    expectedURI,
 	}
 
 	// compare resp to expected
@@ -82,13 +82,13 @@ func TestAccPolicyLifeCycle(t *testing.T) {
 	assert.NoError(t, err)
 
 	expected = &PolicyInfo{
-		Name:       updateInput.Name,
-		Type:       createPolicyInput.Type,
-		HeaderName: updatedHeaderName,
-		Value:      updatedValue,
+		Name:                   updateInput.Name,
+		Type:                   createPolicyInput.Type,
+		HeaderName:             updatedHeaderName,
+		Value:                  updatedValue,
 		ActionWhenHeaderExists: createPolicyInput.SetRequestHeaderPolicyInfo.ActionWhenHeaderExists,
-		State: LBaaSStateHealthy,
-		URI:   expectedURI,
+		State:                  LBaaSStateHealthy,
+		URI:                    expectedURI,
 	}
 
 	assert.Equal(t, expected, resp, "Response should match expected PolicyInfo")
