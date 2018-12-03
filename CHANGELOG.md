@@ -1,4 +1,4 @@
-## 0.14.1 (Unreleased)
+## 0.15.0 (December 3, 2018)
 
 * java: Added support for Load Balancer [GH-174]
 
