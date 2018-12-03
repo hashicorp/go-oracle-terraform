@@ -1,5 +1,9 @@
 ## 0.14.1 (Unreleased)
 
+* java: Added support for Load Balancer [GH-174]
+
+* compute: Adds additional support for vpnaas attributes [GH-173]
+
 ## 0.14.0 (October 1, 2018)
 
 * compute: Added support for VPN Gateway V2 [GH-166]
