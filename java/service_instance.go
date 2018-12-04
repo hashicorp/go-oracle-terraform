@@ -114,6 +114,18 @@ const (
 	ServiceInstanceLoadBalancingPolicyRR ServiceInstanceLoadBalancingPolicy = "ROUND_ROBIN"
 )
 
+// ServiceInstanceLoadBalancerLoadBalancingPolicy specifies the different load balancing policies for the specified LoadBalancer struct
+type ServiceInstanceLoadBalancerLoadBalancingPolicy string
+
+const (
+	// ServiceInstanceLoadBalancerLoadBalancingPolicyLC passes each new request to the server with the least number of active connections.
+	ServiceInstanceLoadBalancerLoadBalancingPolicyLC ServiceInstanceLoadBalancerLoadBalancingPolicy = "LEAST_CONN"
+	// ServiceInstanceLoadBalancerLoadBalancingPolicyIPHash uses the incoming request source IP address as a hashing key to determine the server to route each request.
+	ServiceInstanceLoadBalancerLoadBalancingPolicyIPHash ServiceInstanceLoadBalancerLoadBalancingPolicy = "IP_HASH"
+	// ServiceInstanceLoadBalancerLoadBalancingPolicyRR passes each new request to the next server in line, evenly distributing requests across all servers. This is the default value.
+	ServiceInstanceLoadBalancerLoadBalancingPolicyRR ServiceInstanceLoadBalancerLoadBalancingPolicy = "ROUND_ROBIN"
+)
+
 // ServiceInstanceShape specifies the shapes a service instance can be
 type ServiceInstanceShape string
 
@@ -1032,7 +1044,7 @@ type CreateServiceInstanceInput struct {
 type LoadBalancer struct {
 	// Policy to use for routing requests to the origin servers of the Oracle managed load balancer
 	// (that is, when useIdentityService is set to true.
-	LoadBalancingPolicy ServiceInstanceLoadBalancingPolicy `json:"loadBalancingPolicy,omitempty"`
+	LoadBalancingPolicy ServiceInstanceLoadBalancerLoadBalancingPolicy `json:"loadBalancingPolicy,omitempty"`
 	// Subnets for the Oracle-managed load balancer nodes (node 1 and node 2).
 	// This attribute is only available on Oracle Cloud Infrastructure.
 	// This attribute is required if you are provisioning an Oracle Java Cloud Service instance on a specific subnet using subnet.
