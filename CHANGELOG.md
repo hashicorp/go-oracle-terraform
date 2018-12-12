@@ -1,4 +1,6 @@
-## 0.15.1 (Unreleased)
+## 0.15.2 (December 12, 2018)
+
+* compute: Adding `omitempty` to optional fields in VPNEndpointV2 [GH-175]
 
 ## 0.15.0 (December 3, 2018)
 
