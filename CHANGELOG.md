@@ -1,3 +1,7 @@
+## 0.15.3 (January 22, 2019)
+
+* java: Removed `required` tag from DBServicename for java service instance [GH-179]
+
 ## 0.15.2 (December 12, 2018)
 
 * compute: Adding `omitempty` to optional fields in VPNEndpointV2 [GH-175]
