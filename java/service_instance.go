@@ -372,6 +372,22 @@ const (
 	ServiceInstanceLoadBalancerTypePublic ServiceInstanceLoadBalancerType = "PUBLIC"
 )
 
+//
+type ServiceInstanceATPDatabaseLevel string
+
+const (
+	// ServiceInstanceATPDatabaseLevelHigh - Provides the highest level of resources to each SQL statement resulting in the highest performance, but supports the fewest number of concurrent SQL statements.
+	ServiceInstanceATPDatabaseLevelHigh ServiceInstanceATPDatabaseLevel = "high"
+	// ServiceInstanceATPDatabaseLevelMedium - Provides a lower level of resources to each SQL statement potentially resulting a lower level of performance, but supports more concurrent SQL statements.
+	ServiceInstanceATPDatabaseLevelMedium ServiceInstanceATPDatabaseLevel = "medium"
+	// ServiceInstanceATPDatabaseLevel - Provides the least level of resources to each SQL statement, but supports the most number of concurrent SQL statements.
+	ServiceInstanceATPDatabaseLevelLow ServiceInstanceATPDatabaseLevel = "low"
+	// ServiceInstanceATPDatabaseLevel - Provides a typical application connection service for transaction processing operations. This connection service does not run with parallelism.
+	ServiceInstanceATPDatabaseLevelTP ServiceInstanceATPDatabaseLevel = "tp"
+	// ServiceInstanceATPDatabaseLevel - Provides the highest priority application connection service for time critical transaction processing operations. This connection service supports manual parallelism.
+	ServiceInstanceATPDatabaseLevelTPUrgent ServiceInstanceATPDatabaseLevel = "tpurgent"
+)
+
 // ServiceInstance specifies the attributes associated with a service instance
 type ServiceInstance struct {
 	// Activity logs for the service instance.
@@ -1170,6 +1186,18 @@ type CreateWLS struct {
 	// You can specify up to four application schema database deployments.
 	// Optional.
 	AppDBs []AppDB `json:"appDBs,omitempty"`
+	// Level of performance and concurrency for Autonomous Transaction Processing.
+	// This attribute is required only if  you provision an Oracle Java Cloud Service instance on
+	// Oracle Cloud Infrastructure with the associated infrastructure schema database deployed on
+	// Oracle Autonomous Transaction Processing.
+	// Optional.
+	ATPDBLevel ServiceInstanceATPDatabaseLevel `json:"atpDBLevel,omitempty"`
+	// Name of the infrastructure schema database deployment.
+	// This attribute is required only if  you provision an Oracle Java Cloud Service instance on
+	// Oracle Cloud Infrastructure with the associated infrastructure schema database deployed on
+	// Oracle Autonomous Transaction Processing.
+	// Optional.
+	ATPDBName string `json:"atpDBName,omitempty"`
 	// Size of the backup volume for the service. The value must be a multiple of GBs. You can specify this
 	// value in bytes or GBs. If specified in GBs, use the following format: nG, where n specifies the number of GBs.
 	// For example, you can express 10 GBs as bytes or GBs. For example: 100000000000 or 10G.
@@ -1280,6 +1308,12 @@ type CreateWLS struct {
 	// Cloud Service (MOS Note 2163568.1).
 	// Optional
 	IPReservations string `json:"ipReservations,omitempty"`
+	// Set to true if the database system is a RAC database. Default is false.
+	// This attribute is required if you provision an Oracle Java Cloud Service instance with the associated
+	// infrastructure schema database deployed on an Oracle Cloud Infrastructure Database system that
+	// uses Oracle Real Application Clusters (RAC) technology.
+	// Optional.
+	IsOCIRACDB bool `json:"isOciRacDb,omitempty"`
 	// One or more Managed Server JVM arguments separated by a space.
 	// You cannot specify any arguments that are related to JVM heap sizes and PermGen spaces (for example, -Xms, -Xmx,
 	// -XX:PermSize, and -XX:MaxPermSize).
@@ -1304,6 +1338,10 @@ type CreateWLS struct {
 	// if no value is supplied.
 	// Optional
 	NodeManagerUserName string `json:"nodeManagerUserName,omitempty"`
+	// The DB name of the associated infrastructure schema database that uses Oracle Real Application Clusters (RAC) technology.
+	// This attribute is required if isOciRacDb is set to true during provisioning.
+	// Optional.
+	OCIRACDBName string `json:"ociRacDBName,omitempty"`
 	// Name of the pluggable database for Oracle Database 12c. If not specified, the pluggable database name configured when the database was created will be used.
 	// Note: This value does not apply to Oracle Database 11g.
 	// Optional
