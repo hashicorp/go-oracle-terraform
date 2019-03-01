@@ -22,7 +22,7 @@ const (
 	_ServiceInstanceAdminUsername               = "sdk-user"
 	_ServiceInstanceAdminPassword               = "Test_String7"
 	_ServiceInstancePubKey                      = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQC3QxPp0BFK+ligB9m1FBcFELyvN5EdNUoSwTCe4Zv2b51OIO6wGM/dvTr/yj2ltNA/Vzl9tqf9AUBL8tKjAOk8uukip6G7rfigby+MvoJ9A8N0AC2te3TI+XCfB5Ty2M2OmKJjPOPCd6+OdzhT4cWnPOM+OAiX0DP7WCkO4Kx2kntf8YeTEurTCspOrRjGdo+zZkJxEydMt31asu9zYOTLmZPwLCkhel8vY6SnZhDTNSNkRzxZFv+Mh2VGmqu4SSxfVXr4tcFM6/MbAXlkA8jo+vHpy5sC79T4uNaPu2D8Ed7uC3yDdO3KRVdzZCfWHj4NjixdMs2CtK6EmyeVOPuiYb8/mcTybrb4F/CqA4jydAU6Ok0j0bIqftLyxNgfS31hR1Y3/GNPzly4+uUIgZqmsuVFh5h0L7qc1jMv7wRHphogo5snIp45t9jWNj8uDGzQgWvgbFP5wR7Nt6eS0kaCeGQbxWBDYfjQE801IrwhgMfmdmGw7FFveCH0tFcPm6td/8kMSyg/OewczZN3T62ETQYVsExOxEQl2t4SZ/yqklg+D9oGM+ILTmBRzIQ2m/xMmsbowiTXymjgVmvrWuc638X6dU2fKJ7As4hxs3rA1BA5sOt0XyqfHQhtYrL/Ovb1iV+C7MRhKicTyoNTc7oVcDDG0VW785d8CPqttDi50w=="
-	_ServiceInstanceCloudStorageContainer       = "Storage-a459477/test-java-instance"
+	_ServiceInstanceCloudStorageContainer       = "Storage-ocicpm/test-java-instance"
 	_ServiceInstanceCloudStorageCreateIfMissing = true
 	_ServiceInstanceManagedServerCount          = 0
 	_ServiceInstanceProvisionOTD                = true
@@ -30,12 +30,12 @@ const (
 	_ServiceInstanceUseOauth                    = false
 	_ServiceInstanceConfigureLoadBalancer       = true
 	// Database specific configuration
-	_ServiceInstanceDatabaseName            = "testingjavaserviceinstance1"
+	_ServiceInstanceDatabaseName            = "testingjavaserviceinstance1db"
 	_ServiceInstanceBackupDestinationBoth   = "BOTH"
 	_ServiceInstanceDBSID                   = "ORCL"
 	_ServiceInstanceDBType                  = "db"
 	_ServiceInstanceUsableStorage           = "25"
-	_ServiceInstanceDBCloudStorageContainer = "Storage-a459477/test-db-java-instancea"
+	_ServiceInstanceDBCloudStorageContainer = "Storage-ocicpm/test-db-java-instancea"
 	_ServiceInstanceEdition                 = "EE"
 	_ServiceInstanceDatabaseShape           = "oc3"
 	_ServiceInstanceDBVersion               = "12.2.0.1"
@@ -74,7 +74,7 @@ func TestAccServiceInstanceLifeCycle_Basic(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	defer destroyDatabaseServiceInstance(t, dClient, _ServiceInstanceDatabaseName)
+	// defer destroyDatabaseServiceInstance(t, dClient, _ServiceInstanceDatabaseName)
 
 	wlsConfig := &CreateWLS{
 		DBAName:            _ServiceInstanceDBAUser,
@@ -192,7 +192,7 @@ func TestAccServiceInstanceLifeCycle_typeOTD(t *testing.T) {
 		t.Fatal(err)
 	}
 	assert.Equal(t, _ServiceInstanceName, receivedRes.ServiceName, "Service instance name not expected.")
-	assert.NotEmpty(t, receivedRes.OTDRoot, "Expected OTDROot to not be empty")
+	assert.NotEmpty(t, receivedRes.OTDRoot, "Expected OTDRoot to not be empty")
 }
 
 func TestAccServiceInstanceLifeCycle_ScaleUp(t *testing.T) {
