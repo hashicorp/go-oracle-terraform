@@ -74,7 +74,7 @@ func TestAccServiceInstanceLifeCycle_Basic(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	// defer destroyDatabaseServiceInstance(t, dClient, _ServiceInstanceDatabaseName)
+	defer destroyDatabaseServiceInstance(t, dClient, _ServiceInstanceDatabaseName)
 
 	wlsConfig := &CreateWLS{
 		DBAName:            _ServiceInstanceDBAUser,
