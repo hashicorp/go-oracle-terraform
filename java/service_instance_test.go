@@ -11,7 +11,6 @@ import (
 )
 
 const (
-	// TODO swap
 	_ServiceInstanceName                        = "testingjavaserviceinstance1"
 	_ServiceInstanceLevel                       = "PAAS"
 	_ServiceInstanceSubscriptionType            = "HOURLY"
