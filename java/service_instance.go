@@ -374,16 +374,40 @@ const (
 	ServiceInstanceLoadBalancerTypePublic ServiceInstanceLoadBalancerType = "PUBLIC"
 )
 
+//
+type ServiceInstanceATPDatabaseLevel string
+
+const (
+	// ServiceInstanceATPDatabaseLevelHigh - Provides the highest level of resources to each SQL statement resulting in the highest performance, but supports the fewest number of concurrent SQL statements.
+	ServiceInstanceATPDatabaseLevelHigh ServiceInstanceATPDatabaseLevel = "high"
+	// ServiceInstanceATPDatabaseLevelMedium - Provides a lower level of resources to each SQL statement potentially resulting a lower level of performance, but supports more concurrent SQL statements.
+	ServiceInstanceATPDatabaseLevelMedium ServiceInstanceATPDatabaseLevel = "medium"
+	// ServiceInstanceATPDatabaseLevel - Provides the least level of resources to each SQL statement, but supports the most number of concurrent SQL statements.
+	ServiceInstanceATPDatabaseLevelLow ServiceInstanceATPDatabaseLevel = "low"
+	// ServiceInstanceATPDatabaseLevel - Provides a typical application connection service for transaction processing operations. This connection service does not run with parallelism.
+	ServiceInstanceATPDatabaseLevelTP ServiceInstanceATPDatabaseLevel = "tp"
+	// ServiceInstanceATPDatabaseLevel - Provides the highest priority application connection service for time critical transaction processing operations. This connection service supports manual parallelism.
+	ServiceInstanceATPDatabaseLevelTPUrgent ServiceInstanceATPDatabaseLevel = "tpurgent"
+)
+
 // ServiceInstance specifies the attributes associated with a service instance
 type ServiceInstance struct {
 	// Activity logs for the service instance.
 	ActivityLogs []ActivityLog `json:"activityLogs"`
+	// Fully qualified host name of the Administration Server for this service instance
+	AdminFqnHostName string `json:"adminFqHostName"`
 	// Host name of the Administration Server for this service instance.
 	AdminHostName string `json:"adminHostName"`
 	// Information about service instance attributes.
 	Attributes Attributes `json:"attributes"`
+	// Availability Domain for the service instance.
+	AvailabilityDomain string `json:"availabilityDomain,omitempty"`
 	// Information about service instance backup operations.
 	Backup Backup `json:"backup"`
+	// Backup Destination
+	BackupDestination string `json:"BACKUP_DESTINATION"`
+	// Full Service Instance version
+	BaseReleaseVersion string `json:"baseReleaseVersion"`
 	// Flag that specifies whether this Oracle Java Cloud Service instance is a clone of an existing service instance.
 	Clone bool `json:"clone"`
 	// Groups details about the WLS component and the OTD component (if provisioned).
@@ -404,39 +428,81 @@ type ServiceInstance struct {
 	EditionDisplayName string `json:"editionDisplayName"`
 	// The URL of the Fusion Middleware Control console.
 	FMWRoot string `json:"FMW_ROOT"`
+	// IaaS Provider
+	IaasProvider string `json:"iaasProvider"`
+	// Identity tenancy
+	IdentityTenancy string `json:"identityTenancy"`
+	// Internal Root URL
+	InternalRoot string `json:"INTERNAL_ROOT"`
+	// Is Bring Your Own License
+	IsBYOL bool `json:"isBYOL"`
+	// Is Default Managed
+	IsDefaultManaged bool `json:"isDefaultManaged"`
+	// Is Managed
+	IsManaged bool `json:"isManaged"`
+	// Is Mutiple Site
+	IsMultipleSite bool `json:"isMultipleSite"`
+	// Is Non Shared Managed
+	IsNonSharedmanaged bool `json:"isNonSharedmanaged"`
+	// Is OAuth For Storage Configured
+	IsOAuthForStorageConfigured bool `json:"isOAuthForStorageConfigured"`
+	// Is Shared Managed
+	IsSharedManaged bool `json:"isSharedManaged"`
+	// JDK Version
+	JDKVersion string `json:"jdkVersion"`
 	// Components key to the operation of this service instance.
 	KeyComponentInstance string `json:"keyComponentInstance"`
+	// Layering Mode
+	LayeringMode string `json:"layeringMode"`
 	// Oracle-managed load balancer details.
 	LoadBalancer *LoadBalancerInfo `json:"loadbalancer,omitempty"`
+	// Load Balancer Configured
+	LoadBalancerConfigured string `json:"lbaasConfigured"`
+	// Load Balancer Option
+	LoadBalancerOption string `json:"loadBalancerOption"`
+	// Load Balancer Type
+	LoadBalancerType string `json:"loadBalancerType"`
 	// Current version for the service definition (schema) used by this service instance.
 	MetaVersion string `json:"metaVersion"`
 	// Metering frequency. For example: HOURLY or MONTHLY
 	MeteringFrequency ServiceInstanceSubscriptionType `json:"meteringFrequency"`
 	// Display name of metering frequency.
 	MeteringFrequencyDisplayName string `json:"meteringFrequencyDisplayName"`
+	// Original Meta Version
+	OriginalMetaVersion string `json:"originalMetaVersion"`
 	// The URL of the OTD console
 	OTDRoot string `json:"OTD_ROOT"`
 	// Patching information related to this service instance
 	Patching Patching `json:"patching"`
+	// Provision Engine
+	ProvisionEngine string `json:"provisionEngine"`
 	// Region where the service instance is provisioned
 	Region string `json:"region"`
 	// The specific Oracle WebLogic Server software binaries in use. For example: 12.2.1.2.x, 12.1.3.0.x or 10.3.6.0.x.
 	// Note: This value is updated when the service instance is patched.
 	ReleaseVersion string `json:"releaseVersion"`
+	// URL for the Sample Application if provisioned
+	SampleRoot string `json:"SAMPLE_ROOT"`
 	// Free-form text that was provided about this service instance when it was created.
 	ServiceDescription string `json:"serviceDescription"`
+	// Service entitlement Id
+	ServiceEntitlementId string `json:"serviceEntitlementId"`
 	// ID of the Oracle Java Cloud Service Instance
 	ServiceID int `json:"serviceId"`
 	// Service Level
 	ServiceLevel ServiceInstanceLevel `json:"serviceLevel"`
 	// Display name of the service level
 	ServiceLevelDisplayName string `json:"serviceLevelDisplayName"`
+	// Logical Service UUID
+	serviceLogicalUUID string `json:"serviceLogicalUuid"`
 	// Name given to this service instance when it was created
 	ServiceName string `json:"serviceName"`
 	// State of the service instance
 	ServiceStateDisplayName string `json:"serviceStateDisplayName"`
 	// Type of this service instance
 	ServiceType string `json:"serviceType"`
+	// Service UUID
+	ServiceUUID string `json:"serviceUuid"`
 	// The Oracle WebLogic Server software release that was provisioned on this service instance
 	ServiceVersion string `json:"serviceVersion"`
 	// Current state of this Oracle Java Cloud Service Instance
@@ -445,6 +511,12 @@ type ServiceInstance struct {
 	Subscription ServiceInstanceSubscriptionType `json:"subscription"`
 	// SSD Storage
 	TotalSSDStorage int `json:"totalSSDStorage"`
+	// Total Shared Storage
+	TotalSharedStorage int `json:totalSharedStorage`
+	// Use Identity Service
+	UseIdentityService string `json:"useIdentityService"`
+	// Weblogic Server Security List
+	WLSMSHASecList string `json:"WLS_MSHA_SEC_LIST"`
 	// The URL of the WebLogic Server Administration console
 	WLSRoot string `json:"WLS_ROOT"`
 }
@@ -576,15 +648,21 @@ type OTD struct {
 
 // WLS sepcifies the information about the weblogic server associated with the service instance
 type WLS struct {
+	// Fully qualified host name of the administration server.
+	AdminFqHostName string `json:"adminFqHostName"`
 	// Host name of the administration server.
 	AdminHostName string `json:"adminHostName"`
 	// WLS Component Attribute details
 	Attributes WLSAttributes `json:"attributes"`
+	// OCI Availability Domain
+	AvailabilityDomain string `json:"availabilityDomain"`
 	// Groups details about clusters in the domain by cluster name. Each cluster is a JSON object element.
 	// Clusters have dynamic JSON keys that need to be accounted for
 	Clusters map[string]Clusters `json:"clusters"`
 	// ID of this component of this service instance.
 	ComponentID int `json:"componentId"`
+	// Component state display name
+	ComponentStateDisplayName string `json:"componentStateDisplayName"`
 	// Type of the component
 	ComponentType string `json:"componentType"`
 	// Date and time the component was created
@@ -597,6 +675,12 @@ type WLS struct {
 	InstanceName string `json:"instanceName"`
 	// Instance role
 	InstanceRole string `json:"instanceRole"`
+	// Is Key Component
+	isKeyComponent bool `json:"isKeyComponent"`
+	// Server instance details
+	PaaSServers map[string]PaaSServers `json:"paasServers"`
+	// Deployment Region
+	Region string `json:"region"`
 	// ID of the Oracle Java Cloud Service Instance
 	ServiceID int `json:"serviceId"`
 	// State of the component
@@ -640,6 +724,8 @@ type PaaSAttributes struct {
 	HeapSize string `json:"heap_size"`
 	// Initial heap size
 	HeapStart string `json:"heap_start"`
+	// Maximum Metaspace size
+	MaxMetaspaceSize string `json:"max_metaspace_size"`
 	// Maximum Permanent Generation (PermGen) space in Java heap memory for a Managed Server JVM.
 	MaxPermSize string `json:"max_perm_size"`
 	// Initial Permanent Generation (PermGen) space in Java heap memory for a Managed Server JVM.
@@ -679,10 +765,16 @@ type Hosts struct {
 
 // HostName specifies information about the hostname on the service instances
 type HostName struct {
+	// Availability Domain
+	AvailabilityDomain string `json:"availabilityDomain"`
 	// Type of component.
 	ComponentType string `json:"componentType"`
 	// Creation Date
 	CreationDate string `json:"creationDate"`
+	// Fault Domain
+	FaultDomain string `json:"faultDomain"`
+	// Fully qualified host name
+	FullyQualifiedHostName string `json:"fqHostName"`
 	// DNS host name
 	HostName string `json:"hostName"`
 	// Id of this host
@@ -701,6 +793,8 @@ type HostName struct {
 	ShapeID string `json:"shapeId"`
 	// State of the host.
 	State ServiceInstanceStatus `json:"state"`
+	// Subnet
+	Subnet string `json:"subnet"`
 	// Total megabytes of block storage used by this host.
 	TotalStorage int `json:"totalStorage"`
 	// Purpose of this host
@@ -709,6 +803,8 @@ type HostName struct {
 	UUID string `json:"uuid"`
 	// Id of this host
 	VMID string `json:"vmId"`
+	// VM State display name
+	vmStateDisplayName string `json:"vmStateDisplayName"`
 }
 
 // VMInstances specifies information about the vm instances on the service instance
@@ -1166,6 +1262,18 @@ type CreateWLS struct {
 	// You can specify up to four application schema database deployments.
 	// Optional.
 	AppDBs []AppDB `json:"appDBs,omitempty"`
+	// Level of performance and concurrency for Autonomous Transaction Processing.
+	// This attribute is required only if  you provision an Oracle Java Cloud Service instance on
+	// Oracle Cloud Infrastructure with the associated infrastructure schema database deployed on
+	// Oracle Autonomous Transaction Processing.
+	// Optional.
+	ATPDBLevel ServiceInstanceATPDatabaseLevel `json:"atpDBLevel,omitempty"`
+	// Name of the infrastructure schema database deployment.
+	// This attribute is required only if  you provision an Oracle Java Cloud Service instance on
+	// Oracle Cloud Infrastructure with the associated infrastructure schema database deployed on
+	// Oracle Autonomous Transaction Processing.
+	// Optional.
+	ATPDBName string `json:"atpDBName,omitempty"`
 	// Size of the backup volume for the service. The value must be a multiple of GBs. You can specify this
 	// value in bytes or GBs. If specified in GBs, use the following format: nG, where n specifies the number of GBs.
 	// For example, you can express 10 GBs as bytes or GBs. For example: 100000000000 or 10G.
@@ -1208,6 +1316,10 @@ type CreateWLS struct {
 	// Password for the Database administrator that was specified when the Database Cloud Service database deployment was created.
 	// Required.
 	DBAPassword string `json:"dbaPassword"`
+	// The Database deployment type.
+	// Options: OCINativeDB, ATP
+	// Optional.
+	DBType string `json:"dbType,omitempty"`
 	// Name of the database deployment on Oracle Database Cloud Service to host the Oracle schemas required for this Oracle Java Cloud Service instance.
 	// The specified database deployment must be running. Only an Oracle Java Cloud Service instance based on WebLogic Server
 	// 12.2.1 can use a required schema database deployment that is created using the Oracle Database 12.2 version.
@@ -1276,6 +1388,12 @@ type CreateWLS struct {
 	// Cloud Service (MOS Note 2163568.1).
 	// Optional
 	IPReservations string `json:"ipReservations,omitempty"`
+	// Set to true if the database system is a RAC database. Default is false.
+	// This attribute is required if you provision an Oracle Java Cloud Service instance with the associated
+	// infrastructure schema database deployed on an Oracle Cloud Infrastructure Database system that
+	// uses Oracle Real Application Clusters (RAC) technology.
+	// Optional.
+	IsOCIRACDB bool `json:"isOciRacDb,omitempty"`
 	// One or more Managed Server JVM arguments separated by a space.
 	// You cannot specify any arguments that are related to JVM heap sizes and PermGen spaces (for example, -Xms, -Xmx,
 	// -XX:PermSize, and -XX:MaxPermSize).
@@ -1300,6 +1418,10 @@ type CreateWLS struct {
 	// if no value is supplied.
 	// Optional
 	NodeManagerUserName string `json:"nodeManagerUserName,omitempty"`
+	// The DB name of the associated infrastructure schema database that uses Oracle Real Application Clusters (RAC) technology.
+	// This attribute is required if isOciRacDb is set to true during provisioning.
+	// Optional.
+	OCIRACDBName string `json:"ociRacDBName,omitempty"`
 	// Name of the pluggable database for Oracle Database 12c. If not specified, the pluggable database name configured when the database was created will be used.
 	// Note: This value does not apply to Oracle Database 11g.
 	// Optional
