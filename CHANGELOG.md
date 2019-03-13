@@ -1,3 +1,7 @@
+## 0.16.0 (March 13, 2019) 
+
+* java: Added support for scale out/in for Oracle Traffic Director or WebLogic Server [GH-182]
+
 ## 0.15.3 (January 22, 2019)
 
 * java: Removed `required` tag from DBServicename for java service instance [GH-179]
