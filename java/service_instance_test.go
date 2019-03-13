@@ -491,7 +491,244 @@ func TestAccServiceInstanceLifeCycle_RestartHost(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	assert.Equal(t, ServiceInstanceStatusReady, receivedRes.State, "Service instance status not expected.")
+}
+
+func TestAccServiceInstanceLifeCycle_ScaleOutInWLS(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
+
+	siClient, dClient, err := getServiceInstanceTestClients()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	databaseParameter := database.ParameterInput{
+		AdminPassword:                   _ServiceInstanceDBAPassword,
+		BackupDestination:               _ServiceInstanceBackupDestinationBoth,
+		SID:                             _ServiceInstanceDBSID,
+		Type:                            _ServiceInstanceDBType,
+		UsableStorage:                   _ServiceInstanceUsableStorage,
+		CloudStorageContainer:           _ServiceInstanceDBCloudStorageContainer,
+		CreateStorageContainerIfMissing: _ServiceInstanceCloudStorageCreateIfMissing,
+	}
+
+	createDatabaseServiceInstance := &database.CreateServiceInstanceInput{
+		Name:             _ServiceInstanceDatabaseName,
+		Edition:          _ServiceInstanceEdition,
+		Level:            _ServiceInstanceLevel,
+		Shape:            _ServiceInstanceDatabaseShape,
+		SubscriptionType: _ServiceInstanceSubscriptionType,
+		Version:          _ServiceInstanceDBVersion,
+		VMPublicKey:      _ServiceInstancePubKey,
+		Parameter:        databaseParameter,
+	}
+
+	_, err = dClient.CreateServiceInstance(createDatabaseServiceInstance)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer destroyDatabaseServiceInstance(t, dClient, _ServiceInstanceDatabaseName)
+
+	wlsConfig := &CreateWLS{
+		DBAName:            _ServiceInstanceDBAUser,
+		DBAPassword:        _ServiceInstanceDBAPassword,
+		DBServiceName:      _ServiceInstanceDatabaseName,
+		Shape:              _ServiceInstanceShape,
+		ManagedServerCount: _ServiceInstanceManagedServerCount,
+		AdminUsername:      _ServiceInstanceAdminUsername,
+		AdminPassword:      _ServiceInstanceAdminPassword,
+	}
+
+	createServiceInstance := &CreateServiceInstanceInput{
+		CloudStorageContainer:             _ServiceInstanceCloudStorageContainer,
+		CloudStorageContainerAutoGenerate: _ServiceInstanceCloudStorageCreateIfMissing,
+		ServiceName:                       _ServiceInstanceName,
+		ServiceLevel:                      _ServiceInstanceLevel,
+		Components:                        CreateComponents{WLS: wlsConfig},
+		VMPublicKeyText:                   _ServiceInstancePubKey,
+		Edition:                           ServiceInstanceEditionSuite,
+		ServiceVersion:                    _ServiceInstanceVersion,
+	}
+
+	_, err = siClient.CreateServiceInstance(createServiceInstance)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer destroyServiceInstance(t, siClient, _ServiceInstanceName)
+
+	wlsComponent := &ScaleOutWLS{
+		ClusterName: "testScaleOut",
+	}
+
+	component := ScaleOutComponent{
+		WLS: wlsComponent,
+	}
+
+	scaleOutInput := &ScaleOutInput{
+		Name:       _ServiceInstanceName,
+		Components: component,
+	}
+
+	err = siClient.ScaleOutServiceInstance(scaleOutInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	getInput := &GetServiceInstanceInput{
+		Name: _ServiceInstanceName,
+	}
+
+	receivedRes, err := siClient.GetServiceInstance(getInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t, 2, len(receivedRes.Components.WLS.Hosts.UserHosts), "Length of wls hosts not expected.")
+
+	latestHost, err := siClient.GetHostNameByNumber(receivedRes.Components.WLS.Hosts.UserHosts, len(receivedRes.Components.WLS.Hosts.UserHosts))
+	if err != nil {
+		t.Fatalf(fmt.Sprintf("Unable to find latest host for wls: %s", err))
+	}
+
+	scaleInWLS := &ScaleInHostName{
+		HostNames: []string{latestHost},
+	}
+
+	scaleInInput := &ScaleInInput{
+		Name:       _ServiceInstanceName,
+		Components: ScaleInComponent{WLS: scaleInWLS},
+	}
+
+	err = siClient.ScaleInServiceInstance(scaleInInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	receivedRes, err = siClient.GetServiceInstance(getInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+	assert.Equal(t, 1, len(receivedRes.Components.WLS.Hosts.UserHosts), "Length of wls hosts not expected.")
+
+}
+
+func TestAccServiceInstanceLifeCycle_ScaleOutInOTD(t *testing.T) {
+	helper.Test(t, helper.TestCase{})
+
+	siClient, dClient, err := getServiceInstanceTestClients()
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	databaseParameter := database.ParameterInput{
+		AdminPassword:                   _ServiceInstanceDBAPassword,
+		BackupDestination:               _ServiceInstanceBackupDestinationBoth,
+		SID:                             _ServiceInstanceDBSID,
+		Type:                            _ServiceInstanceDBType,
+		UsableStorage:                   _ServiceInstanceUsableStorage,
+		CloudStorageContainer:           _ServiceInstanceDBCloudStorageContainer,
+		CreateStorageContainerIfMissing: _ServiceInstanceCloudStorageCreateIfMissing,
+	}
+
+	createDatabaseServiceInstance := &database.CreateServiceInstanceInput{
+		Name:             _ServiceInstanceDatabaseName,
+		Edition:          _ServiceInstanceEdition,
+		Level:            _ServiceInstanceLevel,
+		Shape:            _ServiceInstanceDatabaseShape,
+		SubscriptionType: _ServiceInstanceSubscriptionType,
+		Version:          _ServiceInstanceDBVersion,
+		VMPublicKey:      _ServiceInstancePubKey,
+		Parameter:        databaseParameter,
+	}
+
+	_, err = dClient.CreateServiceInstance(createDatabaseServiceInstance)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer destroyDatabaseServiceInstance(t, dClient, _ServiceInstanceDatabaseName)
+
+	wlsConfig := &CreateWLS{
+		DBAName:            _ServiceInstanceDBAUser,
+		DBAPassword:        _ServiceInstanceDBAPassword,
+		DBServiceName:      _ServiceInstanceDatabaseName,
+		Shape:              _ServiceInstanceShape,
+		ManagedServerCount: _ServiceInstanceManagedServerCount,
+		AdminUsername:      _ServiceInstanceAdminUsername,
+		AdminPassword:      _ServiceInstanceAdminPassword,
+	}
+
+	otdConfig := &CreateOTD{
+		AdminUsername: _ServiceInstanceAdminUsername,
+		AdminPassword: _ServiceInstanceAdminPassword,
+		Shape:         _ServiceInstanceShape,
+	}
+
+	createServiceInstance := &CreateServiceInstanceInput{
+		ProvisionOTD:                      _ServiceInstanceProvisionOTD,
+		CloudStorageContainer:             _ServiceInstanceCloudStorageContainer,
+		CloudStorageContainerAutoGenerate: _ServiceInstanceCloudStorageCreateIfMissing,
+		ServiceName:                       _ServiceInstanceName,
+		ServiceLevel:                      _ServiceInstanceLevel,
+		Components:                        CreateComponents{WLS: wlsConfig, OTD: otdConfig},
+		VMPublicKeyText:                   _ServiceInstancePubKey,
+		Edition:                           ServiceInstanceEditionSuite,
+		ServiceVersion:                    _ServiceInstanceVersion,
+	}
+
+	_, err = siClient.CreateServiceInstance(createServiceInstance)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer destroyServiceInstance(t, siClient, _ServiceInstanceName)
+
+	otdComponent := &ScaleOutOTD{
+		OTDServerCount: 1,
+	}
+
+	component := ScaleOutComponent{
+		OTD: otdComponent,
+	}
+
+	scaleOutInput := &ScaleOutInput{
+		Name:       _ServiceInstanceName,
+		Components: component,
+	}
+
+	err = siClient.ScaleOutServiceInstance(scaleOutInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	getInput := &GetServiceInstanceInput{
+		Name: _ServiceInstanceName,
+	}
+
+	receivedRes, err := siClient.GetServiceInstance(getInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t, 2, len(receivedRes.Components.OTD.Hosts.UserHosts), "Length of otd hosts not expected.")
+
+	latestHost, err := siClient.GetHostNameByNumber(receivedRes.Components.OTD.Hosts.UserHosts, len(receivedRes.Components.OTD.Hosts.UserHosts))
+	if err != nil {
+		t.Fatalf(fmt.Sprintf("Unable to find latest host for otd: %s", err))
+	}
+
+	scaleInOTD := &ScaleInHostName{
+		HostNames: []string{latestHost},
+	}
+
+	scaleInInput := &ScaleInInput{
+		Name:       _ServiceInstanceName,
+		Components: ScaleInComponent{OTD: scaleInOTD},
+	}
+
+	err = siClient.ScaleInServiceInstance(scaleInInput)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assert.Equal(t, 1, len(receivedRes.Components.OTD.Hosts.UserHosts), "Length of otd hosts not expected.")
 }
 
 func TestAccServiceInstanceLifeCycle_LoadBalancer(t *testing.T) {
