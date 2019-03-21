@@ -1,3 +1,7 @@
+## 0.16.1 (March 21, 2019)
+
+* java: Adding additional Profile cluster information to java service instance [GH-183]
+
 ## 0.16.0 (March 13, 2019) 
 
 * java: Added support for scale out/in for Oracle Traffic Director or WebLogic Server [GH-182]
