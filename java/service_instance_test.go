@@ -584,7 +584,7 @@ func TestAccServiceInstanceLifeCycle_ScaleOutInWLS(t *testing.T) {
 
 	assert.Equal(t, 2, len(receivedRes.Components.WLS.Hosts.UserHosts), "Length of wls hosts not expected.")
 
-	latestHost, err := siClient.GetHostNameByNumber(receivedRes.Components.WLS.Hosts.UserHosts, len(receivedRes.Components.WLS.Hosts.UserHosts))
+	latestHost, err := GetHostNameByNumber(receivedRes.Components.WLS.Hosts.UserHosts, len(receivedRes.Components.WLS.Hosts.UserHosts))
 	if err != nil {
 		t.Fatalf(fmt.Sprintf("Unable to find latest host for wls: %s", err))
 	}
@@ -709,7 +709,7 @@ func TestAccServiceInstanceLifeCycle_ScaleOutInOTD(t *testing.T) {
 
 	assert.Equal(t, 2, len(receivedRes.Components.OTD.Hosts.UserHosts), "Length of otd hosts not expected.")
 
-	latestHost, err := siClient.GetHostNameByNumber(receivedRes.Components.OTD.Hosts.UserHosts, len(receivedRes.Components.OTD.Hosts.UserHosts))
+	latestHost, err := GetHostNameByNumber(receivedRes.Components.OTD.Hosts.UserHosts, len(receivedRes.Components.OTD.Hosts.UserHosts))
 	if err != nil {
 		t.Fatalf(fmt.Sprintf("Unable to find latest host for otd: %s", err))
 	}
