@@ -16,7 +16,7 @@ const (
 	_InstanceTestLabel      = "test"
 	_InstanceTestShape      = "oc3"
 	_InstanceTestImage      = "/oracle/public/OL_7.2_UEKR4_x86_64"
-	_InstanceTestImageEntry = 4
+	_InstanceTestImageEntry = 6
 	_InstanceTestPublicPool = "ippool:/oracle/public/ippool"
 )
 
