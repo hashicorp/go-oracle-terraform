@@ -1,3 +1,7 @@
+## 0.16.2 (April 19,2019)
+
+* compute: Resources from different users/identity domains now return properly [GH-184]
+
 ## 0.16.1 (March 21, 2019)
 
 * java: Adding additional Profile cluster information to java service instance [GH-183]
