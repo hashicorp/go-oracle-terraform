@@ -1,3 +1,7 @@
+## 0.16.3 (September 5, 2019)
+
+* mysql: Fix `subnet` support
+
 ## 0.16.2 (April 19,2019)
 
 * compute: Resources from different users/identity domains now return properly [GH-184]
