@@ -765,7 +765,7 @@ func (c *InstancesClient) unqualifyNetworking(info map[string]NetworkingInfo) (m
 		if v.Vnic != "" {
 			unq.Vnic = c.getUnqualifiedName(v.Vnic)
 		}
-		if v.Nat != nil {
+		if v.Nat != nil && len(v.Nat) > 0 && v.Nat[0] != "null" {
 			unq.Nat, err = c.unqualifyNat(v.Nat)
 			if err != nil {
 				return nil, err
@@ -806,7 +806,7 @@ func (c *InstancesClient) unqualifyNat(nat []string) ([]string, error) {
 			continue
 		}
 		n := strings.Split(v, ":")
-		if len(n) < 1 {
+		if len(n) < 2 {
 			return nil, fmt.Errorf("Error unqualifying NAT: %s", v)
 		}
 		u := n[1]
