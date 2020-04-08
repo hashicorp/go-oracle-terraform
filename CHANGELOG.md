@@ -1,3 +1,9 @@
+## 0.17.0 (April 8, 2019)
+
+* compute: allow multi-part names
+
+* compute: fix crash where "null" is passed into the sdk
+
 ## 0.16.3 (September 5, 2019)
 
 * mysql: Fix `subnet` support
