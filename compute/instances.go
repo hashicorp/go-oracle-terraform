@@ -452,8 +452,8 @@ func (c *InstancesClient) GetInstance(input *GetInstanceInput) (*InstanceInfo, e
 	// The returned 'Name' attribute is the fully qualified instance name + "/" + ID
 	// Split these out to accurately populate the fields
 	nID := strings.Split(c.getUnqualifiedName(responseBody.FQDN), "/")
-	responseBody.Name = nID[0]
-	responseBody.ID = nID[1]
+	responseBody.Name = strings.Join(nID[0:len(nID)-1], "/")
+	responseBody.ID = nID[len(nID)-1]
 
 	c.unqualify(&responseBody.VCableID)
 
@@ -504,8 +504,8 @@ func (c *InstancesClient) GetInstanceFromName(input *GetInstanceIDInput) (*Insta
 			// The returned 'Name' attribute is the fully qualified instance name + "/" + ID
 			// Split these out to accurately populate the fields
 			nID := strings.Split(c.getUnqualifiedName(i.FQDN), "/")
-			i.Name = nID[0]
-			i.ID = nID[1]
+			i.Name = strings.Join(nID[0:len(nID)-1], "/")
+			i.ID = nID[len(nID)-1]
 
 			c.unqualify(&i.VCableID)
 
