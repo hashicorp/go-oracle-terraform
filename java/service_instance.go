@@ -1810,7 +1810,7 @@ type DesiredStateInput struct {
 	// Flag that specifies whether to control the entire service instance.
 	// This attribute is not applicable to the restart command.
 	// Optional
-	AllServiceHosts bool `json:"allServiceHosts,omitemtpy"`
+	AllServiceHosts bool `json:"allServiceHosts,omitempty"`
 	// Groups properties for the Oracle WebLogic Server component (WLS).
 	// Optional
 	Components *DesiredStateComponent `json:"components,omitempty"`
