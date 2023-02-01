@@ -1,3 +1,6 @@
+// Copyright (c) HashiCorp, Inc.
+// SPDX-License-Identifier: MPL-2.0
+
 package compute
 
 // IPReservationsClient is a client for the IP Reservations functions of the Compute API.

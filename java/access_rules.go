@@ -1,3 +1,6 @@
+// Copyright (c) HashiCorp, Inc.
+// SPDX-License-Identifier: MPL-2.0
+
 // Manages Access Rules for a JaaS Service Instance.
 // The only fields that can be Updated for an Access Rule is the desired state
 // of the access rule. From Enabled -> Disabled.

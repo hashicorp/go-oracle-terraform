@@ -1,3 +1,6 @@
+// Copyright (c) HashiCorp, Inc.
+// SPDX-License-Identifier: MPL-2.0
+
 package compute
 
 // SecurityApplicationsClient is a client for the Security Application functions of the Compute API.

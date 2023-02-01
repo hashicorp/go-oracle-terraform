@@ -1,3 +1,6 @@
+// Copyright (c) HashiCorp, Inc.
+// SPDX-License-Identifier: MPL-2.0
+
 // Manages SSH Keys for a DBaaS Service Instance.
 // SSH Keys can currently only be created and information fetched. They cannot
 // be updated, or deleted via the API. So each interaction requires a ForceNew
