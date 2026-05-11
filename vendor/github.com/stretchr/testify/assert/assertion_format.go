@@ -1,3 +1,5 @@
+// Copyright IBM Corp. 2017, 2026
+
 /*
 * CODE GENERATED AUTOMATICALLY WITH github.com/stretchr/testify/_codegen
 * THIS FILE MUST NOT BE EDITED BY HAND

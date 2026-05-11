@@ -1,3 +1,5 @@
+// Copyright IBM Corp. 2017, 2026
+
 package database
 
 // API URI Paths for Container and Root objects

@@ -1,3 +1,5 @@
+// Copyright IBM Corp. 2017, 2026
+
 // Manages SSH Keys for a DBaaS Service Instance.
 // SSH Keys can currently only be created and information fetched. They cannot
 // be updated, or deleted via the API. So each interaction requires a ForceNew

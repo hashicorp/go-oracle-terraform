@@ -1,3 +1,5 @@
+// Copyright IBM Corp. 2017, 2026
+
 package compute
 
 // SSHKeysClient is a client for the SSH key functions of the Compute API.

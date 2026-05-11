@@ -1,3 +1,5 @@
+// Copyright IBM Corp. 2017, 2026
+
 package compute
 
 // MachineImagesClient is a client for the MachineImage functions of the Compute API.

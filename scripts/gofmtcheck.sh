@@ -1,4 +1,6 @@
 #!/bin/bash
+# Copyright IBM Corp. 2017, 2026
+
 
 # Check gofmt
 echo "==> Checking that code complies with gofmt requirements..."
