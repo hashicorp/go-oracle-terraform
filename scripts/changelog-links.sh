@@ -1,4 +1,6 @@
 #!/bin/bash
+# Copyright IBM Corp. 2017, 2026
+
 
 # This script rewrites [GH-nnnn]-style references in the CHANGELOG.md file to
 # be Markdown links to the given github issues.

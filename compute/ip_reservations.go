@@ -1,3 +1,5 @@
+// Copyright IBM Corp. 2017, 2026
+
 package compute
 
 // IPReservationsClient is a client for the IP Reservations functions of the Compute API.

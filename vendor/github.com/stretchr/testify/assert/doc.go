@@ -1,3 +1,5 @@
+// Copyright IBM Corp. 2017, 2026
+
 // Package assert provides a set of comprehensive testing tools for use with the normal Go testing system.
 //
 // Example Usage

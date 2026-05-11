@@ -1,3 +1,5 @@
+// Copyright IBM Corp. 2017, 2026
+
 // Manages the access rules for the MySQL CS Service Instance.
 // The only fields that can be updated for an access rule is the desired state: Enabled / Disabled.
 // AccessRules are dependent on the existance of ServiceInstance.

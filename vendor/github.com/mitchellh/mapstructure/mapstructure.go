@@ -1,3 +1,5 @@
+// Copyright IBM Corp. 2017, 2026
+
 // The mapstructure package exposes functionality to convert an
 // arbitrary map[string]interface{} into a native Go structure.
 //

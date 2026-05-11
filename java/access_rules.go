@@ -1,3 +1,5 @@
+// Copyright IBM Corp. 2017, 2026
+
 // Manages Access Rules for a JaaS Service Instance.
 // The only fields that can be Updated for an Access Rule is the desired state
 // of the access rule. From Enabled -> Disabled.
